@@ -66,14 +66,14 @@ const QuranIndex = () => {
 
               {/* الوسط - العنوان */}
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center shadow-gold">
-                  <BookOpen className="w-4 h-4 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-lg gradient-gold flex items-center justify-center shadow-gold">
+                  <BookOpen className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-base font-bold font-amiri bg-gradient-to-l from-primary to-gold-dark bg-clip-text text-transparent">
+                  <h1 className="text-lg font-bold font-amiri bg-gradient-to-l from-primary to-gold-dark bg-clip-text text-transparent">
                     القرآن الكريم
                   </h1>
-                  <p className="text-[9px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     {availableCount} سورة متوفرة
                   </p>
                 </div>
@@ -172,7 +172,7 @@ const QuranIndex = () => {
             </div>
             <div className="flex-1">
               <p className="text-xs font-medium text-foreground">
-                السور المتوفرة: الفاتحة • البقرة (80 آية) • يس • جزء عمّ
+                السور المتوفرة: الفاتحة • البقرة (كاملة) • يس • جزء عمّ
               </p>
             </div>
           </div>
