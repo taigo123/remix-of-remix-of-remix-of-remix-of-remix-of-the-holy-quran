@@ -66,8 +66,8 @@ const QuranIndex = () => {
 
               {/* الوسط - العنوان */}
               <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg gradient-gold flex items-center justify-center shadow-gold">
-                  <BookOpen className="w-5 h-5 text-primary-foreground" />
+              <div className="w-12 h-12 rounded-xl gradient-gold flex items-center justify-center shadow-gold">
+                  <BookOpen className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <div className="text-center">
                   <h1 className="text-lg font-bold font-amiri bg-gradient-to-l from-primary to-gold-dark bg-clip-text text-transparent">
