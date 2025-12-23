@@ -21,6 +21,8 @@ import { surahAlKahf } from './surahs/018-alkahf';
 import { surahMaryam } from './surahs/019-maryam';
 import { surahTaha } from './surahs/020-taha';
 import { surahAlIkhlas } from './surahs/112-alikhlas';
+import { surahAlFalaq } from './surahs/113-alfalaq';
+import { surahAnNas } from './surahs/114-annas';
 
 // استيراد سورة ياسين الموجودة
 import { sections as yasinSections, surahInfo as yasinInfo } from './surahYasinTafsir';
