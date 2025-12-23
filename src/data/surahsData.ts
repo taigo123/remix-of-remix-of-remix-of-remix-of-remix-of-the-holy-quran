@@ -93,8 +93,6 @@ export const availableSurahs: Record<number, Surah> = {
   66: surahAtTahrim,
   67: surahAlMulk,
   68: surahAlQalam,
-  71: surahNuh,
-  68: surahAlQalam,
   69: surahAlHaqqah,
   70: surahAlMaarij,
   71: surahNuh,
