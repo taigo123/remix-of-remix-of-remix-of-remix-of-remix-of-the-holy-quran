@@ -22,6 +22,9 @@ import { surahMaryam } from './surahs/019-maryam';
 import { surahTaha } from './surahs/020-taha';
 import { surahAlAnbiya } from './surahs/021-alanbiya';
 import { surahAlHajj } from './surahs/022-alhajj';
+import { surahAlMuminun } from './surahs/023-almuminun';
+import { surahAnNur } from './surahs/024-annur';
+import { surahAlFurqan } from './surahs/025-alfurqan';
 import { surahAlIkhlas } from './surahs/112-alikhlas';
 import { surahAlFalaq } from './surahs/113-alfalaq';
 import { surahAnNas } from './surahs/114-annas';
@@ -123,6 +126,9 @@ export const availableSurahs: Record<number, Surah> = {
   20: surahTaha,
   21: surahAlAnbiya,
   22: surahAlHajj,
+  23: surahAlMuminun,
+  24: surahAnNur,
+  25: surahAlFurqan,
   36: surahYasin,
   62: surahAlJumuah,
   63: surahAlMunafiqun,
