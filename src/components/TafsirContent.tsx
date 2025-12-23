@@ -1,10 +1,10 @@
-import { sections } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
 import { VerseCard } from "./VerseCard";
 import { SectionNav } from "./SectionNav";
 import { SearchBar, SearchResult } from "./SearchBar";
 import { FavoritesPanel } from "./FavoritesPanel";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ChevronUp, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -12,8 +12,34 @@ interface TafsirContentProps {
   playerHighlightedVerse?: number | null;
 }
 
+// تجميع الآيات حسب المواضيع
+const getSections = () => {
+  const surah = getSurahData(36);
+  if (!surah) return [];
+  
+  const themeGroups: { id: string; title: string; description: string; verses: typeof surah.verses }[] = [];
+  let currentTheme = "";
+  
+  surah.verses.forEach((verse) => {
+    if (verse.theme && verse.theme !== currentTheme) {
+      currentTheme = verse.theme;
+      themeGroups.push({
+        id: `theme-${verse.id}`,
+        title: verse.theme,
+        description: verse.tafsir.substring(0, 100) + "...",
+        verses: [verse],
+      });
+    } else if (themeGroups.length > 0) {
+      themeGroups[themeGroups.length - 1].verses.push(verse);
+    }
+  });
+  
+  return themeGroups;
+};
+
 export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) => {
-  const [activeSection, setActiveSection] = useState(sections[0].id);
+  const sections = useMemo(() => getSections(), []);
+  const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -48,13 +74,20 @@ export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) =>
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const scrollToVerse = (verseNumber: number) => {
+    const el = verseRefs.current.get(verseNumber);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
   const handleResultsChange = useCallback(
     (results: SearchResult[], query: string) => {
       setSearchResults(results);
       setSearchQuery(query);
       setCurrentResultIndex(0);
       if (results.length > 0) {
-        const firstVerse = results[0].verse.number;
+        const firstVerse = results[0].verse.id;
         setHighlightedVerse(firstVerse);
         scrollToVerse(firstVerse);
       } else {
@@ -64,17 +97,10 @@ export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) =>
     []
   );
 
-  const scrollToVerse = (verseNumber: number) => {
-    const el = verseRefs.current.get(verseNumber);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   const handleNavigate = useCallback((result: SearchResult, index: number) => {
     setCurrentResultIndex(index);
-    setHighlightedVerse(result.verse.number);
-    scrollToVerse(result.verse.number);
+    setHighlightedVerse(result.verse.id);
+    scrollToVerse(result.verse.id);
   }, []);
 
   const handleFavoriteNavigate = useCallback((verseNumber: number) => {
@@ -167,8 +193,8 @@ export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) =>
                   {section.description}
                 </p>
                 <div className="mt-3 text-primary-foreground/70 text-sm" dir="rtl">
-                  الآيات: {section.verses[0].number} -{" "}
-                  {section.verses[section.verses.length - 1].number}
+                  الآيات: {section.verses[0].id} -{" "}
+                  {section.verses[section.verses.length - 1].id}
                 </div>
               </div>
 
@@ -176,13 +202,13 @@ export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) =>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {section.verses.map((verse, index) => (
                   <VerseCard
-                    key={verse.number}
-                    ref={setVerseRef(verse.number)}
+                    key={verse.id}
+                    ref={setVerseRef(verse.id)}
                     verse={verse}
                     index={index}
                     searchQuery={searchQuery}
-                    isHighlighted={activeHighlight === verse.number}
-                    isFavorite={isFavorite(verse.number)}
+                    isHighlighted={activeHighlight === verse.id}
+                    isFavorite={isFavorite(verse.id)}
                     onToggleFavorite={toggleFavorite}
                   />
                 ))}
@@ -205,4 +231,3 @@ export const TafsirContent = ({ playerHighlightedVerse }: TafsirContentProps) =>
     </main>
   );
 };
-

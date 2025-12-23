@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Verse } from "@/data/surahYasinTafsir";
+import { Verse } from "@/data/types";
 import { BookOpen, Heart, Lightbulb, Tag } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { HighlightText } from "./HighlightText";
@@ -31,7 +31,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
     return (
       <div
         ref={ref}
-        id={`verse-${verse.number}`}
+        id={`verse-${verse.id}`}
         className={cn(
           "group gradient-card rounded-2xl p-6 md:p-8 shadow-card hover:shadow-elevated transition-all duration-500 animate-slide-up border",
           isHighlighted
@@ -43,7 +43,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
         {/* Verse Number & Theme & Actions */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
           <div className="flex items-center gap-3">
-            <span className="verse-number animate-glow">{verse.number}</span>
+            <span className="verse-number animate-glow">{verse.id}</span>
             {verse.theme && (
               <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/10 text-secondary">
                 <Tag className="w-4 h-4" />
@@ -57,7 +57,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onToggleFavorite(verse.number)}
+                onClick={() => onToggleFavorite(verse.id)}
                 className={cn(
                   "h-9 w-9 p-0 rounded-full transition-all",
                   isFavorite
@@ -80,13 +80,13 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
             className="font-arabic text-2xl md:text-3xl leading-[2.5] text-foreground text-center"
             dir="rtl"
           >
-            <HighlightText text={verse.arabic} query={searchQuery} />
+            <HighlightText text={verse.arabicText} query={searchQuery} />
           </p>
         </div>
 
         {/* Audio Player */}
         <div className="mb-6 flex justify-center" dir="rtl">
-          <AudioPlayer verseNumber={verse.number} />
+          <AudioPlayer verseNumber={verse.id} />
         </div>
 
         {/* Tafsir */}

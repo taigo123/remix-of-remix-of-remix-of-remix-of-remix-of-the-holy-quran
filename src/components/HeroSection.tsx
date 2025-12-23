@@ -1,4 +1,4 @@
-import { surahInfo } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
 import { BookOpen, MapPin, ScrollText, Star } from "lucide-react";
 import { FullSurahPlayer } from "./FullSurahPlayer";
 
@@ -11,6 +11,12 @@ export const HeroSection = ({
   onVerseChange,
   currentHighlightedVerse,
 }: HeroSectionProps) => {
+  const surahInfo = getSurahData(36);
+  
+  if (!surahInfo) return null;
+  
+  const virtuesArray = surahInfo.virtues ? surahInfo.virtues.split(' | ') : [];
+  
   return (
     <header className="relative gradient-hero text-primary-foreground overflow-hidden">
       {/* Decorative Pattern */}
@@ -56,7 +62,7 @@ export const HeroSection = ({
           <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl p-4 text-center border border-primary-foreground/20">
             <MapPin className="w-6 h-6 mx-auto mb-2 text-primary" />
             <span className="block font-bold text-lg" dir="rtl">
-              {surahInfo.revelation}
+              {surahInfo.revelationType}
             </span>
             <span className="text-sm text-primary-foreground/70" dir="rtl">
               مكان النزول
@@ -100,7 +106,7 @@ export const HeroSection = ({
               className="font-naskh text-lg leading-[2.2] text-primary-foreground"
               dir="rtl"
             >
-              {surahInfo.introduction}
+              {surahInfo.description}
             </p>
 
             <div className="mt-6 pt-6 border-t border-primary-foreground/20">
@@ -108,7 +114,7 @@ export const HeroSection = ({
                 فضائل السورة
               </h3>
               <ul className="space-y-3" dir="rtl">
-                {surahInfo.virtues.map((virtue, index) => (
+                {virtuesArray.map((virtue, index) => (
                   <li
                     key={index}
                     className="flex items-start gap-3 font-naskh text-primary-foreground"
