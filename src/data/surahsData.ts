@@ -39,6 +39,14 @@ import { surahAtTakathur } from './surahs/102-attakathur';
 import { surahAlAsr } from './surahs/103-alasr';
 import { surahAlHumazah, surahAlFil, surahQuraysh, surahAlMaun, surahAlKawthar, surahAlKafirun, surahAnNasr, surahAlMasad } from './surahs/104-111';
 
+// استيراد السور الجديدة
+import { surahAlJumuah } from './surahs/062-aljumuah';
+import { surahAlMunafiqun } from './surahs/063-almunafiqun';
+import { surahAtTaghabun } from './surahs/064-attaghabun';
+import { surahAtTalaq } from './surahs/065-attalaq';
+import { surahAtTahrim } from './surahs/066-attahrim';
+import { surahAlMulk } from './surahs/067-almulk';
+
 // تحويل بيانات سورة ياسين للتنسيق الجديد
 const yasinVerses = yasinSections.flatMap(section => 
   section.verses.map(v => ({
