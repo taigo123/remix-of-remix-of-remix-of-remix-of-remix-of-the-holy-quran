@@ -22,7 +22,7 @@ import {
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
-import { sections } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
 import { useToast } from "@/hooks/use-toast";
 import { useReadingStats } from "@/hooks/useReadingStats";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,8 @@ const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulbasitmurattal": 64,
 };
 
-const allVerses = sections.flatMap((s) => s.verses.map((v) => v.number));
+const surahYasin = getSurahData(36);
+const allVerses = surahYasin ? surahYasin.verses.map((v) => v.id) : [];
 const TOTAL_VERSES = allVerses.length;
 const SURAH_ID = 36;
 const SURAH_NAME = "يس";

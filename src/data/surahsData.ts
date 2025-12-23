@@ -35,6 +35,7 @@ import { surahAsSajdah } from './surahs/032-assajdah';
 import { surahAlAhzab } from './surahs/033-alahzab';
 import { surahSaba } from './surahs/034-saba';
 import { surahFatir } from './surahs/035-fatir';
+import { surahYasin } from './surahs/036-yasin';
 import { surahAsSaffat } from './surahs/037-assaffat';
 import { surahSad } from './surahs/038-sad';
 import { surahAzZumar } from './surahs/039-azzumar';
@@ -64,8 +65,6 @@ import { surahAlIkhlas } from './surahs/112-alikhlas';
 import { surahAlFalaq } from './surahs/113-alfalaq';
 import { surahAnNas } from './surahs/114-annas';
 
-// استيراد سورة ياسين الموجودة
-import { sections as yasinSections, surahInfo as yasinInfo } from './surahYasinTafsir';
 
 // استيراد سور جزء عمّ
 import { surahAnNaba } from './surahs/078-annaba';
@@ -113,30 +112,6 @@ import { surahAlMuddaththir } from './surahs/074-almuddaththir';
 import { surahAlQiyamah } from './surahs/075-alqiyamah';
 import { surahAlInsan } from './surahs/076-alinsan';
 import { surahAlMursalat } from './surahs/077-almursalat';
-
-// تحويل بيانات سورة ياسين للتنسيق الجديد
-const yasinVerses = yasinSections.flatMap(section => 
-  section.verses.map(v => ({
-    id: v.number,
-    arabicText: v.arabic,
-    tafsir: v.tafsir,
-    theme: v.theme,
-    benefits: v.benefits
-  }))
-);
-
-const surahYasin: Surah = {
-  id: 36,
-  name: yasinInfo.name,
-  englishName: yasinInfo.englishName,
-  versesCount: yasinInfo.versesCount,
-  revelationType: yasinInfo.revelation as 'مكية' | 'مدنية',
-  order: yasinInfo.order,
-  juz: [22, 23],
-  description: yasinInfo.introduction,
-  virtues: yasinInfo.virtues.join(' | '),
-  verses: yasinVerses
-};
 
 export const availableSurahs: Record<number, Surah> = {
   1: surahAlFatiha,

@@ -1,13 +1,41 @@
-import { sections } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 interface SectionNavProps {
   activeSection: string;
   onSectionChange: (id: string) => void;
 }
 
+// تقسيم السورة إلى أقسام بناءً على المواضيع
+const getSections = () => {
+  const surah = getSurahData(36);
+  if (!surah) return [];
+  
+  // تجميع الآيات حسب المواضيع
+  const themeGroups: { id: string; title: string; verses: number[] }[] = [];
+  let currentTheme = "";
+  
+  surah.verses.forEach((verse) => {
+    if (verse.theme && verse.theme !== currentTheme) {
+      currentTheme = verse.theme;
+      themeGroups.push({
+        id: `theme-${verse.id}`,
+        title: verse.theme,
+        verses: [verse.id],
+      });
+    } else if (themeGroups.length > 0) {
+      themeGroups[themeGroups.length - 1].verses.push(verse.id);
+    }
+  });
+  
+  return themeGroups;
+};
+
 export const SectionNav = ({ activeSection, onSectionChange }: SectionNavProps) => {
+  const sections = useMemo(() => getSections(), []);
+  
   return (
     <nav className="sticky top-4 z-10">
       <div className="gradient-navy rounded-2xl p-4 shadow-elevated overflow-hidden">

@@ -1,7 +1,8 @@
 import { Heart, X, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
-import { sections, Verse } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
+import { Verse } from "@/data/types";
 import { useMemo } from "react";
 
 interface FavoritesPanelProps {
@@ -18,9 +19,9 @@ export const FavoritesPanel = ({
   onClose,
 }: FavoritesPanelProps) => {
   const favoriteVerses = useMemo(() => {
-    const allVerses: Verse[] = [];
-    sections.forEach((s) => allVerses.push(...s.verses));
-    return allVerses.filter((v) => favorites.includes(v.number));
+    const surah = getSurahData(36);
+    if (!surah) return [];
+    return surah.verses.filter((v) => favorites.includes(v.id));
   }, [favorites]);
 
   return (
@@ -48,18 +49,18 @@ export const FavoritesPanel = ({
           <div className="space-y-3" dir="rtl">
             {favoriteVerses.map((verse) => (
               <button
-                key={verse.number}
-                onClick={() => onNavigate(verse.number)}
+                key={verse.id}
+                onClick={() => onNavigate(verse.id)}
                 className="w-full text-right p-3 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-card transition-all duration-200"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="verse-number text-xs w-8 h-8">{verse.number}</span>
+                  <span className="verse-number text-xs w-8 h-8">{verse.id}</span>
                   {verse.theme && (
                     <span className="text-xs text-muted-foreground">{verse.theme}</span>
                   )}
                 </div>
                 <p className="font-arabic text-sm leading-relaxed line-clamp-2">
-                  {verse.arabic}
+                  {verse.arabicText}
                 </p>
               </button>
             ))}

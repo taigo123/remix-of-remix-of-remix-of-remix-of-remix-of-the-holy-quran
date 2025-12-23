@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Verse } from "@/data/surahYasinTafsir";
+import { Verse } from "@/data/types";
 import { useToast } from "@/hooks/use-toast";
 
 interface ShareVerseButtonProps {
@@ -16,8 +16,8 @@ interface ShareVerseButtonProps {
 export const ShareVerseButton = ({ verse }: ShareVerseButtonProps) => {
   const { toast } = useToast();
 
-  const shareText = `${verse.arabic}\n\n— سورة ياسين، الآية ${verse.number}`;
-  const shareUrl = `${window.location.origin}/tafsir#verse-${verse.number}`;
+  const shareText = `${verse.arabicText}\n\n— سورة ياسين، الآية ${verse.id}`;
+  const shareUrl = `${window.location.origin}/tafsir#verse-${verse.id}`;
 
   const handleWhatsApp = () => {
     const url = `https://wa.me/?text=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`;

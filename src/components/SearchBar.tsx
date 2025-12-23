@@ -2,7 +2,8 @@ import { Search, X, ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { sections, Verse } from "@/data/surahYasinTafsir";
+import { getSurahData } from "@/data/surahsData";
+import { Verse } from "@/data/types";
 import { VoiceSearchButton } from "./VoiceSearchButton";
 
 export interface SearchResult {
@@ -27,13 +28,12 @@ export const SearchBar = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const allVerses = useMemo(() => {
-    const list: { verse: Verse; sectionId: string }[] = [];
-    sections.forEach((section) => {
-      section.verses.forEach((verse) => {
-        list.push({ verse, sectionId: section.id });
-      });
-    });
-    return list;
+    const surah = getSurahData(36);
+    if (!surah) return [];
+    return surah.verses.map((verse) => ({
+      verse,
+      sectionId: `section-${verse.id}`,
+    }));
   }, []);
 
   const search = useCallback(
@@ -49,7 +49,7 @@ export const SearchBar = ({
       const found: SearchResult[] = [];
 
       allVerses.forEach(({ verse, sectionId }) => {
-        if (verse.arabic.includes(q.trim())) {
+        if (verse.arabicText.includes(q.trim())) {
           found.push({ verse, sectionId, matchField: "arabic" });
         } else if (verse.tafsir.toLowerCase().includes(normalized)) {
           found.push({ verse, sectionId, matchField: "tafsir" });
