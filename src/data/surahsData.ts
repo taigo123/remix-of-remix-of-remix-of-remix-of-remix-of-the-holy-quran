@@ -2,6 +2,7 @@
 import { Surah } from './types';
 import { surahAlFatiha } from './surahs/001-alfatiha';
 import { surahAlBaqara } from './surahs/002-albaqara';
+import { surahAlImran } from './surahs/003-alimran';
 import { surahAlIkhlas } from './surahs/112-alikhlas';
 import { surahAlFalaq } from './surahs/113-alfalaq';
 import { surahAnNas } from './surahs/114-annas';
@@ -65,6 +66,7 @@ const surahYasin: Surah = {
 export const availableSurahs: Record<number, Surah> = {
   1: surahAlFatiha,
   2: surahAlBaqara,
+  3: surahAlImran,
   36: surahYasin,
   78: surahAnNaba,
   79: surahAnNaziat,
