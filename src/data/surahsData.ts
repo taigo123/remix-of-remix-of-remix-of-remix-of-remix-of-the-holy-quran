@@ -10,9 +10,17 @@ import { surahAlAraf } from './surahs/007-alaraf';
 import { surahAlAnfal } from './surahs/008-alanfal';
 import { surahAtTawba } from './surahs/009-attawba';
 import { surahYunus } from './surahs/010-yunus';
+import { surahHud } from './surahs/011-hud';
+import { surahYusuf } from './surahs/012-yusuf';
+import { surahArRaad } from './surahs/013-arraad';
+import { surahIbrahim } from './surahs/014-ibrahim';
+import { surahAlHijr } from './surahs/015-alhijr';
+import { surahAnNahl } from './surahs/016-annahl';
+import { surahAlIsra } from './surahs/017-alisra';
+import { surahAlKahf } from './surahs/018-alkahf';
+import { surahMaryam } from './surahs/019-maryam';
+import { surahTaha } from './surahs/020-taha';
 import { surahAlIkhlas } from './surahs/112-alikhlas';
-import { surahAlFalaq } from './surahs/113-alfalaq';
-import { surahAnNas } from './surahs/114-annas';
 
 // استيراد سورة ياسين الموجودة
 import { sections as yasinSections, surahInfo as yasinInfo } from './surahYasinTafsir';
@@ -92,6 +100,23 @@ export const availableSurahs: Record<number, Surah> = {
   1: surahAlFatiha,
   2: surahAlBaqara,
   3: surahAlImran,
+  4: surahAnNisa,
+  5: surahAlMaida,
+  6: surahAlAnam,
+  7: surahAlAraf,
+  8: surahAlAnfal,
+  9: surahAtTawba,
+  10: surahYunus,
+  11: surahHud,
+  12: surahYusuf,
+  13: surahArRaad,
+  14: surahIbrahim,
+  15: surahAlHijr,
+  16: surahAnNahl,
+  17: surahAlIsra,
+  18: surahAlKahf,
+  19: surahMaryam,
+  20: surahTaha,
   36: surahYasin,
   62: surahAlJumuah,
   63: surahAlMunafiqun,
