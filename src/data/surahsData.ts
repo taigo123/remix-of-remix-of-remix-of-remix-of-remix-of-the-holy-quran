@@ -47,8 +47,15 @@ import { surahAtTalaq } from './surahs/065-attalaq';
 import { surahAtTahrim } from './surahs/066-attahrim';
 import { surahAlMulk } from './surahs/067-almulk';
 import { surahAlQalam } from './surahs/068-alqalam';
+import { surahAlHaqqah } from './surahs/069-alhaqqah';
+import { surahAlMaarij } from './surahs/070-almaarij';
 import { surahNuh } from './surahs/071-nuh';
 import { surahAlJinn } from './surahs/072-aljinn';
+import { surahAlMuzzammil } from './surahs/073-almuzzammil';
+import { surahAlMuddaththir } from './surahs/074-almuddaththir';
+import { surahAlQiyamah } from './surahs/075-alqiyamah';
+import { surahAlInsan } from './surahs/076-alinsan';
+import { surahAlMursalat } from './surahs/077-almursalat';
 
 // تحويل بيانات سورة ياسين للتنسيق الجديد
 const yasinVerses = yasinSections.flatMap(section => 
@@ -85,6 +92,18 @@ export const availableSurahs: Record<number, Surah> = {
   65: surahAtTalaq,
   66: surahAtTahrim,
   67: surahAlMulk,
+  68: surahAlQalam,
+  71: surahNuh,
+  68: surahAlQalam,
+  69: surahAlHaqqah,
+  70: surahAlMaarij,
+  71: surahNuh,
+  72: surahAlJinn,
+  73: surahAlMuzzammil,
+  74: surahAlMuddaththir,
+  75: surahAlQiyamah,
+  76: surahAlInsan,
+  77: surahAlMursalat,
   78: surahAnNaba,
   79: surahAnNaziat,
   80: surahAbasa,
