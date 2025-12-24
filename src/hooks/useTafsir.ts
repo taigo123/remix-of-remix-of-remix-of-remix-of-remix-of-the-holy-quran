@@ -2,14 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { 
   fetchSurahTafsir, 
   AVAILABLE_TAFSIRS,
-  type ExternalTafsir 
 } from '@/services/tafsirApi';
 
-export type TafsirSource = 'local' | 'ar.muyassar' | 'ar.jalalayn';
+export type TafsirSource = 'local' | string;
 
 interface UseTafsirOptions {
   surahNumber: number;
+  versesCount?: number;
   autoLoad?: boolean;
+}
+
+interface TafsirSourceInfo {
+  id: TafsirSource;
+  name: string;
+  description: string;
+  author: string;
 }
 
 interface UseTafsirReturn {
@@ -18,18 +25,28 @@ interface UseTafsirReturn {
   getTafsir: (verseNumber: number, localTafsir: string) => string;
   isLoading: boolean;
   error: string | null;
-  availableSources: { id: TafsirSource; name: string }[];
+  availableSources: TafsirSourceInfo[];
 }
 
-export const useTafsir = ({ surahNumber, autoLoad = true }: UseTafsirOptions): UseTafsirReturn => {
+export const useTafsir = ({ surahNumber, versesCount = 286, autoLoad = true }: UseTafsirOptions): UseTafsirReturn => {
   const [selectedSource, setSelectedSource] = useState<TafsirSource>('local');
   const [tafsirCache, setTafsirCache] = useState<Map<string, Map<number, string>>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const availableSources: { id: TafsirSource; name: string }[] = [
-    { id: 'local', name: 'التفسير المحلي' },
-    ...AVAILABLE_TAFSIRS.map(t => ({ id: t.id as TafsirSource, name: t.name })),
+  const availableSources: TafsirSourceInfo[] = [
+    { 
+      id: 'local', 
+      name: 'التفسير المحلي', 
+      description: 'تفسير مختصر مبني على المصادر المعتمدة',
+      author: 'مجمّع'
+    },
+    ...AVAILABLE_TAFSIRS.map(t => ({ 
+      id: t.id, 
+      name: t.name, 
+      description: t.description,
+      author: t.author
+    })),
   ];
 
   // تحميل التفسير عند تغيير المصدر
@@ -43,7 +60,7 @@ export const useTafsir = ({ surahNumber, autoLoad = true }: UseTafsirOptions): U
     setError(null);
     
     try {
-      const tafsirMap = await fetchSurahTafsir(surahNumber, source);
+      const tafsirMap = await fetchSurahTafsir(surahNumber, source, versesCount);
       
       if (tafsirMap.size === 0) {
         throw new Error('لم يتم العثور على تفسير');
@@ -59,7 +76,7 @@ export const useTafsir = ({ surahNumber, autoLoad = true }: UseTafsirOptions): U
     } finally {
       setIsLoading(false);
     }
-  }, [surahNumber, tafsirCache]);
+  }, [surahNumber, versesCount, tafsirCache]);
 
   // تحميل التفسير عند تغيير المصدر
   useEffect(() => {
@@ -67,6 +84,12 @@ export const useTafsir = ({ surahNumber, autoLoad = true }: UseTafsirOptions): U
       loadTafsir(selectedSource);
     }
   }, [selectedSource, autoLoad, loadTafsir]);
+
+  // إعادة تعيين عند تغيير السورة
+  useEffect(() => {
+    setSelectedSource('local');
+    setError(null);
+  }, [surahNumber]);
 
   const getTafsir = useCallback((verseNumber: number, localTafsir: string): string => {
     if (selectedSource === 'local') {

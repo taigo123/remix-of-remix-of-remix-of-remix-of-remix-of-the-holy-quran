@@ -39,7 +39,7 @@ const SurahPage = () => {
     isLoading: isTafsirLoading,
     error: tafsirError,
     availableSources,
-  } = useTafsir({ surahNumber: surahId });
+  } = useTafsir({ surahNumber: surahId, versesCount: surah?.versesCount || 7 });
 
   // تطبيق إعدادات حجم الخط
   const arabicFontClasses = {
