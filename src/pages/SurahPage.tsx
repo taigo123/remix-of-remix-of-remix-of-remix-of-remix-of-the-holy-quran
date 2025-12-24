@@ -10,6 +10,8 @@ import { FullSurahAudioPlayer } from '@/components/FullSurahAudioPlayer';
 import { useState } from 'react';
 import { useQuranSettings } from '@/hooks/useQuranSettings';
 import { QuranSettingsPanel } from '@/components/QuranSettingsPanel';
+import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
+import { useTafsir } from '@/hooks/useTafsir';
 import {
   Sheet,
   SheetContent,
@@ -28,6 +30,16 @@ const SurahPage = () => {
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { settings, isLoaded } = useQuranSettings();
+  
+  // إعدادات التفسير
+  const {
+    selectedSource,
+    setSelectedSource,
+    getTafsir,
+    isLoading: isTafsirLoading,
+    error: tafsirError,
+    availableSources,
+  } = useTafsir({ surahNumber: surahId });
 
   // تطبيق إعدادات حجم الخط
   const arabicFontClasses = {
@@ -186,6 +198,19 @@ const SurahPage = () => {
           </Card>
         )}
 
+        {/* اختيار مصدر التفسير */}
+        <div className="mb-6">
+          <TafsirSourceSelector
+            selectedSource={selectedSource}
+            onSourceChange={setSelectedSource}
+            availableSources={availableSources}
+            isLoading={isTafsirLoading}
+          />
+          {tafsirError && (
+            <p className="mt-2 text-sm text-destructive">{tafsirError}</p>
+          )}
+        </div>
+
         <div className="space-y-4">
           {surah.verses.map((verse) => (
             <Card 
@@ -227,8 +252,17 @@ const SurahPage = () => {
               )}
 
               <div className="bg-muted/50 rounded-lg p-3">
-                <h4 className="text-sm font-bold text-primary mb-1">التفسير:</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed">{verse.tafsir}</p>
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-sm font-bold text-primary">التفسير:</h4>
+                  {selectedSource !== 'local' && (
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                      {availableSources.find(s => s.id === selectedSource)?.name}
+                    </span>
+                  )}
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {getTafsir(verse.id, verse.tafsir)}
+                </p>
               </div>
               {verse.benefits && (
                 <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
@@ -262,7 +296,8 @@ const SurahPage = () => {
 
       <footer className="bg-muted/50 border-t py-6 px-4 mt-8">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>تفسير مجمّع من أمهات كتب التفسير</p>
+          <p>التفاسير الموثوقة: التفسير الميسر (مجمع الملك فهد) | تفسير الجلالين</p>
+          <p className="mt-1 text-xs">مصدر البيانات: api.alquran.cloud</p>
         </div>
       </footer>
     </div>
