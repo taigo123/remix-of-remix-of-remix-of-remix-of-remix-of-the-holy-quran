@@ -37,9 +37,9 @@ export const useTafsir = ({ surahNumber, versesCount = 286, autoLoad = true }: U
   const availableSources: TafsirSourceInfo[] = [
     { 
       id: 'local', 
-      name: 'التفسير المحلي', 
-      description: 'تفسير مختصر مبني على المصادر المعتمدة',
-      author: 'مجمّع'
+      name: 'التفسير المحلي (مُولَّد بالذكاء الاصطناعي)', 
+      description: 'تفسير مُولَّد بالذكاء الاصطناعي - ليس من مصدر علمي موثق',
+      author: 'ذكاء اصطناعي'
     },
     ...AVAILABLE_TAFSIRS.map(t => ({ 
       id: t.id, 
