@@ -314,16 +314,24 @@ const LandingSidebar = () => {
 
             {/* Feedback Button */}
             <div className={cn(
-              "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
+              "flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group",
               isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
             )}>
               <div className={cn(
-                "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors",
+                "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-colors",
                 isRtl ? "order-first" : "order-last"
               )}>
-                <MessageSquare className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-colors" />
               </div>
-              <UserFeedback />
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "font-medium text-amber-600 dark:text-amber-400",
+                  isRtl ? "order-last" : "order-first"
+                )}>
+                  {isRtl ? "ملاحظات" : "Feedback"}
+                </span>
+                <UserFeedback />
+              </div>
             </div>
 
             {/* Divider */}
