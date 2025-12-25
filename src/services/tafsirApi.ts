@@ -13,81 +13,45 @@ export interface TafsirEdition {
   name: string;
   description: string;
   author: string;
-  apiSource: 'alquran' | 'quran-tafseer';
-  apiId?: number; // للـ quran-tafseer API
 }
 
-// التفاسير المتاحة مع شرح كل تفسير
+// التفاسير المتاحة من alquran.cloud API
 export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
   { 
     id: 'ar.muyassar', 
     name: 'التفسير الميسر', 
-    description: 'تفسير مبسط من مجمع الملك فهد لطباعة المصحف الشريف - سهل الفهم للجميع',
-    author: 'مجمع الملك فهد',
-    apiSource: 'alquran'
+    description: 'تفسير مبسط وسهل الفهم من مجمع الملك فهد لطباعة المصحف الشريف',
+    author: 'مجمع الملك فهد'
   },
   { 
     id: 'ar.jalalayn', 
     name: 'تفسير الجلالين', 
-    description: 'تفسير موجز وشامل للإمامين جلال الدين المحلي وجلال الدين السيوطي',
-    author: 'المحلي والسيوطي',
-    apiSource: 'alquran'
+    description: 'تفسير كلاسيكي موجز للإمامين جلال الدين المحلي (ت 864 هـ) وجلال الدين السيوطي (ت 911 هـ)',
+    author: 'المحلي والسيوطي'
   },
   { 
-    id: 'quran-tafseer-1', 
-    name: 'التفسير الميسر (مفصل)', 
-    description: 'تفسير ميسر مفصل من مجمع الملك فهد - نسخة موسعة',
-    author: 'مجمع الملك فهد',
-    apiSource: 'quran-tafseer',
-    apiId: 1
-  },
-  { 
-    id: 'quran-tafseer-2', 
-    name: 'تفسير ابن كثير', 
-    description: 'من أشهر كتب التفسير بالمأثور للحافظ عماد الدين ابن كثير',
-    author: 'ابن كثير (774 هـ)',
-    apiSource: 'quran-tafseer',
-    apiId: 2
-  },
-  { 
-    id: 'quran-tafseer-3', 
-    name: 'تفسير الطبري', 
-    description: 'جامع البيان في تأويل القرآن - أعظم تفاسير السلف',
-    author: 'الإمام الطبري (310 هـ)',
-    apiSource: 'quran-tafseer',
-    apiId: 3
-  },
-  { 
-    id: 'quran-tafseer-4', 
+    id: 'ar.qurtubi', 
     name: 'تفسير القرطبي', 
-    description: 'الجامع لأحكام القرآن - يركز على الأحكام الفقهية',
-    author: 'الإمام القرطبي (671 هـ)',
-    apiSource: 'quran-tafseer',
-    apiId: 4
+    description: 'الجامع لأحكام القرآن - يركز على الأحكام الفقهية للإمام القرطبي (ت 671 هـ)',
+    author: 'الإمام القرطبي'
   },
   { 
-    id: 'quran-tafseer-5', 
+    id: 'ar.baghawi', 
     name: 'تفسير البغوي', 
-    description: 'معالم التنزيل - تفسير سلفي موجز',
-    author: 'الإمام البغوي (516 هـ)',
-    apiSource: 'quran-tafseer',
-    apiId: 5
+    description: 'معالم التنزيل - تفسير سلفي موجز للإمام البغوي (ت 516 هـ)',
+    author: 'الإمام البغوي'
   },
   { 
-    id: 'quran-tafseer-6', 
-    name: 'تفسير السعدي', 
-    description: 'تيسير الكريم الرحمن - تفسير عصري ميسر',
-    author: 'الشيخ السعدي (1376 هـ)',
-    apiSource: 'quran-tafseer',
-    apiId: 6
-  },
-  { 
-    id: 'quran-tafseer-7', 
+    id: 'ar.waseet', 
     name: 'التفسير الوسيط', 
-    description: 'تفسير معاصر من الأزهر الشريف',
-    author: 'مجمع البحوث الإسلامية',
-    apiSource: 'quran-tafseer',
-    apiId: 7
+    description: 'تفسير معاصر شامل من الأزهر الشريف',
+    author: 'مجمع البحوث الإسلامية'
+  },
+  { 
+    id: 'ar.miqbas', 
+    name: 'تنوير المقباس', 
+    description: 'تنوير المقباس من تفسير ابن عباس - من أقدم التفاسير المنسوبة للصحابة',
+    author: 'منسوب لابن عباس'
   },
 ];
 
@@ -114,29 +78,6 @@ const fetchFromAlQuranCloud = async (
   return data.data.text;
 };
 
-// جلب تفسير من quran-tafseer API
-const fetchFromQuranTafseer = async (
-  surahNumber: number,
-  verseNumber: number,
-  tafsirId: number
-): Promise<string> => {
-  const response = await fetch(
-    `https://api.quran-tafseer.com/tafseer/${tafsirId}/${surahNumber}/${verseNumber}`
-  );
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  
-  if (!data.text) {
-    throw new Error('فشل في جلب التفسير');
-  }
-  
-  return data.text;
-};
-
 // جلب تفسير آية واحدة
 export const fetchVerseTafsir = async (
   surahNumber: number,
@@ -155,13 +96,7 @@ export const fetchVerseTafsir = async (
   }
   
   try {
-    let text: string;
-    
-    if (edition.apiSource === 'alquran') {
-      text = await fetchFromAlQuranCloud(surahNumber, verseNumber, editionId);
-    } else {
-      text = await fetchFromQuranTafseer(surahNumber, verseNumber, edition.apiId!);
-    }
+    const text = await fetchFromAlQuranCloud(surahNumber, verseNumber, editionId);
     
     return {
       source: editionId,
@@ -207,42 +142,11 @@ const fetchSurahFromAlQuranCloud = async (
   return tafsirMap;
 };
 
-// جلب تفسير سورة كاملة من quran-tafseer
-const fetchSurahFromQuranTafseer = async (
-  surahNumber: number,
-  tafsirId: number,
-  versesCount: number
-): Promise<Map<number, string>> => {
-  const tafsirMap = new Map<number, string>();
-  
-  // جلب كل الآيات بالتوازي (بحد أقصى 10 في المرة)
-  const batchSize = 10;
-  for (let i = 1; i <= versesCount; i += batchSize) {
-    const promises = [];
-    for (let j = i; j < Math.min(i + batchSize, versesCount + 1); j++) {
-      promises.push(
-        fetchFromQuranTafseer(surahNumber, j, tafsirId)
-          .then(text => ({ verseNum: j, text }))
-          .catch(() => ({ verseNum: j, text: '' }))
-      );
-    }
-    
-    const results = await Promise.all(promises);
-    results.forEach(({ verseNum, text }) => {
-      if (text) {
-        tafsirMap.set(verseNum, text);
-      }
-    });
-  }
-  
-  return tafsirMap;
-};
-
 // جلب تفسير سورة كاملة (للتحميل المسبق)
 export const fetchSurahTafsir = async (
   surahNumber: number,
   editionId: string,
-  versesCount: number = 286 // افتراضي لسورة البقرة
+  versesCount: number = 286
 ): Promise<Map<number, string>> => {
   const edition = AVAILABLE_TAFSIRS.find(t => t.id === editionId);
   
@@ -251,11 +155,7 @@ export const fetchSurahTafsir = async (
   }
   
   try {
-    if (edition.apiSource === 'alquran') {
-      return await fetchSurahFromAlQuranCloud(surahNumber, editionId);
-    } else {
-      return await fetchSurahFromQuranTafseer(surahNumber, edition.apiId!, versesCount);
-    }
+    return await fetchSurahFromAlQuranCloud(surahNumber, editionId);
   } catch (error) {
     console.error('Error fetching surah tafsir:', error);
     return new Map();
