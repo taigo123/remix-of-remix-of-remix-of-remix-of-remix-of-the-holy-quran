@@ -23,19 +23,21 @@ import { surahIndex } from "@/data/surahIndex";
 import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import LandingSidebar from "@/components/LandingSidebar";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Landing = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { t, isRtl, dir, language } = useLanguage();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      scrollContainerRef.current.scrollBy({ left: isRtl ? 300 : -300, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      scrollContainerRef.current.scrollBy({ left: isRtl ? -300 : 300, behavior: 'smooth' });
     }
   };
 
@@ -68,26 +70,26 @@ const Landing = () => {
 
   // المميزات
   const features = [
-    { icon: BookMarked, title: "114 سورة كاملة", desc: "القرآن الكريم بالرسم العثماني" },
-    { icon: Languages, title: "14 تفسير موثوق", desc: "من أمهات كتب التفسير" },
-    { icon: Headphones, title: "6 قراء مميزين", desc: "تلاوات بأصوات عذبة" },
-    { icon: Search, title: "بحث متقدم", desc: "ابحث في الآيات والتفاسير" },
-    { icon: Heart, title: "المفضلة", desc: "احفظ آياتك المفضلة" },
-    { icon: Volume2, title: "استماع آية بآية", desc: "أو السورة كاملة" },
+    { icon: BookMarked, title: `114 ${t.fullSurahs}`, desc: t.uthmaniScript },
+    { icon: Languages, title: `14 ${t.trustedTafsirs}`, desc: t.fromMajorBooks },
+    { icon: Headphones, title: `6 ${t.distinguishedReciters}`, desc: t.beautifulRecitations },
+    { icon: Search, title: t.advancedSearch, desc: t.searchInVerses },
+    { icon: Heart, title: t.favorites, desc: t.saveYourFavorites },
+    { icon: Volume2, title: t.listenVerseByVerse, desc: t.orFullSurah },
   ];
 
   return (
     <>
       <Helmet>
-        <title>القرآن الكريم - تفسير وتلاوة | أفضل تطبيق للقرآن</title>
+        <title>{t.holyQuran} - {t.tafsir}</title>
         <meta
           name="description"
-          content="تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين - اقرأ واستمع وتدبر آيات الله بتصميم عصري فريد"
+          content={t.aboutText}
         />
-        <html lang="ar" dir="rtl" />
+        <html lang={language} dir={dir} />
       </Helmet>
 
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/30">
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/30" dir={dir}>
         {/* Animated Background */}
         <div className="absolute inset-0">
           {/* Geometric Islamic Pattern */}
@@ -118,7 +120,7 @@ const Landing = () => {
               <div className="text-center mb-12 animate-fade-in">
                 <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/5 border border-primary/10 mb-8">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="font-amiri text-primary">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+                  <span className="font-amiri text-primary">{t.bismillah}</span>
                   <Sparkles className="w-4 h-4 text-primary" />
                 </div>
               </div>
@@ -152,23 +154,23 @@ const Landing = () => {
 
                     {/* Title */}
                     <div className="text-center mb-8">
-                      <h1 className="font-arabic text-4xl md:text-6xl font-bold text-foreground mb-4" dir="rtl">
-                        القرآن الكريم
+                      <h1 className="font-arabic text-4xl md:text-6xl font-bold text-foreground mb-4">
+                        {t.holyQuran}
                       </h1>
-                      <p className="font-amiri text-xl md:text-2xl text-primary mb-4 animate-shimmer-text" dir="rtl">
-                        كتاب الله المبين
+                      <p className="font-amiri text-xl md:text-2xl text-primary mb-4 animate-shimmer-text">
+                        {t.bookOfAllah}
                       </p>
                       <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-                        اقرأ واستمع وتدبر آيات الله بتفسير شامل من أمهات كتب التفسير
+                        {t.readListenReflect}
                       </p>
                     </div>
 
                     {/* Stats */}
                     <div className="flex items-center justify-center gap-6 md:gap-10 mb-10">
                       {[
-                        { num: "114", label: "سورة" },
-                        { num: "30", label: "جزء" },
-                        { num: "6236", label: "آية" },
+                        { num: "114", label: t.surah },
+                        { num: "30", label: t.juz },
+                        { num: "6236", label: t.verse },
                       ].map((stat, i) => (
                         <div key={i} className="text-center">
                           <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-2 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -188,8 +190,12 @@ const Landing = () => {
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                           <Heart className="w-6 h-6 relative z-10" />
-                          <span className="font-amiri font-bold text-xl relative z-10">الأذكار والأدعية</span>
-                          <ChevronLeft className="w-6 h-6 relative z-10 transition-transform group-hover:-translate-x-2" />
+                          <span className="font-amiri font-bold text-xl relative z-10">{t.athkarAndDuas}</span>
+                          {isRtl ? (
+                            <ChevronLeft className="w-6 h-6 relative z-10 transition-transform group-hover:-translate-x-2" />
+                          ) : (
+                            <ChevronRight className="w-6 h-6 relative z-10 transition-transform group-hover:translate-x-2" />
+                          )}
                         </Button>
                       </Link>
                     </div>
@@ -205,14 +211,14 @@ const Landing = () => {
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 mb-4">
                   <BookOpen className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-primary font-medium">فهرس السور</span>
+                  <span className="text-sm text-primary font-medium">{t.surahIndex}</span>
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold font-arabic text-foreground mb-2">
-                  تصفح سور القرآن الكريم
+                  {t.browseSurahs}
                 </h2>
                 <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                   <GripHorizontal className="w-4 h-4" />
-                  اسحب للتصفح أو استخدم الأسهم
+                  {t.dragToScroll}
                 </p>
               </div>
 
@@ -222,17 +228,23 @@ const Landing = () => {
                   variant="outline"
                   size="icon"
                   onClick={scrollRight}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex"
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex",
+                    isRtl ? "right-0" : "left-0"
+                  )}
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  {isRtl ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={scrollLeft}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex"
+                  className={cn(
+                    "absolute top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex",
+                    isRtl ? "left-0" : "right-0"
+                  )}
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  {isRtl ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                 </Button>
 
                 {/* Scrollable Container */}
@@ -267,7 +279,7 @@ const Landing = () => {
                         )}>
                           {surah.name}
                         </h3>
-                        <span className="text-xs text-muted-foreground">{surah.versesCount} آية</span>
+                        <span className="text-xs text-muted-foreground">{surah.versesCount} {t.verse}</span>
                       </Link>
                     );
                   })}
@@ -282,8 +294,8 @@ const Landing = () => {
                     className="gradient-gold text-primary-foreground gap-3 px-8 py-6 text-base rounded-2xl shadow-gold hover:scale-105 transition-transform"
                   >
                     <BookOpen className="w-5 h-5" />
-                    <span className="font-amiri font-bold">عرض الفهرس الكامل</span>
-                    <ChevronLeft className="w-5 h-5" />
+                    <span className="font-amiri font-bold">{t.viewFullIndex}</span>
+                    {isRtl ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                   </Button>
                 </Link>
               </div>
@@ -296,13 +308,13 @@ const Landing = () => {
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 mb-4">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-primary font-medium">مميزات التطبيق</span>
+                  <span className="text-sm text-primary font-medium">{t.features}</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold font-arabic text-foreground mb-4">
-                  كل ما تحتاجه في مكان واحد
+                  {t.allInOnePlace}
                 </h2>
                 <p className="text-muted-foreground max-w-xl mx-auto">
-                  تطبيق شامل للقرآن الكريم يجمع بين القراءة والاستماع والتفسير
+                  {t.comprehensiveApp}
                 </p>
               </div>
 
@@ -339,8 +351,8 @@ const Landing = () => {
                         <FileText className="w-6 h-6 text-primary-foreground" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">التفاسير الموثوقة</h3>
-                        <p className="text-sm text-muted-foreground">{tafsirs.length} تفاسير من أمهات الكتب</p>
+                        <h3 className="text-xl font-bold text-foreground">{t.trustedTafsirs}</h3>
+                        <p className="text-sm text-muted-foreground">{tafsirs.length} {t.fromMajorBooks}</p>
                       </div>
                     </div>
 
@@ -374,8 +386,8 @@ const Landing = () => {
                         <Mic2 className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">القراء المميزون</h3>
-                        <p className="text-sm text-muted-foreground">{reciters.length} قراء بأصوات عذبة</p>
+                        <h3 className="text-xl font-bold text-foreground">{t.distinguishedReciters}</h3>
+                        <p className="text-sm text-muted-foreground">{reciters.length} {t.reciters}</p>
                       </div>
                     </div>
 
@@ -408,10 +420,10 @@ const Landing = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl" />
                 <div className="relative p-8 md:p-12 text-center">
                   <Star className="w-8 h-8 text-primary mx-auto mb-6" />
-                  <blockquote className="font-arabic text-2xl md:text-3xl text-foreground leading-relaxed mb-6">
+                  <blockquote className="font-arabic text-2xl md:text-3xl text-foreground leading-relaxed mb-6" dir="rtl">
                     ﴿ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا ﴾
                   </blockquote>
-                  <cite className="text-muted-foreground">— سورة المزمل، الآية 4</cite>
+                  <cite className="text-muted-foreground">— {isRtl ? 'سورة المزمل، الآية 4' : 'Surah Al-Muzzammil, Verse 4'}</cite>
                 </div>
               </div>
             </div>
@@ -421,7 +433,7 @@ const Landing = () => {
           <section className="py-12 px-4 bg-gradient-to-b from-transparent to-muted/30">
             <div className="container mx-auto max-w-4xl text-center">
               <p className="text-sm text-muted-foreground">
-                تفسير مجمّع من أمهات كتب التفسير الإسلامية
+                {t.trustedTafsirsList}
               </p>
             </div>
           </section>
