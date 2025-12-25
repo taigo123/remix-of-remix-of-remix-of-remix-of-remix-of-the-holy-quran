@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useLanguage, languages } from "@/contexts/LanguageContext";
+import { useLanguage, languages, regionLabels, LanguageRegion, LanguageInfo } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 
 const LandingSidebar = () => {
@@ -35,9 +35,29 @@ const LandingSidebar = () => {
     return languages.filter(lang => 
       lang.name.toLowerCase().includes(search) ||
       lang.nativeName.toLowerCase().includes(search) ||
-      lang.code.toLowerCase().includes(search)
+      lang.code.toLowerCase().includes(search) ||
+      lang.translator?.toLowerCase().includes(search)
     );
   }, [languageSearch]);
+
+  // Group languages by region
+  const groupedLanguages = useMemo(() => {
+    const groups: Record<LanguageRegion, LanguageInfo[]> = {
+      original: [],
+      middleeast: [],
+      european: [],
+      asian: [],
+      african: [],
+    };
+    
+    filteredLanguages.forEach(lang => {
+      groups[lang.region].push(lang);
+    });
+    
+    return groups;
+  }, [filteredLanguages]);
+
+  const regionOrder: LanguageRegion[] = ['original', 'middleeast', 'european', 'asian', 'african'];
 
   const menuItems = [
     { icon: Home, label: t.home, to: "/" },
@@ -213,44 +233,59 @@ const LandingSidebar = () => {
                     />
                   </div>
                   
-                  {/* Languages List */}
-                  <ScrollArea className="h-64">
-                    <div className="space-y-1">
+                  {/* Languages List - Grouped by Region */}
+                  <ScrollArea className="h-72">
+                    <div className="space-y-3">
                       {filteredLanguages.length > 0 ? (
-                        filteredLanguages.map((lang) => (
-                          <button
-                            key={lang.code}
-                            onClick={() => {
-                              setLanguage(lang.code);
-                              setShowLanguages(false);
-                              setLanguageSearch("");
-                            }}
-                            className={cn(
-                              "flex flex-col gap-1 p-3 rounded-xl transition-colors w-full",
-                              language === lang.code 
-                                ? "bg-primary/10 text-primary" 
-                                : "hover:bg-muted/50 text-foreground",
-                              isRtl ? "items-end text-right" : "items-start text-left"
-                            )}
-                          >
-                            <div className={cn(
-                              "flex items-center gap-2",
-                              isRtl ? "flex-row" : "flex-row-reverse"
-                            )}>
-                              <span className="font-medium">{lang.nativeName}</span>
-                              <span className="text-sm text-muted-foreground">({lang.name})</span>
-                            </div>
-                            {lang.translator && lang.code !== 'ar' && (
-                              <div className="text-xs text-muted-foreground/70">
-                                {isRtl ? `المترجم: ${lang.translator}` : `Translator: ${lang.translator}`}
-                                {lang.source && (
-                                  <span className="mx-1">•</span>
-                                )}
-                                {lang.source && lang.source}
+                        regionOrder.map(region => {
+                          const regionLangs = groupedLanguages[region];
+                          if (regionLangs.length === 0) return null;
+                          
+                          return (
+                            <div key={region} className="space-y-1">
+                              {/* Region Header */}
+                              <div className={cn(
+                                "sticky top-0 z-10 px-2 py-1.5 bg-muted/80 backdrop-blur-sm rounded-lg text-xs font-medium text-muted-foreground flex items-center gap-2",
+                                isRtl ? "flex-row" : "flex-row-reverse"
+                              )}>
+                                <span>{isRtl ? regionLabels[region].ar : regionLabels[region].en}</span>
+                                <span className="text-muted-foreground/50">({regionLangs.length})</span>
                               </div>
-                            )}
-                          </button>
-                        ))
+                              
+                              {/* Languages in this region */}
+                              {regionLangs.map((lang) => (
+                                <button
+                                  key={lang.code}
+                                  onClick={() => {
+                                    setLanguage(lang.code);
+                                    setShowLanguages(false);
+                                    setLanguageSearch("");
+                                  }}
+                                  className={cn(
+                                    "flex flex-col gap-1 p-3 rounded-xl transition-colors w-full",
+                                    language === lang.code 
+                                      ? "bg-primary/10 text-primary" 
+                                      : "hover:bg-muted/50 text-foreground",
+                                    isRtl ? "items-end text-right" : "items-start text-left"
+                                  )}
+                                >
+                                  <div className={cn(
+                                    "flex items-center gap-2",
+                                    isRtl ? "flex-row" : "flex-row-reverse"
+                                  )}>
+                                    <span className="font-medium">{lang.nativeName}</span>
+                                    <span className="text-sm text-muted-foreground">({lang.name})</span>
+                                  </div>
+                                  {lang.translator && lang.code !== 'ar' && (
+                                    <div className="text-xs text-muted-foreground/70">
+                                      {isRtl ? `المترجم: ${lang.translator}` : `Translator: ${lang.translator}`}
+                                    </div>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          );
+                        })
                       ) : (
                         <div className={cn(
                           "p-4 text-center text-muted-foreground text-sm",
