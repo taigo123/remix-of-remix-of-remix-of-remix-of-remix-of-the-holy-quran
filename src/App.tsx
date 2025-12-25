@@ -9,6 +9,7 @@ import Landing from "./pages/Landing";
 import InstallGuide from "./pages/InstallGuide";
 import QuranIndex from "./pages/QuranIndex";
 import SurahPage from "./pages/SurahPage";
+import TafsirList from "./pages/TafsirList";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/quran" element={<QuranIndex />} />
             <Route path="/surah/:id" element={<SurahPage />} />
             <Route path="/tafsir" element={<Index />} />
+            <Route path="/tafsir-list" element={<TafsirList />} />
             <Route path="/install-guide" element={<InstallGuide />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
