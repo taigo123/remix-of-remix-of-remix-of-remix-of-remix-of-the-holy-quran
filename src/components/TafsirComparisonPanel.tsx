@@ -20,7 +20,7 @@ import {
   ArrowLeftRight,
   Download,
   FileImage,
-  FileText,
+  
   Search,
   XCircle
 } from 'lucide-react';
@@ -29,7 +29,7 @@ import { fetchSurahTafsir, AVAILABLE_TAFSIRS, DEFAULT_TAFSIR } from '@/services/
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+
 
 interface TafsirSourceInfo {
   id: TafsirSource;
@@ -192,93 +192,6 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF بجودة عالية
-  const exportAsPDF = async () => {
-    if (!contentRef.current) return;
-    
-    setIsExporting(true);
-    try {
-      const element = contentRef.current;
-      
-      // Clone the element to avoid scroll issues
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = element.scrollWidth + 'px';
-      clone.style.height = 'auto';
-      clone.style.overflow = 'visible';
-      clone.style.backgroundColor = '#ffffff';
-      document.body.appendChild(clone);
-      
-      // Wait for render
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const canvas = await html2canvas(clone, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-      });
-      
-      // Remove clone
-      document.body.removeChild(clone);
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const margin = 10;
-      const contentWidth = pageWidth - (margin * 2);
-      
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = contentWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-      
-      // Add image - if it fits on one page
-      if (scaledHeight <= pageHeight - (margin * 2)) {
-        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, scaledHeight);
-      } else {
-        // Multi-page: add full image and let jsPDF handle overflow
-        let heightLeft = scaledHeight;
-        let position = margin;
-        
-        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, scaledHeight);
-        heightLeft -= (pageHeight - margin * 2);
-        
-        while (heightLeft > 0) {
-          position = -(pageHeight - margin * 2) * (Math.ceil((scaledHeight - heightLeft) / (pageHeight - margin * 2)));
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', margin, position + margin, contentWidth, scaledHeight);
-          heightLeft -= (pageHeight - margin * 2);
-        }
-      }
-      
-      pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
-      
-      toast({
-        title: 'تم التصدير بنجاح',
-        description: 'تم حفظ ملف PDF',
-      });
-    } catch (error) {
-      console.error('Export PDF error:', error);
-      toast({
-        title: 'خطأ',
-        description: 'فشل في تصدير PDF',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   // تمييز نص البحث
   const highlightText = (text: string) => {
@@ -317,16 +230,6 @@ export const TafsirComparisonPanel = ({
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
                 <span className="hidden sm:inline mr-1">صورة</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={exportAsPDF}
-                disabled={isExporting}
-                className="text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                <span className="hidden sm:inline mr-1">PDF</span>
               </Button>
               
               <Button 
