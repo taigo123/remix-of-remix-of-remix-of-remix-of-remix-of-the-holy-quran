@@ -12,8 +12,10 @@ import {
   Home,
   Search,
   Info,
-  Globe
+  Globe,
+  MessageSquare
 } from "lucide-react";
+import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
@@ -310,10 +312,22 @@ const LandingSidebar = () => {
               )}
             </div>
 
+            {/* Feedback Button */}
+            <div className={cn(
+              "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
+              isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
+            )}>
+              <div className={cn(
+                "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors",
+                isRtl ? "order-first" : "order-last"
+              )}>
+                <MessageSquare className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+              </div>
+              <UserFeedback />
+            </div>
+
             {/* Divider */}
             <div className="h-px bg-primary/10 my-4" />
-
-            {/* App Info */}
             <div className="p-4 rounded-2xl bg-muted/30 border border-primary/10">
               <div className={cn(
                 "flex items-center gap-3 mb-3",
