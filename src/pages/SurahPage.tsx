@@ -1,12 +1,12 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle, SkipForward, Square } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SurahAudioPlayer } from '@/components/SurahAudioPlayer';
 import { FullSurahAudioPlayer } from '@/components/FullSurahAudioPlayer';
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
 import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
@@ -41,6 +41,12 @@ const SurahPage = () => {
   const [showTTSWarning, setShowTTSWarning] = useState(true);
   const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
   
+  // Auto-play chain state
+  const [isAutoPlayChainActive, setIsAutoPlayChainActive] = useState(false);
+  const [autoPlayStartVerse, setAutoPlayStartVerse] = useState<number | null>(null);
+  const audioPlayerRefs = useRef<{ [key: number]: { play: () => void; pause: () => void } }>({});
+  const autoPlayChainRef = useRef(false);
+  
   const {
     selectedSource,
     setSelectedSource,
@@ -49,6 +55,69 @@ const SurahPage = () => {
     error: tafsirError,
     availableSources,
   } = useTafsir({ surahNumber: surahId, versesCount: surah?.versesCount || 7 });
+
+  // Keep ref in sync
+  useEffect(() => {
+    autoPlayChainRef.current = isAutoPlayChainActive;
+  }, [isAutoPlayChainActive]);
+
+  // Function to play the next verse in chain
+  const playNextVerseInChain = useCallback((currentVerseId: number) => {
+    if (!autoPlayChainRef.current || !surah) return;
+    
+    const nextVerseId = currentVerseId + 1;
+    if (nextVerseId <= surah.versesCount) {
+      console.log('Playing next verse in chain:', nextVerseId);
+      // Scroll to next verse
+      const nextVerseElement = document.getElementById(`verse-${nextVerseId}`);
+      if (nextVerseElement) {
+        nextVerseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      // Trigger play on the next verse's audio player
+      setTimeout(() => {
+        const nextPlayer = audioPlayerRefs.current[nextVerseId];
+        if (nextPlayer) {
+          nextPlayer.play();
+        }
+      }, 500);
+    } else {
+      // End of surah
+      console.log('End of surah, stopping auto-play chain');
+      setIsAutoPlayChainActive(false);
+      setAutoPlayStartVerse(null);
+    }
+  }, [surah]);
+
+  // Start auto-play chain from a specific verse
+  const startAutoPlayChain = useCallback((startVerseId: number) => {
+    console.log('Starting auto-play chain from verse:', startVerseId);
+    setIsAutoPlayChainActive(true);
+    setAutoPlayStartVerse(startVerseId);
+    autoPlayChainRef.current = true;
+    
+    // Scroll to the verse
+    const verseElement = document.getElementById(`verse-${startVerseId}`);
+    if (verseElement) {
+      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Start playing
+    setTimeout(() => {
+      const player = audioPlayerRefs.current[startVerseId];
+      if (player) {
+        player.play();
+      }
+    }, 300);
+  }, []);
+
+  // Stop auto-play chain
+  const stopAutoPlayChain = useCallback(() => {
+    console.log('Stopping auto-play chain');
+    setIsAutoPlayChainActive(false);
+    setAutoPlayStartVerse(null);
+    autoPlayChainRef.current = false;
+    stopPlayback();
+  }, [stopPlayback]);
   
   // Handle TTS play for a specific verse
   const handlePlayTranslation = async (verseId: number, text: string) => {
@@ -343,37 +412,87 @@ const SurahPage = () => {
                       surahId={surahId} 
                       verseNumber={verse.id} 
                       surahName={surah.name}
+                      ref={(playerRef) => {
+                        if (playerRef) {
+                          audioPlayerRefs.current[verse.id] = playerRef;
+                        }
+                      }}
                       onPlaybackComplete={() => {
-                        console.log('Verse playback complete, autoPlay:', autoPlayTranslation, 'language:', language);
-                        if (autoPlayTranslation && language !== 'ar') {
+                        console.log('Verse playback complete, autoPlay:', autoPlayTranslation, 'language:', language, 'chainActive:', isAutoPlayChainActive);
+                        
+                        // If auto-play translation is enabled
+                        if ((autoPlayTranslation || isAutoPlayChainActive) && language !== 'ar') {
                           const translationText = getTranslation(verse.id);
                           console.log('Translation text:', translationText?.substring(0, 50));
                           if (translationText) {
                             setCurrentTTSVerse(verse.id);
-                            playTranslation(translationText).then(() => {
+                            playTranslation(translationText, () => {
                               setCurrentTTSVerse(null);
+                              // If chain is active, play next verse
+                              if (autoPlayChainRef.current) {
+                                playNextVerseInChain(verse.id);
+                              }
                             });
+                          } else if (autoPlayChainRef.current) {
+                            // No translation, just move to next verse
+                            playNextVerseInChain(verse.id);
                           }
+                        } else if (isAutoPlayChainActive && language === 'ar') {
+                          // Arabic mode: just play next verse without TTS
+                          playNextVerseInChain(verse.id);
                         }
                       }}
                     />
                   </div>
-                  {/* Auto-play translation toggle */}
-                  {language !== 'ar' && getTranslation(verse.id) && (
-                    <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border/30">
-                      <span className="text-xs text-muted-foreground">
-                        {isRtl ? 'تشغيل الترجمة تلقائياً' : 'Auto-play translation'}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-primary" : "text-muted-foreground")} />
-                        <Switch
-                          checked={autoPlayTranslation}
-                          onCheckedChange={setAutoPlayTranslation}
-                          className="scale-75"
-                        />
+                  
+                  {/* Auto-play controls */}
+                  <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border/30">
+                    {/* Start/Stop chain play button */}
+                    <Button
+                      variant={isAutoPlayChainActive && autoPlayStartVerse === verse.id ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        if (isAutoPlayChainActive) {
+                          stopAutoPlayChain();
+                        } else {
+                          startAutoPlayChain(verse.id);
+                        }
+                      }}
+                      className={cn(
+                        "h-7 gap-1.5 text-xs rounded-full",
+                        isAutoPlayChainActive && "bg-primary text-primary-foreground"
+                      )}
+                    >
+                      {isAutoPlayChainActive ? (
+                        <>
+                          <Square className="w-3 h-3" />
+                          {isRtl ? 'إيقاف' : 'Stop'}
+                        </>
+                      ) : (
+                        <>
+                          <SkipForward className="w-3 h-3" />
+                          {isRtl ? 'تشغيل متتابع' : 'Auto-play'}
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* Auto-play translation toggle */}
+                    {language !== 'ar' && getTranslation(verse.id) && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {isRtl ? 'مع الترجمة' : 'With translation'}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-primary" : "text-muted-foreground")} />
+                          <Switch
+                            checked={autoPlayTranslation}
+                            onCheckedChange={setAutoPlayTranslation}
+                            className="scale-75"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* التفسير */}
