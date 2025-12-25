@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { Download, Loader2, Pause, Play, Repeat, Volume2, VolumeX } from "lucide-react";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
@@ -10,6 +10,11 @@ interface SurahAudioPlayerProps {
   verseNumber: number;
   surahName?: string;
   onPlaybackComplete?: () => void;
+}
+
+export interface SurahAudioPlayerRef {
+  play: () => void;
+  pause: () => void;
 }
 
 const RECITERS = [
@@ -46,7 +51,8 @@ const formatTime = (seconds: number) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackComplete }: SurahAudioPlayerProps) => {
+export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayerProps>(
+  ({ surahId, verseNumber, surahName, onPlaybackComplete }, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -63,6 +69,7 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
   const onPlaybackCompleteRef = useRef(onPlaybackComplete);
   const repeatCountRef = useRef(repeatCount);
   const currentRepeatRef = useRef(currentRepeat);
+  const selectedReciterRef = useRef(selectedReciter);
 
   // Keep refs updated
   useEffect(() => {
@@ -76,6 +83,23 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
   useEffect(() => {
     currentRepeatRef.current = currentRepeat;
   }, [currentRepeat]);
+
+  useEffect(() => {
+    selectedReciterRef.current = selectedReciter;
+  }, [selectedReciter]);
+
+  const getGlobalVerseNumber = useCallback(() => {
+    let globalVerse = 0;
+    for (let i = 0; i < surahId - 1; i++) {
+      globalVerse += VERSE_COUNTS[i];
+    }
+    return globalVerse + verseNumber;
+  }, [surahId, verseNumber]);
+
+  const getAudioUrl = useCallback(() => {
+    const bitrate = RECITER_BITRATE[selectedReciterRef.current] ?? 128;
+    return `https://cdn.islamic.network/quran/audio/${bitrate}/${selectedReciterRef.current}/${getGlobalVerseNumber()}.mp3`;
+  }, [getGlobalVerseNumber]);
 
   // Initialize audio element once
   useEffect(() => {
@@ -148,20 +172,7 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
     setCurrentRepeat(0);
   }, [surahId, verseNumber]);
 
-  const getGlobalVerseNumber = useCallback(() => {
-    let globalVerse = 0;
-    for (let i = 0; i < surahId - 1; i++) {
-      globalVerse += VERSE_COUNTS[i];
-    }
-    return globalVerse + verseNumber;
-  }, [surahId, verseNumber]);
-
-  const getAudioUrl = useCallback(() => {
-    const bitrate = RECITER_BITRATE[selectedReciter] ?? 128;
-    return `https://cdn.islamic.network/quran/audio/${bitrate}/${selectedReciter}/${getGlobalVerseNumber()}.mp3`;
-  }, [selectedReciter, getGlobalVerseNumber]);
-
-  const togglePlay = async () => {
+  const togglePlay = useCallback(async () => {
     if (!audioRef.current) return;
     setError(null);
 
@@ -190,7 +201,22 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
       setError("فشل تشغيل التلاوة");
       setIsLoading(false);
     }
-  };
+  }, [isPlaying, getAudioUrl]);
+
+  // Expose play/pause methods via ref
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      if (!isPlaying) {
+        togglePlay();
+      }
+    },
+    pause: () => {
+      if (audioRef.current && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  }), [isPlaying, togglePlay]);
 
   const handleReciterChange = (reciterId: string) => {
     setSelectedReciter(reciterId);
@@ -343,4 +369,6 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
       {error && <span className="text-xs text-destructive text-center">{error}</span>}
     </div>
   );
-};
+});
+
+SurahAudioPlayer.displayName = "SurahAudioPlayer";
