@@ -1,9 +1,10 @@
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Sparkles, Building2, User, Calendar } from 'lucide-react';
+import { ArrowRight, BookOpen, Sparkles, Building2, User, Calendar, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface TafsirInfo {
   id: string;
@@ -23,12 +24,12 @@ const TAFSIR_LIST: TafsirInfo[] = [
     id: 'local',
     name: 'التفسير المحلي',
     author: 'ذكاء اصطناعي',
-    authorFull: 'مُولَّد بالذكاء الاصطناعي',
-    description: 'تفسير مُولَّد آلياً',
-    fullDescription: 'هذا التفسير مُولَّد بواسطة الذكاء الاصطناعي وليس من مصدر علمي موثق. يُستخدم للتوضيح السريع فقط ولا يُعتمد عليه في الأحكام الشرعية. يُنصح باستخدام التفاسير الموثوقة من العلماء.',
+    authorFull: 'مُولَّد بواسطة الذكاء الاصطناعي',
+    description: 'تفسير مُولَّد آلياً - غير موثق',
+    fullDescription: 'هذا التفسير مُولَّد بواسطة الذكاء الاصطناعي وليس من مصدر علمي موثق. يُستخدم للتوضيح السريع فقط ولا يُعتمد عليه في الأحكام الشرعية. يُنصح بشدة باستخدام التفاسير الموثوقة من العلماء أدناه.',
     type: 'ai',
     source: 'محلي',
-    features: ['سريع التحميل', 'يعمل بدون إنترنت', 'غير موثق علمياً']
+    features: ['سريع', 'يعمل بدون إنترنت', '⚠️ غير موثق علمياً']
   },
   {
     id: 'ar.muyassar',
@@ -54,31 +55,7 @@ const TAFSIR_LIST: TafsirInfo[] = [
     features: ['موجز ومختصر', 'شامل', 'كلاسيكي', 'معتمد علمياً']
   },
   {
-    id: 'quran-tafseer-2',
-    name: 'تفسير ابن كثير',
-    author: 'ابن كثير',
-    authorFull: 'الحافظ عماد الدين إسماعيل بن عمر بن كثير الدمشقي',
-    deathYear: '774 هـ',
-    description: 'من أشهر التفاسير بالمأثور',
-    fullDescription: 'تفسير القرآن العظيم للحافظ ابن كثير (ت 774 هـ) من أشهر كتب التفسير بالمأثور. يعتمد على تفسير القرآن بالقرآن، ثم بالسنة النبوية، ثم بأقوال الصحابة والتابعين. يتميز بالتحقيق في الأحاديث وبيان صحيحها من ضعيفها، وهو مرجع أساسي لطلاب العلم.',
-    type: 'classical',
-    source: 'quran-tafseer.com',
-    features: ['تفسير بالمأثور', 'تحقيق الأحاديث', 'مرجع علمي', 'شامل']
-  },
-  {
-    id: 'quran-tafseer-3',
-    name: 'تفسير الطبري',
-    author: 'الإمام الطبري',
-    authorFull: 'الإمام محمد بن جرير الطبري',
-    deathYear: '310 هـ',
-    description: 'جامع البيان - أعظم تفاسير السلف',
-    fullDescription: 'جامع البيان في تأويل القرآن للإمام الطبري (ت 310 هـ) يُعد أعظم تفاسير السلف وأوسعها. جمع فيه أقوال الصحابة والتابعين مع الأسانيد، ورجّح بين الأقوال بمنهج علمي دقيق. يُعتبر المرجع الأول لجميع المفسرين الذين جاءوا بعده.',
-    type: 'classical',
-    source: 'quran-tafseer.com',
-    features: ['أقدم التفاسير الكبرى', 'جمع أقوال السلف', 'بالأسانيد', 'مرجع المفسرين']
-  },
-  {
-    id: 'quran-tafseer-4',
+    id: 'ar.qurtubi',
     name: 'تفسير القرطبي',
     author: 'الإمام القرطبي',
     authorFull: 'الإمام أبو عبد الله محمد بن أحمد القرطبي',
@@ -86,54 +63,42 @@ const TAFSIR_LIST: TafsirInfo[] = [
     description: 'الجامع لأحكام القرآن',
     fullDescription: 'الجامع لأحكام القرآن للإمام القرطبي (ت 671 هـ) من أهم التفاسير الفقهية. يركز على استنباط الأحكام الشرعية من الآيات مع ذكر أقوال الفقهاء ومذاهبهم. مفيد جداً لمن يريد فهم الأحكام الفقهية المستنبطة من القرآن.',
     type: 'classical',
-    source: 'quran-tafseer.com',
+    source: 'alquran.cloud',
     features: ['تفسير فقهي', 'أحكام شرعية', 'مقارنة المذاهب', 'موسوعي']
   },
   {
-    id: 'quran-tafseer-5',
+    id: 'ar.baghawi',
     name: 'تفسير البغوي',
     author: 'الإمام البغوي',
     authorFull: 'الإمام الحسين بن مسعود البغوي',
     deathYear: '516 هـ',
     description: 'معالم التنزيل',
-    fullDescription: 'معالم التنزيل للإمام البغوي (ت 516 هـ) تفسير سلفي موجز ومعتدل. يجمع بين التفسير بالمأثور والرأي، ويتميز بالوضوح والاختصار مع الابتعاد عن الإسرائيليات. وصفه شيخ الإسلام ابن تيمية بأنه مختصر من تفسير الثعلبي لكنه منقى من البدع.',
+    fullDescription: 'معالم التنزيل للإمام البغوي (ت 516 هـ) تفسير سلفي موجز ومعتدل. يجمع بين التفسير بالمأثور والرأي، ويتميز بالوضوح والاختصار مع الابتعاد عن الإسرائيليات. وصفه شيخ الإسلام ابن تيمية بأنه مختصر منقى من البدع.',
     type: 'classical',
-    source: 'quran-tafseer.com',
+    source: 'alquran.cloud',
     features: ['موجز', 'سلفي المنهج', 'خالٍ من الإسرائيليات', 'معتدل']
   },
   {
-    id: 'quran-tafseer-6',
-    name: 'تفسير السعدي',
-    author: 'الشيخ السعدي',
-    authorFull: 'الشيخ عبد الرحمن بن ناصر السعدي',
-    deathYear: '1376 هـ',
-    description: 'تيسير الكريم الرحمن',
-    fullDescription: 'تيسير الكريم الرحمن في تفسير كلام المنان للشيخ السعدي (ت 1376 هـ) تفسير عصري ميسر. يتميز بأسلوبه السهل والواضح، ويركز على استنباط الفوائد والعبر من الآيات. مناسب للقراءة اليومية ولعامة المسلمين.',
-    type: 'modern',
-    source: 'quran-tafseer.com',
-    features: ['عصري', 'سهل الأسلوب', 'فوائد وعبر', 'مناسب للجميع']
-  },
-  {
-    id: 'quran-tafseer-7',
+    id: 'ar.waseet',
     name: 'التفسير الوسيط',
     author: 'مجمع البحوث الإسلامية',
     authorFull: 'لجنة من علماء الأزهر الشريف',
     description: 'تفسير معاصر من الأزهر',
     fullDescription: 'التفسير الوسيط صادر عن مجمع البحوث الإسلامية بالأزهر الشريف. أعده مجموعة من العلماء المتخصصين ليكون تفسيراً وسطاً بين الإيجاز والتطويل. يجمع بين الأصالة والمعاصرة ويعالج قضايا العصر في ضوء القرآن الكريم.',
     type: 'modern',
-    source: 'quran-tafseer.com',
+    source: 'alquran.cloud',
     features: ['معاصر', 'وسط ومعتدل', 'من الأزهر', 'يعالج قضايا العصر']
   },
   {
-    id: 'quran-tafseer-1',
-    name: 'التفسير الميسر (مفصل)',
-    author: 'مجمع الملك فهد',
-    authorFull: 'مجمع الملك فهد لطباعة المصحف الشريف',
-    description: 'نسخة موسعة من التفسير الميسر',
-    fullDescription: 'هذه النسخة الموسعة من التفسير الميسر توفر شرحاً أكثر تفصيلاً للآيات مع الحفاظ على سهولة الأسلوب. مناسبة لمن يريد فهماً أعمق مع البقاء على البساطة والوضوح.',
-    type: 'modern',
-    source: 'quran-tafseer.com',
-    features: ['مفصل أكثر', 'سهل', 'موثق', 'شامل']
+    id: 'ar.miqbas',
+    name: 'تنوير المقباس',
+    author: 'منسوب لابن عباس',
+    authorFull: 'منسوب لعبد الله بن عباس رضي الله عنه',
+    description: 'من أقدم التفاسير المنسوبة للصحابة',
+    fullDescription: 'تنوير المقباس من تفسير ابن عباس يُنسب إلى حبر الأمة عبد الله بن عباس رضي الله عنه، ترجمان القرآن. يُعد من أقدم التفاسير ويحتوي على آراء الصحابة في تفسير الآيات.',
+    type: 'classical',
+    source: 'alquran.cloud',
+    features: ['من التراث', 'منسوب للصحابة', 'قديم', 'تاريخي']
   },
 ];
 
@@ -144,7 +109,7 @@ const getTypeColor = (type: TafsirInfo['type']) => {
     case 'modern':
       return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
     case 'ai':
-      return 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30';
+      return 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30';
   }
 };
 
@@ -155,7 +120,7 @@ const getTypeLabel = (type: TafsirInfo['type']) => {
     case 'modern':
       return 'تفسير عصري';
     case 'ai':
-      return 'ذكاء اصطناعي';
+      return '⚠️ ذكاء اصطناعي';
   }
 };
 
@@ -193,6 +158,14 @@ export default function TafsirList() {
 
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* تحذير التفسير المحلي */}
+          <Alert className="mb-6 border-red-500/30 bg-red-500/10">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-700 dark:text-red-300">
+              <strong>تنبيه:</strong> التفسير المحلي (المُولَّد بالذكاء الاصطناعي) ليس موثوقاً علمياً ولا يُعتمد عليه. يُرجى استخدام التفاسير الموثوقة أدناه.
+            </AlertDescription>
+          </Alert>
+
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mb-8">
             <Badge className={`${getTypeColor('classical')} border`}>
@@ -202,8 +175,8 @@ export default function TafsirList() {
               تفسير عصري (معاصر)
             </Badge>
             <Badge className={`${getTypeColor('ai')} border`}>
-              <Sparkles className="h-3 w-3 ml-1" />
-              ذكاء اصطناعي
+              <AlertTriangle className="h-3 w-3 ml-1" />
+              ذكاء اصطناعي (غير موثق)
             </Badge>
           </div>
 
