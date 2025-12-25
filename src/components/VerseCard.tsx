@@ -1,12 +1,13 @@
 import * as React from "react";
 import { Verse } from "@/data/types";
-import { BookOpen, Heart, Lightbulb, Tag, Globe } from "lucide-react";
+import { BookOpen, Heart, Lightbulb, Tag, Globe, Volume2, Loader2, VolumeX } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { HighlightText } from "./HighlightText";
 import { ShareVerseButton } from "./ShareVerseButton";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslationTTS } from "@/hooks/useTranslationTTS";
 interface VerseCardProps {
   verse: Verse;
   index: number;
@@ -33,6 +34,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
     ref
   ) => {
     const { t, language } = useLanguage();
+    const { isPlaying, isLoading, playTranslation, stopPlayback } = useTranslationTTS();
     const isRTL = ['ar', 'ur'].includes(language);
     return (
       <div
@@ -93,9 +95,27 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
         {/* Translation */}
         {showTranslation && translation && (
           <div className="mb-4 p-4 rounded-xl bg-secondary/10 border border-secondary/20">
-            <div className="flex items-center gap-2 mb-2 text-secondary">
-              <Globe className="w-4 h-4" />
-              <span className="text-sm font-medium">{t.translation}</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-secondary">
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{t.translation}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => isPlaying ? stopPlayback() : playTranslation(translation)}
+                disabled={isLoading}
+                className="h-8 w-8 p-0 rounded-full hover:bg-secondary/20"
+                aria-label={isPlaying ? "إيقاف" : "استماع للترجمة"}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-secondary" />
+                ) : isPlaying ? (
+                  <VolumeX className="w-4 h-4 text-secondary" />
+                ) : (
+                  <Volume2 className="w-4 h-4 text-secondary" />
+                )}
+              </Button>
             </div>
             <p
               className="text-base leading-relaxed text-foreground/85"
