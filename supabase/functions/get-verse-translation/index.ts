@@ -60,10 +60,6 @@ const quranComTranslations: Record<string, number> = {
   ms: 39,  // Basmeih
   th: 51,  // King Fahad Complex
   vi: 177, // Ruwwad
-  my: 233, // Sani Taher
-  km: 224, // Cambodia
-  lo: 226, // Lao
-  fil: 211, // Diyanet
   
   // East Asian Languages
   zh: 56,  // Ma Jian
@@ -79,7 +75,6 @@ const quranComTranslations: Record<string, number> = {
   sw: 49,  // Al-Barwani
   ha: 32,  // Abubakar Gumi
   yo: 125, // Shaykh Abu Rahimah
-  ig: 181, // Igbo
   
   // Maldivian
   dv: 86,  // Office of the President
