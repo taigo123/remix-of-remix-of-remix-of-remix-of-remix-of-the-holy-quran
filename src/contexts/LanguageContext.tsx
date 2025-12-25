@@ -88,6 +88,8 @@ export const translations: Record<Language, {
   electronicMushaf: string;
   allRightsReserved: string;
   trustedTafsirsList: string;
+  // ترجمة الآية
+  translation: string;
 }> = {
   ar: {
     title: 'القرآن الكريم',
@@ -148,6 +150,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'المصحف الإلكتروني',
     allRightsReserved: 'جميع الحقوق محفوظة',
     trustedTafsirsList: 'التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين',
+    translation: 'الترجمة',
   },
   en: {
     title: 'The Holy Quran',
@@ -208,6 +211,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'Electronic Mushaf',
     allRightsReserved: 'All rights reserved',
     trustedTafsirsList: 'Trusted Tafsirs: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
+    translation: 'Translation',
   },
   fr: {
     title: 'Le Saint Coran',
@@ -268,6 +272,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'Mushaf Électronique',
     allRightsReserved: 'Tous droits réservés',
     trustedTafsirsList: 'Tafsirs fiables: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
+    translation: 'Traduction',
   },
   ur: {
     title: 'قرآن پاک',
@@ -328,6 +333,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'الیکٹرانک مصحف',
     allRightsReserved: 'جملہ حقوق محفوظ ہیں',
     trustedTafsirsList: 'معتبر تفاسیر: ابن کثیر | طبری | سعدی | میسر | جلالین',
+    translation: 'ترجمہ',
   },
   id: {
     title: 'Al-Quran Al-Karim',
@@ -388,6 +394,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'Mushaf Elektronik',
     allRightsReserved: 'Hak cipta dilindungi',
     trustedTafsirsList: 'Tafsir Terpercaya: Ibn Katsir | Thabari | Saadi | Muyassar | Jalalayn',
+    translation: 'Terjemahan',
   },
   tr: {
     title: "Kur'an-ı Kerim",
@@ -448,6 +455,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'Elektronik Mushaf',
     allRightsReserved: 'Tüm hakları saklıdır',
     trustedTafsirsList: 'Güvenilir Tefsirler: İbn Kesir | Taberi | Saadi | Müyesser | Celaleyn',
+    translation: 'Çeviri',
   },
   it: {
     title: 'Il Sacro Corano',
@@ -508,6 +516,7 @@ export const translations: Record<Language, {
     electronicMushaf: 'Mushaf Elettronico',
     allRightsReserved: 'Tutti i diritti riservati',
     trustedTafsirsList: 'Tafsir Affidabili: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
+    translation: 'Traduzione',
   },
 };
 

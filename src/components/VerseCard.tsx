@@ -1,12 +1,12 @@
 import * as React from "react";
 import { Verse } from "@/data/types";
-import { BookOpen, Heart, Lightbulb, Tag } from "lucide-react";
+import { BookOpen, Heart, Lightbulb, Tag, Globe } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { HighlightText } from "./HighlightText";
 import { ShareVerseButton } from "./ShareVerseButton";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-
+import { useLanguage } from "@/contexts/LanguageContext";
 interface VerseCardProps {
   verse: Verse;
   index: number;
@@ -14,6 +14,8 @@ interface VerseCardProps {
   isHighlighted?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: (verseNumber: number) => void;
+  translation?: string | null;
+  showTranslation?: boolean;
 }
 
 export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
@@ -25,9 +27,13 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
       isHighlighted = false,
       isFavorite = false,
       onToggleFavorite,
+      translation,
+      showTranslation = false,
     },
     ref
   ) => {
+    const { t, language } = useLanguage();
+    const isRTL = ['ar', 'ur'].includes(language);
     return (
       <div
         ref={ref}
@@ -84,6 +90,22 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
           </p>
         </div>
 
+        {/* Translation */}
+        {showTranslation && translation && (
+          <div className="mb-4 p-4 rounded-xl bg-secondary/10 border border-secondary/20">
+            <div className="flex items-center gap-2 mb-2 text-secondary">
+              <Globe className="w-4 h-4" />
+              <span className="text-sm font-medium">{t.translation}</span>
+            </div>
+            <p
+              className="text-base leading-relaxed text-foreground/85"
+              dir={isRTL ? 'rtl' : 'ltr'}
+            >
+              {translation}
+            </p>
+          </div>
+        )}
+
         {/* Audio Player */}
         <div className="mb-6 flex justify-center" dir="rtl">
           <AudioPlayer verseNumber={verse.id} />
@@ -93,7 +115,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3 text-primary">
             <BookOpen className="w-5 h-5" />
-            <h4 className="font-amiri font-bold text-lg">التفسير</h4>
+            <h4 className="font-amiri font-bold text-lg">{t.tafsir}</h4>
           </div>
           <p className="font-naskh text-lg leading-[2.2] text-foreground/90" dir="rtl">
             <HighlightText text={verse.tafsir} query={searchQuery} />

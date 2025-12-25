@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,8 +23,10 @@ const SurahPage = () => {
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [showTafsir, setShowTafsir] = useState(true);
-  const { t, isRtl, dir } = useLanguage();
+  const { t, isRtl, dir, language } = useLanguage();
   
+  // Verse translations
+  const { getTranslation, showTranslation, isLoading: isTranslationLoading } = useVerseTranslation(surahId);
   const {
     selectedSource,
     setSelectedSource,
@@ -245,9 +248,28 @@ const SurahPage = () => {
               
               {/* النص القرآني */}
               <div className="p-6">
-                <p className="font-arabic text-foreground text-right text-2xl md:text-3xl leading-loose mb-6" dir="rtl">
+                <p className="font-arabic text-foreground text-right text-2xl md:text-3xl leading-loose mb-4" dir="rtl">
                   {verse.arabicText}
                 </p>
+                
+                {/* Translation */}
+                {showTranslation && (
+                  <div className="mb-6 p-4 bg-secondary/10 border border-secondary/20 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2 text-secondary">
+                      <Globe className="w-4 h-4" />
+                      <span className="text-sm font-medium">{t.translation}</span>
+                      {isTranslationLoading && (
+                        <span className="text-xs text-muted-foreground animate-pulse">{isRtl ? 'جاري التحميل...' : 'Loading...'}</span>
+                      )}
+                    </div>
+                    <p
+                      className="text-base leading-relaxed text-foreground/85"
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                    >
+                      {getTranslation(verse.id) || (isTranslationLoading ? '...' : '')}
+                    </p>
+                  </div>
+                )}
                 
                 {/* مشغل الصوت */}
                 <div className="p-4 bg-muted/30 rounded-xl mb-6">
