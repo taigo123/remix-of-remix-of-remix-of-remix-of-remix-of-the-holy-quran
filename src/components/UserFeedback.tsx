@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -717,15 +718,43 @@ export const UserFeedback = () => {
   const [originalText, setOriginalText] = useState('');
   const [suggestedText, setSuggestedText] = useState('');
   const [context, setContext] = useState('');
+  const [touched, setTouched] = useState({ suggestedText: false, context: false });
 
   const labels = UI_LABELS[language] || UI_LABELS.en;
   const isRTL = RTL_LANGUAGES.includes(language);
   const isTranslation = feedbackType === 'translation';
 
+  // Validation messages
+  const validationMessages = {
+    ar: {
+      required: 'هذا الحقل مطلوب',
+      minLength: 'يجب إدخال 3 أحرف على الأقل'
+    },
+    en: {
+      required: 'This field is required',
+      minLength: 'Please enter at least 3 characters'
+    }
+  };
+  const messages = validationMessages[isRTL ? 'ar' : 'en'];
+
+  // Validation errors
+  const errors = {
+    suggestedText: touched.suggestedText && !suggestedText.trim() ? messages.required : 
+                   touched.suggestedText && suggestedText.trim().length < 3 ? messages.minLength : '',
+    context: isTranslation && touched.context && !context.trim() ? messages.required : ''
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!suggestedText.trim()) {
+    // Mark all fields as touched
+    setTouched({ suggestedText: true, context: true });
+    
+    if (!suggestedText.trim() || suggestedText.trim().length < 3) {
+      return;
+    }
+    
+    if (isTranslation && !context.trim()) {
       return;
     }
 
@@ -752,6 +781,7 @@ export const UserFeedback = () => {
         setOriginalText('');
         setSuggestedText('');
         setContext('');
+        setTouched({ suggestedText: false, context: false });
       }, 1500);
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -863,16 +893,24 @@ export const UserFeedback = () => {
             <div className="space-y-2">
               <Label htmlFor="suggested">
                 {isTranslation ? labels.suggestedLabel : labels.messageLabel}
+                <span className="text-red-500 mx-1">*</span>
               </Label>
               <Textarea
                 id="suggested"
                 value={suggestedText}
                 onChange={(e) => setSuggestedText(e.target.value)}
+                onBlur={() => setTouched(prev => ({ ...prev, suggestedText: true }))}
                 placeholder={isTranslation ? '' : labels.messagePlaceholder}
                 required
                 rows={3}
                 dir="auto"
+                className={cn(
+                  errors.suggestedText && "border-red-500 focus-visible:ring-red-500"
+                )}
               />
+              {errors.suggestedText && (
+                <p className="text-xs text-red-500 animate-fade-in">{errors.suggestedText}</p>
+              )}
             </div>
 
             {/* Context / Additional Details */}
@@ -891,16 +929,23 @@ export const UserFeedback = () => {
                 id="context"
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
+                onBlur={() => setTouched(prev => ({ ...prev, context: true }))}
                 placeholder={labels.contextPlaceholder}
                 required={isTranslation}
                 dir="auto"
+                className={cn(
+                  errors.context && "border-red-500 focus-visible:ring-red-500"
+                )}
               />
+              {errors.context && (
+                <p className="text-xs text-red-500 animate-fade-in">{errors.context}</p>
+              )}
             </div>
 
             <Button 
               type="submit" 
               className="w-full gap-2" 
-              disabled={isSubmitting || !suggestedText.trim() || (isTranslation && !context.trim())}
+              disabled={isSubmitting || !suggestedText.trim() || suggestedText.trim().length < 3 || (isTranslation && !context.trim())}
             >
               <Send className="h-4 w-4" />
               {labels.submit}
