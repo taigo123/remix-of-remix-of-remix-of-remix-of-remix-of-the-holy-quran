@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Settings2, Columns2, Sparkles } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -8,18 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { SurahAudioPlayer } from '@/components/SurahAudioPlayer';
 import { FullSurahAudioPlayer } from '@/components/FullSurahAudioPlayer';
 import { useState } from 'react';
-import { useQuranSettings } from '@/hooks/useQuranSettings';
-import { QuranSettingsPanel } from '@/components/QuranSettingsPanel';
 import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
 import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
 const SurahPage = () => {
@@ -29,9 +20,7 @@ const SurahPage = () => {
   const surahInfo = getSurahById(surahId);
   const [showAudioNotice, setShowAudioNotice] = useState(true);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
-  const { settings, isLoaded } = useQuranSettings();
   
   const {
     selectedSource,
@@ -42,28 +31,6 @@ const SurahPage = () => {
     availableSources,
   } = useTafsir({ surahNumber: surahId, versesCount: surah?.versesCount || 7 });
 
-  // تطبيق إعدادات حجم الخط
-  const arabicFontClasses = {
-    small: 'text-xl md:text-2xl',
-    medium: 'text-2xl md:text-3xl',
-    large: 'text-3xl md:text-4xl',
-    xlarge: 'text-4xl md:text-5xl',
-  };
-
-  // تطبيق إعدادات المسافة بين السطور
-  const lineSpacingStyles = {
-    tight: 'leading-relaxed',
-    normal: 'leading-loose',
-    relaxed: 'leading-[2.5]',
-    loose: 'leading-[3]',
-  };
-
-  // تطبيق إعدادات السطوع
-  const brightnessStyles = {
-    dim: { filter: 'brightness(0.75)' },
-    normal: { filter: 'brightness(1)' },
-    bright: { filter: 'brightness(1.1)' },
-  };
 
   if (!surah || !surahInfo) {
     return (
@@ -96,8 +63,7 @@ const SurahPage = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background transition-all duration-500" 
-      style={isLoaded ? brightnessStyles[settings.brightness] : undefined}
+      className="min-h-screen bg-background" 
       dir="rtl"
     >
       {/* خلفية */}
@@ -148,25 +114,8 @@ const SurahPage = () => {
               </div>
             </div>
 
-            {/* الإعدادات */}
-            <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
-                  <Settings2 className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[340px] overflow-y-auto" dir="rtl">
-                <SheetHeader>
-                  <SheetTitle className="text-right font-amiri flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
-                      <Settings2 className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                    إعدادات العرض
-                  </SheetTitle>
-                </SheetHeader>
-                <QuranSettingsPanel className="mt-6" />
-              </SheetContent>
-            </Sheet>
+            {/* مساحة فارغة للتوازن */}
+            <div className="w-9" />
           </div>
         </div>
       </header>
@@ -255,8 +204,7 @@ const SurahPage = () => {
               id={`verse-${verse.id}`} 
               className={cn(
                 'bg-card rounded-2xl border border-border/50 overflow-hidden transition-all duration-300',
-                currentPlayingVerse === verse.id && 'ring-2 ring-primary border-primary/30 shadow-lg',
-                settings.enableAnimations && 'animate-fade-in'
+                currentPlayingVerse === verse.id && 'ring-2 ring-primary border-primary/30 shadow-lg'
               )}
             >
               {/* رقم الآية والموضوع */}
@@ -275,24 +223,18 @@ const SurahPage = () => {
               
               {/* النص القرآني */}
               <div className="p-6">
-                <p className={cn(
-                  'font-arabic text-foreground text-right transition-all duration-300 mb-6',
-                  arabicFontClasses[settings.fontSize],
-                  lineSpacingStyles[settings.lineSpacing]
-                )}>
+                <p className="font-arabic text-foreground text-right text-2xl md:text-3xl leading-loose mb-6">
                   {verse.arabicText}
                 </p>
                 
                 {/* مشغل الصوت */}
-                {settings.showAudioIcon && (
-                  <div className="p-4 bg-muted/30 rounded-xl mb-6">
-                    <SurahAudioPlayer 
-                      surahId={surahId} 
-                      verseNumber={verse.id} 
-                      surahName={surah.name}
-                    />
-                  </div>
-                )}
+                <div className="p-4 bg-muted/30 rounded-xl mb-6">
+                  <SurahAudioPlayer 
+                    surahId={surahId} 
+                    verseNumber={verse.id} 
+                    surahName={surah.name}
+                  />
+                </div>
 
                 {/* التفسير */}
                 <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/10">
