@@ -11,7 +11,7 @@ interface TranslationCache {
   [key: string]: TranslatedVerse[];
 }
 
-// Language codes mapping for AlQuran API
+// Language codes for translation API
 const languageCodeMap: Record<Language, string> = {
   ar: 'ar', // Arabic (original - no translation needed)
   en: 'en',
@@ -19,7 +19,7 @@ const languageCodeMap: Record<Language, string> = {
   ur: 'ur',
   id: 'id',
   tr: 'tr',
-  it: 'en', // Italian fallback to English (not available in API)
+  it: 'it', // Italian now supported via Quran.com API
 };
 
 const translationCache: TranslationCache = {};
