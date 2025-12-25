@@ -232,7 +232,12 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
         if (autoScrollRef.current) {
           const verseElement = document.getElementById(`verse-${verseNumber}`);
           if (verseElement) {
-            verseElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            // التمرير لبداية الآية بدلاً من المنتصف لتظهر كاملة
+            verseElement.scrollIntoView({ behavior: "smooth", block: "start" });
+            // إضافة هامش للرأس
+            setTimeout(() => {
+              window.scrollBy({ top: -80, behavior: "smooth" });
+            }, 300);
           }
         }
       } catch {
@@ -367,7 +372,10 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
           if (autoScrollRef.current) {
             const verseElement = document.getElementById(`verse-${verseNumber}`);
             if (verseElement) {
-              verseElement.scrollIntoView({ behavior: "smooth", block: "center" });
+              verseElement.scrollIntoView({ behavior: "smooth", block: "start" });
+              setTimeout(() => {
+                window.scrollBy({ top: -80, behavior: "smooth" });
+              }, 300);
             }
           }
         })
