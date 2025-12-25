@@ -10,41 +10,34 @@ interface AudioPlayerProps {
   onRecitationEnd?: () => void;
 }
 
+// القراء المتاحون في Islamic Network API للآيات المنفردة
 const RECITERS = [
-  // القراء المميزون - الأفضل في المقدمة
-  { id: "ar.yasserdossari", name: "ياسر الدوسري" },
   { id: "ar.alafasy", name: "مشاري العفاسي" },
   { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس" },
-  { id: "ar.saaborimaa", name: "سعود الشريم" },
+  { id: "ar.saoodshuraym", name: "سعود الشريم" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
-  { id: "ar.saaborim", name: "سعد الغامدي" },
   { id: "ar.ahmedajamy", name: "أحمد العجمي" },
-  { id: "ar.nasserqatami", name: "ناصر القطامي" },
-  { id: "ar.faresabbad", name: "فارس عباد" },
   { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)" },
   { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)" },
   { id: "ar.minshawi", name: "محمد صديق المنشاوي" },
+  { id: "ar.minshawimujawwad", name: "المنشاوي (مجود)" },
   { id: "ar.husary", name: "محمود خليل الحصري" },
+  { id: "ar.husarymujawwad", name: "الحصري (مجود)" },
   { id: "ar.hudhaify", name: "علي الحذيفي" },
   { id: "ar.abdullahbasfar", name: "عبدالله بصفر" },
-  { id: "ar.ibrahimakhdar", name: "إبراهيم الأخضر" },
-  { id: "ar.bandarbalila", name: "بندر بليلة" },
-  { id: "ar.haborimo", name: "هاني الرفاعي" },
-  { id: "ar.idreesakbar", name: "إدريس أبكر" },
-  { id: "ar.muhammadluhaidan", name: "محمد اللحيدان" },
-  { id: "ar.muhammadayyub", name: "محمد أيوب" },
-  { id: "ar.abdulmohsenqasim", name: "عبد المحسن القاسم" },
-  { id: "ar.khalidjalil", name: "خالد الجليل" },
-  { id: "ar.abdullahjuhany", name: "عبدالله الجهني" },
-  { id: "ar.abdulazizahmed", name: "عبد العزيز الأحمد" },
-  { id: "ar.nabilrifa3i", name: "نبيل الرفاعي" },
-  { id: "ar.salahbukhatir", name: "صلاح بوخاطر" },
-  { id: "ar.muhammadtablawi", name: "محمد الطبلاوي" },
+  { id: "ar.hanirifai", name: "هاني الرفاعي" },
+  { id: "ar.muhammadayyoub", name: "محمد أيوب" },
+  { id: "ar.shaatree", name: "أبو بكر الشاطري" },
+  { id: "ar.muhammadjibreel", name: "محمد جبريل" },
+  { id: "ar.aymanswoaid", name: "أيمن سويد" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
   "ar.abdulbasitmurattal": 64,
+  "ar.saoodshuraym": 64,
+  "ar.minshawimujawwad": 64,
+  "ar.aymanswoaid": 64,
 };
 
 const REPEAT_OPTIONS = [0, 2, 3, 5, 7, 10]; // 0 = no repeat
