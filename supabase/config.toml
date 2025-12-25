@@ -1,13 +1,1 @@
-project_id = "ecdpjilnmtibbsifigvp"
-
-[functions.get-tafsir]
-verify_jwt = false
-
-[functions.list-tafsirs]
-verify_jwt = false
-
-[functions.get-verse-translation]
-verify_jwt = false
-
-[functions.text-to-speech]
-verify_jwt = false
+project_id = "wygxvkvbvyrunyzizbad"
