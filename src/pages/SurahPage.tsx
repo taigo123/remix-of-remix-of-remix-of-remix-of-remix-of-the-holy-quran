@@ -34,6 +34,7 @@ const SurahPage = () => {
   const { isPlaying: isTTSPlaying, isLoading: isTTSLoading, playTranslation, stopPlayback } = useTranslationTTS();
   const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
   const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
+  const [showTTSWarning, setShowTTSWarning] = useState(true);
   
   const {
     selectedSource,
@@ -283,7 +284,7 @@ const SurahPage = () => {
                           <span className="text-xs text-muted-foreground animate-pulse">{isRtl ? 'جاري التحميل...' : 'Loading...'}</span>
                         )}
                       </div>
-                      {getTranslation(verse.id) && (
+                      {getTranslation(verse.id) && language !== 'ar' && (
                         <div className="flex items-center gap-2">
                           {/* Auto-play toggle */}
                           <div className="flex items-center gap-1.5" title={isRtl ? "تشغيل تلقائي بعد التلاوة" : "Auto-play after recitation"}>
@@ -314,6 +315,22 @@ const SurahPage = () => {
                         </div>
                       )}
                     </div>
+                    
+                    {/* TTS Warning */}
+                    {showTTSWarning && language !== 'ar' && (
+                      <div className="mb-3 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start justify-between gap-2">
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                          ⚠️ {t.ttsWarning}
+                        </p>
+                        <button 
+                          onClick={() => setShowTTSWarning(false)}
+                          className="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 text-xs shrink-0"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                    
                     <p
                       className="text-base leading-relaxed text-foreground/85"
                       dir={isRtl ? 'rtl' : 'ltr'}

@@ -90,6 +90,8 @@ export const translations: Record<Language, {
   trustedTafsirsList: string;
   // ترجمة الآية
   translation: string;
+  // تحذير صوت الترجمة
+  ttsWarning: string;
 }> = {
   ar: {
     title: 'القرآن الكريم',
@@ -151,6 +153,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'جميع الحقوق محفوظة',
     trustedTafsirsList: 'التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين',
     translation: 'الترجمة',
+    ttsWarning: 'تنبيه: صوت الترجمة قد لا يكون دقيقاً في نطق بعض الكلمات الإسلامية',
   },
   en: {
     title: 'The Holy Quran',
@@ -212,6 +215,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'All rights reserved',
     trustedTafsirsList: 'Trusted Tafsirs: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
     translation: 'Translation',
+    ttsWarning: 'Note: Audio may not accurately pronounce some Islamic terms',
   },
   fr: {
     title: 'Le Saint Coran',
@@ -273,6 +277,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'Tous droits réservés',
     trustedTafsirsList: 'Tafsirs fiables: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
     translation: 'Traduction',
+    ttsWarning: 'Note: L\'audio peut ne pas prononcer correctement certains termes islamiques',
   },
   ur: {
     title: 'قرآن پاک',
@@ -334,6 +339,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'جملہ حقوق محفوظ ہیں',
     trustedTafsirsList: 'معتبر تفاسیر: ابن کثیر | طبری | سعدی | میسر | جلالین',
     translation: 'ترجمہ',
+    ttsWarning: 'نوٹ: آڈیو کچھ اسلامی الفاظ کا صحیح تلفظ نہیں کر سکتا',
   },
   id: {
     title: 'Al-Quran Al-Karim',
@@ -395,6 +401,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'Hak cipta dilindungi',
     trustedTafsirsList: 'Tafsir Terpercaya: Ibn Katsir | Thabari | Saadi | Muyassar | Jalalayn',
     translation: 'Terjemahan',
+    ttsWarning: 'Catatan: Audio mungkin tidak mengucapkan beberapa istilah Islam dengan tepat',
   },
   tr: {
     title: "Kur'an-ı Kerim",
@@ -456,6 +463,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'Tüm hakları saklıdır',
     trustedTafsirsList: 'Güvenilir Tefsirler: İbn Kesir | Taberi | Saadi | Müyesser | Celaleyn',
     translation: 'Çeviri',
+    ttsWarning: 'Not: Ses bazı İslami terimleri doğru telaffuz etmeyebilir',
   },
   it: {
     title: 'Il Sacro Corano',
@@ -517,6 +525,7 @@ export const translations: Record<Language, {
     allRightsReserved: 'Tutti i diritti riservati',
     trustedTafsirsList: 'Tafsir Affidabili: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
     translation: 'Traduzione',
+    ttsWarning: 'Nota: L\'audio potrebbe non pronunciare correttamente alcuni termini islamici',
   },
 };
 
