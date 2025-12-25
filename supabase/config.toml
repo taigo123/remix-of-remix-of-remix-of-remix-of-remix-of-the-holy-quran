@@ -1,1 +1,7 @@
 project_id = "mljvedodaptigsusjacv"
+
+[functions.get-tafsir]
+verify_jwt = false
+
+[functions.list-tafsirs]
+verify_jwt = false

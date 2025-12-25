@@ -14,13 +14,13 @@ export interface TafsirEdition {
   name: string;
   description: string;
   author: string;
-  apiSource: 'alquran' | 'quran-tafseer';
-  apiId?: number;
+  apiSource: 'alquran' | 'qurancom';
+  apiId?: number; // لـ quran.com API
 }
 
-// التفاسير المتاحة
+// التفاسير المتاحة - مجموعة شاملة من التفاسير الموثوقة
 export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
-  // تفاسير من alquran.cloud
+  // ===== تفاسير من alquran.cloud (سريعة) =====
   { 
     id: 'ar.muyassar', 
     name: 'التفسير الميسر', 
@@ -63,38 +63,63 @@ export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
     author: 'منسوب لابن عباس',
     apiSource: 'alquran'
   },
-  // تفاسير من quran-tafseer.com (عبر Edge Function)
+  
+  // ===== تفاسير من quran.com API (موثوقة جداً) =====
   { 
-    id: 'qt-ibn-kathir', 
+    id: 'qc-ibn-kathir', 
     name: 'تفسير ابن كثير', 
     description: 'من أشهر كتب التفسير بالمأثور للحافظ عماد الدين ابن كثير (ت 774 هـ)',
     author: 'ابن كثير',
-    apiSource: 'quran-tafseer',
-    apiId: 2
+    apiSource: 'qurancom',
+    apiId: 14
   },
   { 
-    id: 'qt-tabari', 
+    id: 'qc-tabari', 
     name: 'تفسير الطبري', 
     description: 'جامع البيان في تأويل القرآن - أعظم تفاسير السلف للإمام الطبري (ت 310 هـ)',
     author: 'الإمام الطبري',
-    apiSource: 'quran-tafseer',
-    apiId: 3
+    apiSource: 'qurancom',
+    apiId: 15
   },
   { 
-    id: 'qt-saadi', 
+    id: 'qc-saadi', 
     name: 'تفسير السعدي', 
-    description: 'تيسير الكريم الرحمن - تفسير عصري ميسر للشيخ السعدي (ت 1376 هـ)',
+    description: 'تيسير الكريم الرحمن - تفسير عصري ميسر للشيخ عبد الرحمن السعدي (ت 1376 هـ)',
     author: 'الشيخ السعدي',
-    apiSource: 'quran-tafseer',
-    apiId: 6
+    apiSource: 'qurancom',
+    apiId: 91
   },
   { 
-    id: 'qt-muyassar', 
+    id: 'qc-muyassar', 
     name: 'التفسير الميسر (مفصل)', 
-    description: 'نسخة موسعة ومفصلة من التفسير الميسر',
+    description: 'نسخة موسعة ومفصلة من التفسير الميسر من quran.com',
     author: 'مجمع الملك فهد',
-    apiSource: 'quran-tafseer',
-    apiId: 1
+    apiSource: 'qurancom',
+    apiId: 16
+  },
+  { 
+    id: 'qc-qurtubi', 
+    name: 'تفسير القرطبي (مفصل)', 
+    description: 'الجامع لأحكام القرآن - نسخة مفصلة من quran.com',
+    author: 'الإمام القرطبي',
+    apiSource: 'qurancom',
+    apiId: 90
+  },
+  { 
+    id: 'qc-baghawi', 
+    name: 'تفسير البغوي (مفصل)', 
+    description: 'معالم التنزيل - نسخة مفصلة من quran.com',
+    author: 'الإمام البغوي',
+    apiSource: 'qurancom',
+    apiId: 94
+  },
+  { 
+    id: 'qc-waseet', 
+    name: 'التفسير الوسيط للطنطاوي', 
+    description: 'التفسير الوسيط للشيخ محمد سيد طنطاوي شيخ الأزهر الأسبق',
+    author: 'الشيخ الطنطاوي',
+    apiSource: 'qurancom',
+    apiId: 93
   },
 ];
 
@@ -121,8 +146,8 @@ const fetchFromAlQuranCloud = async (
   return data.data.text;
 };
 
-// جلب تفسير من quran-tafseer عبر Edge Function
-const fetchFromQuranTafseer = async (
+// جلب تفسير من quran.com عبر Edge Function
+const fetchFromQuranCom = async (
   surahNumber: number,
   verseNumber: number,
   tafsirId: number
@@ -165,7 +190,7 @@ export const fetchVerseTafsir = async (
     if (edition.apiSource === 'alquran') {
       text = await fetchFromAlQuranCloud(surahNumber, verseNumber, editionId);
     } else {
-      text = await fetchFromQuranTafseer(surahNumber, verseNumber, edition.apiId!);
+      text = await fetchFromQuranCom(surahNumber, verseNumber, edition.apiId!);
     }
     
     return {
@@ -212,8 +237,8 @@ const fetchSurahFromAlQuranCloud = async (
   return tafsirMap;
 };
 
-// جلب تفسير سورة كاملة من quran-tafseer عبر Edge Function
-const fetchSurahFromQuranTafseer = async (
+// جلب تفسير سورة كاملة من quran.com عبر Edge Function
+const fetchSurahFromQuranCom = async (
   surahNumber: number,
   tafsirId: number,
   versesCount: number
@@ -226,7 +251,7 @@ const fetchSurahFromQuranTafseer = async (
     const promises = [];
     for (let j = i; j < Math.min(i + batchSize, versesCount + 1); j++) {
       promises.push(
-        fetchFromQuranTafseer(surahNumber, j, tafsirId)
+        fetchFromQuranCom(surahNumber, j, tafsirId)
           .then(text => ({ verseNum: j, text }))
           .catch(() => ({ verseNum: j, text: '' }))
       );
@@ -259,7 +284,7 @@ export const fetchSurahTafsir = async (
     if (edition.apiSource === 'alquran') {
       return await fetchSurahFromAlQuranCloud(surahNumber, editionId);
     } else {
-      return await fetchSurahFromQuranTafseer(surahNumber, edition.apiId!, versesCount);
+      return await fetchSurahFromQuranCom(surahNumber, edition.apiId!, versesCount);
     }
   } catch (error) {
     console.error('Error fetching surah tafsir:', error);
