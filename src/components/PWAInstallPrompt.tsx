@@ -8,7 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-const PWAInstallPromptInner = () => {
+export const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -142,10 +142,3 @@ const PWAInstallPromptInner = () => {
     </div>
   );
 };
-
-export const PWAInstallPrompt = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  (props, ref) => {
-    return <PWAInstallPromptInner {...props} />;
-  }
-);
-PWAInstallPrompt.displayName = "PWAInstallPrompt";
