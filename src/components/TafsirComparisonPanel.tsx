@@ -192,81 +192,97 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF بجودة عالية
+  // تصدير كـ PDF بجودة عالية (مع تقسيم صحيح للصفحات)
   const exportAsPDF = async () => {
     if (!contentRef.current) return;
-    
+
     setIsExporting(true);
+    let clone: HTMLElement | null = null;
+
     try {
       const element = contentRef.current;
-      
-      // Clone the element to avoid scroll issues
-      const clone = element.cloneNode(true) as HTMLElement;
+
+      // Clone خارج منطقة الـ scroll لضمان أن html2canvas يلتقط كل المحتوى
+      clone = element.cloneNode(true) as HTMLElement;
       clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
+      clone.style.left = '-99999px';
       clone.style.top = '0';
-      clone.style.width = element.scrollWidth + 'px';
+      clone.style.width = `${element.scrollWidth}px`;
       clone.style.height = 'auto';
       clone.style.overflow = 'visible';
       clone.style.backgroundColor = '#ffffff';
       document.body.appendChild(clone);
-      
-      // Wait for render
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+
+      // انتظار بسيط لتثبيت الـ layout
+      await new Promise((r) => setTimeout(r, 120));
+
       const canvas = await html2canvas(clone, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         logging: false,
-        allowTaint: true,
       });
-      
-      // Remove clone
-      document.body.removeChild(clone);
-      
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
-      
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const margin = 10;
-      const contentWidth = pageWidth - (margin * 2);
-      
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = contentWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-      
-      // Add image - if it fits on one page
-      if (scaledHeight <= pageHeight - (margin * 2)) {
-        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, scaledHeight);
-      } else {
-        // Multi-page: add full image and let jsPDF handle overflow
-        let heightLeft = scaledHeight;
-        let position = margin;
-        
-        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, scaledHeight);
-        heightLeft -= (pageHeight - margin * 2);
-        
-        while (heightLeft > 0) {
-          position = -(pageHeight - margin * 2) * (Math.ceil((scaledHeight - heightLeft) / (pageHeight - margin * 2)));
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', margin, position + margin, contentWidth, scaledHeight);
-          heightLeft -= (pageHeight - margin * 2);
-        }
+
+      const pageWidthMm = 210;
+      const pageHeightMm = 297;
+      const marginMm = 10;
+      const contentWidthMm = pageWidthMm - marginMm * 2;
+      const contentHeightMm = pageHeightMm - marginMm * 2;
+
+      // نحول ارتفاع الصفحة من mm إلى px بناءً على عرض الصورة
+      const pxPerMm = canvas.width / contentWidthMm;
+      const pageHeightPx = Math.floor(contentHeightMm * pxPerMm);
+
+      // صورة لكل صفحة (slice) لتفادي صفحات فارغة
+      let y = 0;
+      let pageIndex = 0;
+
+      while (y < canvas.height) {
+        const sliceHeight = Math.min(pageHeightPx, canvas.height - y);
+        if (sliceHeight <= 0) break;
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+
+        const ctx = pageCanvas.getContext('2d');
+        if (!ctx) break;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        ctx.drawImage(
+          canvas,
+          0,
+          y,
+          canvas.width,
+          sliceHeight,
+          0,
+          0,
+          canvas.width,
+          sliceHeight
+        );
+
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+        const sliceHeightMm = sliceHeight / pxPerMm;
+
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, sliceHeightMm);
+
+        y += sliceHeight;
+        pageIndex += 1;
       }
-      
+
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
-      
+
       toast({
         title: 'تم التصدير بنجاح',
-        description: 'تم حفظ ملف PDF',
+        description: `تم حفظ ملف PDF (${pageIndex} صفحة)`,
       });
     } catch (error) {
       console.error('Export PDF error:', error);
@@ -276,6 +292,13 @@ export const TafsirComparisonPanel = ({
         variant: 'destructive',
       });
     } finally {
+      if (clone) {
+        try {
+          document.body.removeChild(clone);
+        } catch {
+          // ignore
+        }
+      }
       setIsExporting(false);
     }
   };
