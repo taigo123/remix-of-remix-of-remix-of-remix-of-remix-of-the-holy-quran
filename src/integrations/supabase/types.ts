@@ -24,6 +24,7 @@ export type Database = {
           original_text: string | null
           status: string
           suggested_text: string
+          viewer_id: string | null
         }
         Insert: {
           context?: string | null
@@ -34,6 +35,7 @@ export type Database = {
           original_text?: string | null
           status?: string
           suggested_text: string
+          viewer_id?: string | null
         }
         Update: {
           context?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           original_text?: string | null
           status?: string
           suggested_text?: string
+          viewer_id?: string | null
         }
         Relationships: []
       }
