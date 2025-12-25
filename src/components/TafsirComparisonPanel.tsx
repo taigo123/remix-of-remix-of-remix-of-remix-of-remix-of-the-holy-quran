@@ -201,7 +201,7 @@ export const TafsirComparisonPanel = ({
       // جودة عالية للـ PDF
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // جودة أعلى
+        scale: 2,
         useCORS: true,
         logging: false,
         scrollX: 0,
@@ -210,18 +210,18 @@ export const TafsirComparisonPanel = ({
         height: contentRef.current.scrollHeight,
       });
       
-      const imgData = canvas.toDataURL('image/png'); // PNG بدلاً من JPEG لجودة أفضل
+      // استخدام JPEG بجودة عالية (jsPDF يتعامل معه بشكل أفضل)
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
       
       // حساب الحجم المناسب للـ PDF (A4)
-      const pdfWidth = 595.28; // A4 width in points
-      const pdfHeight = 841.89; // A4 height in points
-      const margin = 20; // هامش
+      const pdfWidth = 595.28;
+      const pdfHeight = 841.89;
+      const margin = 20;
       
       const contentWidth = pdfWidth - (margin * 2);
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       
-      // حساب النسبة للعرض المتاح
       const ratio = contentWidth / imgWidth;
       const scaledHeight = imgHeight * ratio;
       
@@ -231,7 +231,6 @@ export const TafsirComparisonPanel = ({
         format: 'a4',
       });
       
-      // تقسيم المحتوى على صفحات
       const contentPerPage = pdfHeight - (margin * 2);
       const totalPages = Math.ceil(scaledHeight / contentPerPage);
       
@@ -240,13 +239,11 @@ export const TafsirComparisonPanel = ({
           pdf.addPage();
         }
         
-        // حساب موضع الصورة لهذه الصفحة
         const yOffset = -(page * contentPerPage) + margin;
         
-        // إضافة الصورة مع قص للصفحة الحالية
         pdf.addImage(
           imgData, 
-          'PNG', 
+          'JPEG', 
           margin, 
           yOffset, 
           contentWidth, 
@@ -258,7 +255,7 @@ export const TafsirComparisonPanel = ({
       
       toast({
         title: 'تم التصدير',
-        description: `تم حفظ ملف PDF (${totalPages} صفحات)`,
+        description: `تم حفظ ملف PDF (${totalPages} صفحة)`,
       });
     } catch (error) {
       console.error('Export PDF error:', error);
