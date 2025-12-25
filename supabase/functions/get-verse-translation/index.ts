@@ -34,7 +34,6 @@ const quranComTranslations: Record<string, number> = {
   az: 23,  // Vasim Mammadaliyev
   uz: 127, // Muhammad Sodik
   kk: 222, // Khalifa Altay
-  ky: 223, // Sooronbay Jdanov
   tt: 53,  // Yakub Ibn Nugman
   
   // South Asian Languages

@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Extended language support - 35+ languages from Quran.com
-// Removed: my, km, lo, ig, fil, gu, mr, pa, sr, hr, sl, mk, tg, sk, vi, th, hi - not available correctly in API
+// Removed: my, km, lo, ig, fil, gu, mr, pa, sr, hr, sl, mk, tg, sk, vi, th, hi, ky - not available correctly in API
 export type Language = 
   | 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it' | 'de' | 'es' | 'pt' 
   | 'ru' | 'bn' | 'fa' | 'ms' | 'nl' | 'pl' | 'ro' | 'sv'
-  | 'zh' | 'ja' | 'ko' | 'uz' | 'az' | 'kk' | 'ky' | 'tt'
+  | 'zh' | 'ja' | 'ko' | 'uz' | 'az' | 'kk' | 'tt'
   | 'bs' | 'sq' | 'bg' | 'cs' | 'uk'
   | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ml' | 'ta' | 'te'
   | 'si' | 'ne' | 'dv';
@@ -73,7 +73,6 @@ export const languages: LanguageInfo[] = [
   { code: 'ko', name: 'Korean', nativeName: '한국어', translationId: 36, translator: 'Korean Translation', source: 'King Fahd Complex', region: 'asian' },
   { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbek', translationId: 127, translator: 'Muhammad Sodik', source: 'King Fahd Complex', region: 'asian' },
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақ', translationId: 222, translator: 'Khalifa Altay', source: 'King Fahd Complex', region: 'asian' },
-  { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргыз', translationId: 223, translator: 'Sooronbay Jdanov', source: 'Quran.com', region: 'asian' },
   { code: 'tt', name: 'Tatar', nativeName: 'Татар', translationId: 53, translator: 'Yakub Ibn Nugman', source: 'King Fahd Complex', region: 'asian' },
   
   // African Languages
@@ -304,7 +303,6 @@ export const translations: Record<Language, TranslationStrings> = {
   uz: { ...englishTranslations, title: 'Qur\'oni Karim', language: 'Til', translation: 'Tarjima' },
   az: { ...englishTranslations, title: 'Müqəddəs Quran', language: 'Dil', translation: 'Tərcümə' },
   kk: { ...englishTranslations, title: 'Құран Кәрім', language: 'Тіл', translation: 'Аударма' },
-  ky: { ...englishTranslations, title: 'Куран Карим', language: 'Тил', translation: 'Котормо' },
   tt: { ...englishTranslations, title: 'Коръән Кәрим', language: 'Тел', translation: 'Тәрҗемә' },
   bs: { ...englishTranslations, title: 'Sveti Kuran', language: 'Jezik', translation: 'Prijevod' },
   sq: { ...englishTranslations, title: 'Kurani i Shenjtë', language: 'Gjuha', translation: 'Përkthimi' },
