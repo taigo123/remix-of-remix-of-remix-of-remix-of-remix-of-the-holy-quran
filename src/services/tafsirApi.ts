@@ -19,7 +19,33 @@ export interface TafsirEdition {
 }
 
 // التفاسير المتاحة - مجموعة شاملة من التفاسير الموثوقة
+// مرتبة حسب الأفضلية والدقة العلمية
 export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
+  // ===== أفضل التفاسير الموثوقة (الافتراضي) =====
+  { 
+    id: 'qc-ibn-kathir', 
+    name: 'تفسير ابن كثير ⭐', 
+    description: 'من أشهر وأدق كتب التفسير بالمأثور للحافظ عماد الدين ابن كثير (ت 774 هـ) - موصى به',
+    author: 'ابن كثير',
+    apiSource: 'qurancom',
+    apiId: 14
+  },
+  { 
+    id: 'qc-tabari', 
+    name: 'تفسير الطبري ⭐', 
+    description: 'جامع البيان في تأويل القرآن - أعظم تفاسير السلف للإمام الطبري (ت 310 هـ)',
+    author: 'الإمام الطبري',
+    apiSource: 'qurancom',
+    apiId: 15
+  },
+  { 
+    id: 'qc-saadi', 
+    name: 'تفسير السعدي ⭐', 
+    description: 'تيسير الكريم الرحمن - تفسير عصري ميسر ودقيق للشيخ عبد الرحمن السعدي (ت 1376 هـ)',
+    author: 'الشيخ السعدي',
+    apiSource: 'qurancom',
+    apiId: 91
+  },
   // ===== تفاسير من alquran.cloud (سريعة) =====
   { 
     id: 'ar.muyassar', 
@@ -64,31 +90,7 @@ export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
     apiSource: 'alquran'
   },
   
-  // ===== تفاسير من quran.com API (موثوقة جداً) =====
-  { 
-    id: 'qc-ibn-kathir', 
-    name: 'تفسير ابن كثير', 
-    description: 'من أشهر كتب التفسير بالمأثور للحافظ عماد الدين ابن كثير (ت 774 هـ)',
-    author: 'ابن كثير',
-    apiSource: 'qurancom',
-    apiId: 14
-  },
-  { 
-    id: 'qc-tabari', 
-    name: 'تفسير الطبري', 
-    description: 'جامع البيان في تأويل القرآن - أعظم تفاسير السلف للإمام الطبري (ت 310 هـ)',
-    author: 'الإمام الطبري',
-    apiSource: 'qurancom',
-    apiId: 15
-  },
-  { 
-    id: 'qc-saadi', 
-    name: 'تفسير السعدي', 
-    description: 'تيسير الكريم الرحمن - تفسير عصري ميسر للشيخ عبد الرحمن السعدي (ت 1376 هـ)',
-    author: 'الشيخ السعدي',
-    apiSource: 'qurancom',
-    apiId: 91
-  },
+  // ===== تفاسير إضافية من quran.com API =====
   { 
     id: 'qc-muyassar', 
     name: 'التفسير الميسر (مفصل)', 
@@ -122,6 +124,9 @@ export const AVAILABLE_TAFSIRS: TafsirEdition[] = [
     apiId: 93
   },
 ];
+
+// التفسير الافتراضي (ابن كثير - الأدق والأشهر)
+export const DEFAULT_TAFSIR = 'qc-ibn-kathir';
 
 // جلب تفسير من alquran.cloud
 const fetchFromAlQuranCloud = async (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Select,
   SelectContent,
@@ -11,16 +11,25 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   BookOpen, 
   Loader2, 
   X, 
   Columns2,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Download,
+  FileImage,
+  FileText,
+  Search,
+  XCircle
 } from 'lucide-react';
 import { TafsirSource } from '@/hooks/useTafsir';
-import { fetchSurahTafsir, AVAILABLE_TAFSIRS } from '@/services/tafsirApi';
+import { fetchSurahTafsir, AVAILABLE_TAFSIRS, DEFAULT_TAFSIR } from '@/services/tafsirApi';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface TafsirSourceInfo {
   id: TafsirSource;
@@ -31,6 +40,7 @@ interface TafsirSourceInfo {
 
 interface TafsirComparisonPanelProps {
   surahNumber: number;
+  surahName?: string;
   versesCount: number;
   verses: Array<{ id: number; arabicText: string; tafsir: string }>;
   isOpen: boolean;
@@ -39,25 +49,30 @@ interface TafsirComparisonPanelProps {
 
 export const TafsirComparisonPanel = ({
   surahNumber,
+  surahName = '',
   versesCount,
   verses,
   isOpen,
   onClose,
 }: TafsirComparisonPanelProps) => {
-  const [leftSource, setLeftSource] = useState<TafsirSource>('ar.muyassar');
-  const [rightSource, setRightSource] = useState<TafsirSource>('ar.jalalayn');
+  const [leftSource, setLeftSource] = useState<TafsirSource>(DEFAULT_TAFSIR);
+  const [rightSource, setRightSource] = useState<TafsirSource>('qc-saadi');
   const [leftCache, setLeftCache] = useState<Map<number, string>>(new Map());
   const [rightCache, setRightCache] = useState<Map<number, string>>(new Map());
   const [leftLoading, setLeftLoading] = useState(false);
   const [rightLoading, setRightLoading] = useState(false);
   const [showAllVerses, setShowAllVerses] = useState(true);
   const [selectedVerse, setSelectedVerse] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+  
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const availableSources: TafsirSourceInfo[] = [
     { 
       id: 'local', 
-      name: 'التفسير المحلي', 
-      description: 'مُولَّد بالذكاء الاصطناعي',
+      name: 'التفسير المحلي ⚠️', 
+      description: 'مُولَّد بالذكاء الاصطناعي - غير موثق',
       author: 'ذكاء اصطناعي'
     },
     ...AVAILABLE_TAFSIRS.map(t => ({ 
@@ -74,7 +89,6 @@ export const TafsirComparisonPanel = ({
     setLoading: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
     if (source === 'local') {
-      // للتفسير المحلي، نستخدم البيانات المحلية
       const localMap = new Map<number, string>();
       verses.forEach(v => localMap.set(v.id, v.tafsir));
       setCache(localMap);
@@ -92,14 +106,12 @@ export const TafsirComparisonPanel = ({
     }
   }, [surahNumber, versesCount, verses]);
 
-  // تحميل التفسير الأيسر
   useEffect(() => {
     if (isOpen) {
       loadTafsir(leftSource, setLeftCache, setLeftLoading);
     }
   }, [leftSource, isOpen, loadTafsir]);
 
-  // تحميل التفسير الأيمن
   useEffect(() => {
     if (isOpen) {
       loadTafsir(rightSource, setRightCache, setRightLoading);
@@ -119,11 +131,109 @@ export const TafsirComparisonPanel = ({
     return availableSources.find(s => s.id === sourceId)?.name || sourceId;
   };
 
-  if (!isOpen) return null;
+  // فلترة الآيات بناءً على البحث
+  const filteredVerses = verses.filter(verse => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const leftTafsir = leftCache.get(verse.id)?.toLowerCase() || '';
+    const rightTafsir = rightCache.get(verse.id)?.toLowerCase() || '';
+    const arabicText = verse.arabicText.toLowerCase();
+    
+    return (
+      arabicText.includes(query) ||
+      leftTafsir.includes(query) ||
+      rightTafsir.includes(query) ||
+      verse.id.toString() === query
+    );
+  });
 
   const versesToShow = showAllVerses 
-    ? verses 
-    : verses.filter(v => v.id === selectedVerse);
+    ? filteredVerses 
+    : filteredVerses.filter(v => v.id === selectedVerse);
+
+  // تصدير كصورة
+  const exportAsImage = async () => {
+    if (!contentRef.current) return;
+    
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(contentRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast({
+        title: 'تم التصدير',
+        description: 'تم حفظ الصورة بنجاح',
+      });
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'فشل في تصدير الصورة',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // تصدير كـ PDF
+  const exportAsPDF = async () => {
+    if (!contentRef.current) return;
+    
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(contentRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
+      
+      toast({
+        title: 'تم التصدير',
+        description: 'تم حفظ ملف PDF بنجاح',
+      });
+    } catch (error) {
+      toast({
+        title: 'خطأ',
+        description: 'فشل في تصدير PDF',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // تمييز نص البحث
+  const highlightText = (text: string) => {
+    if (!searchQuery.trim()) return text;
+    
+    const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
+    return parts.map((part, i) => 
+      part.toLowerCase() === searchQuery.toLowerCase() 
+        ? <mark key={i} className="bg-yellow-300 dark:bg-yellow-600 px-0.5 rounded">{part}</mark>
+        : part
+    );
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-hidden" dir="rtl">
@@ -134,17 +244,42 @@ export const TafsirComparisonPanel = ({
             <div className="flex items-center gap-2">
               <Columns2 className="w-5 h-5" />
               <span className="font-bold">مقارنة التفاسير</span>
+              {surahName && <Badge variant="secondary">{surahName}</Badge>}
             </div>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClose}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <X className="w-4 h-4 ml-1" />
-              إغلاق
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* أزرار التصدير */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={exportAsImage}
+                disabled={isExporting}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
+                <span className="hidden sm:inline mr-1">صورة</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={exportAsPDF}
+                disabled={isExporting}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                <span className="hidden sm:inline mr-1">PDF</span>
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onClose}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                <X className="w-4 h-4 ml-1" />
+                إغلاق
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -208,8 +343,27 @@ export const TafsirComparisonPanel = ({
               </div>
             </div>
 
-            {/* عرض آية واحدة أو الكل */}
-            <div className="flex items-center gap-4">
+            {/* البحث وخيارات العرض */}
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* البحث في التفاسير */}
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="بحث في التفاسير..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pr-9 pl-8 w-48 bg-background"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2"
+                  >
+                    <XCircle className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  </button>
+                )}
+              </div>
+
               <div className="flex items-center gap-2">
                 <Switch 
                   id="show-all"
@@ -240,69 +394,83 @@ export const TafsirComparisonPanel = ({
               )}
             </div>
           </div>
+          
+          {/* عدد نتائج البحث */}
+          {searchQuery && (
+            <div className="mt-2 text-sm text-muted-foreground">
+              تم العثور على {filteredVerses.length} آية تحتوي على "{searchQuery}"
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="container mx-auto py-4 px-4 h-[calc(100vh-120px)] overflow-y-auto">
-        <div className="space-y-6">
-          {versesToShow.map((verse) => (
-            <Card key={verse.id} className="overflow-hidden">
-              {/* رقم الآية والنص */}
-              <div className="bg-primary/5 p-3 border-b">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                    {verse.id}
-                  </span>
-                  <span className="text-xs text-muted-foreground">الآية {verse.id}</span>
-                </div>
-                <p className="font-arabic text-lg text-foreground leading-relaxed">
-                  {verse.arabicText}
-                </p>
-              </div>
-
-              {/* مقارنة التفسيرين */}
-              <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse">
-                {/* التفسير الأول */}
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge className="bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30">
-                      {getSourceName(leftSource)}
-                    </Badge>
-                    {leftLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+      <div className="container mx-auto py-4 px-4 h-[calc(100vh-140px)] overflow-y-auto">
+        <div ref={contentRef} className="space-y-6 bg-background p-4 rounded-lg">
+          {versesToShow.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>لا توجد نتائج للبحث "{searchQuery}"</p>
+            </div>
+          ) : (
+            versesToShow.map((verse) => (
+              <Card key={verse.id} className="overflow-hidden">
+                {/* رقم الآية والنص */}
+                <div className="bg-primary/5 p-3 border-b">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                      {verse.id}
+                    </span>
+                    <span className="text-xs text-muted-foreground">الآية {verse.id}</span>
                   </div>
-                  <p className={cn(
-                    "text-sm leading-relaxed",
-                    leftLoading && "text-muted-foreground"
-                  )}>
-                    {leftLoading 
-                      ? 'جاري التحميل...'
-                      : leftCache.get(verse.id) || 'التفسير غير متوفر'
-                    }
+                  <p className="font-arabic text-lg text-foreground leading-relaxed">
+                    {highlightText(verse.arabicText)}
                   </p>
                 </div>
 
-                {/* التفسير الثاني */}
-                <div className="p-4 bg-muted/20">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
-                      {getSourceName(rightSource)}
-                    </Badge>
-                    {rightLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                {/* مقارنة التفسيرين */}
+                <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x md:divide-x-reverse">
+                  {/* التفسير الأول */}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30">
+                        {getSourceName(leftSource)}
+                      </Badge>
+                      {leftLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                    </div>
+                    <p className={cn(
+                      "text-sm leading-relaxed",
+                      leftLoading && "text-muted-foreground"
+                    )}>
+                      {leftLoading 
+                        ? 'جاري التحميل...'
+                        : highlightText(leftCache.get(verse.id) || 'التفسير غير متوفر')
+                      }
+                    </p>
                   </div>
-                  <p className={cn(
-                    "text-sm leading-relaxed",
-                    rightLoading && "text-muted-foreground"
-                  )}>
-                    {rightLoading 
-                      ? 'جاري التحميل...'
-                      : rightCache.get(verse.id) || 'التفسير غير متوفر'
-                    }
-                  </p>
+
+                  {/* التفسير الثاني */}
+                  <div className="p-4 bg-muted/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30">
+                        {getSourceName(rightSource)}
+                      </Badge>
+                      {rightLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                    </div>
+                    <p className={cn(
+                      "text-sm leading-relaxed",
+                      rightLoading && "text-muted-foreground"
+                    )}>
+                      {rightLoading 
+                        ? 'جاري التحميل...'
+                        : highlightText(rightCache.get(verse.id) || 'التفسير غير متوفر')
+                      }
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>
