@@ -174,9 +174,9 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
         console.log('No specific voice found, using lang:', utterance.lang);
       }
 
-      // Voice settings - MUCH lower pitch to sound more masculine
-      utterance.rate = 0.85; // Slightly slower for clarity
-      utterance.pitch = 0.5; // Very low pitch for deep male voice
+      // Voice settings
+      utterance.rate = 0.9; // Slightly slower for clarity
+      utterance.pitch = 0.9; // Slightly lower pitch
 
       utterance.onstart = () => {
         console.log('TTS started with pitch:', utterance.pitch);
