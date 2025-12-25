@@ -20,7 +20,8 @@ import {
   Volume2,
   VolumeX,
   ChevronDown,
-  Clock
+  Clock,
+  Trash2
 } from "lucide-react";
 import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,25 @@ const LandingSidebar = () => {
         ? (language === 'ar' ? '🔇 تم كتم صوت الإشعارات' : '🔇 Notifications muted')
         : (language === 'ar' ? '🔊 تم تفعيل صوت الإشعارات' : '🔊 Notifications unmuted')
     );
+  };
+
+  // Delete feedback
+  const deleteFeedback = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_feedback')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setRecentFeedbacks(prev => prev.filter(f => f.id !== id));
+      setFeedbackCount(prev => Math.max(0, prev - 1));
+      toast.success(language === 'ar' ? '🗑️ تم حذف الملاحظة' : '🗑️ Feedback deleted');
+    } catch (error) {
+      console.error('Error deleting feedback:', error);
+      toast.error(language === 'ar' ? 'حدث خطأ أثناء الحذف' : 'Error deleting feedback');
+    }
   };
 
   useEffect(() => {
@@ -526,7 +546,7 @@ const LandingSidebar = () => {
                       <div
                         key={feedback.id}
                         className={cn(
-                          "p-2 rounded-lg bg-background/50 border border-border/50 text-xs",
+                          "p-2 rounded-lg bg-background/50 border border-border/50 text-xs group/item relative",
                           isRtl ? "text-right" : "text-left"
                         )}
                       >
@@ -543,6 +563,17 @@ const LandingSidebar = () => {
                               minute: '2-digit'
                             })}
                           </span>
+                          {/* Delete Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteFeedback(feedback.id);
+                            }}
+                            className="ml-auto p-1 rounded-md opacity-0 group-hover/item:opacity-100 transition-opacity bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                            title={isRtl ? "حذف" : "Delete"}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
                         <p className="text-foreground/80 line-clamp-2">
                           {feedback.suggested_text}
