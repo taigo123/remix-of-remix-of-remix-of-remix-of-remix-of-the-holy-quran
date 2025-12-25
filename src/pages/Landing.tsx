@@ -274,16 +274,6 @@ const Landing = () => {
                 </div>
               </div>
 
-              {/* Full Index Link */}
-              <div className="text-center mt-6">
-                <Link to="/quran">
-                  <Button variant="outline" className="gap-2 rounded-xl">
-                    <BookOpen className="w-4 h-4" />
-                    عرض الفهرس الكامل
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
             </div>
           </section>
 

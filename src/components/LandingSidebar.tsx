@@ -4,14 +4,15 @@ import {
   Menu, 
   X, 
   BookOpen, 
-  Settings, 
   Heart, 
   Moon, 
   Sun,
   ChevronLeft,
+  ChevronRight,
   Home,
   Search,
-  Info
+  Info,
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -20,21 +21,143 @@ import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+type Language = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr';
+
+const languages: { code: Language; name: string; nativeName: string }[] = [
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'fr', name: 'French', nativeName: 'Français' },
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
+];
+
+const translations: Record<Language, {
+  title: string;
+  index: string;
+  settings: string;
+  home: string;
+  athkar: string;
+  search: string;
+  appearance: string;
+  lightMode: string;
+  darkMode: string;
+  language: string;
+  about: string;
+  aboutText: string;
+  verses: string;
+}> = {
+  ar: {
+    title: 'القرآن الكريم',
+    index: 'فهرس السور',
+    settings: 'الإعدادات',
+    home: 'الرئيسية',
+    athkar: 'الأذكار والأدعية',
+    search: 'البحث',
+    appearance: 'المظهر',
+    lightMode: 'الوضع النهاري',
+    darkMode: 'الوضع الليلي',
+    language: 'اللغة',
+    about: 'عن التطبيق',
+    aboutText: 'تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين. اقرأ واستمع وتدبر آيات الله.',
+    verses: 'آية',
+  },
+  en: {
+    title: 'The Holy Quran',
+    index: 'Surah Index',
+    settings: 'Settings',
+    home: 'Home',
+    athkar: 'Athkar & Duas',
+    search: 'Search',
+    appearance: 'Appearance',
+    lightMode: 'Light Mode',
+    darkMode: 'Dark Mode',
+    language: 'Language',
+    about: 'About App',
+    aboutText: 'Quran app with 14 trusted Tafsirs and 6 distinguished reciters. Read, listen and reflect on the verses of Allah.',
+    verses: 'verses',
+  },
+  fr: {
+    title: 'Le Saint Coran',
+    index: 'Index des Sourates',
+    settings: 'Paramètres',
+    home: 'Accueil',
+    athkar: 'Athkar & Duas',
+    search: 'Recherche',
+    appearance: 'Apparence',
+    lightMode: 'Mode Clair',
+    darkMode: 'Mode Sombre',
+    language: 'Langue',
+    about: 'À propos',
+    aboutText: 'Application Coran avec 14 Tafsirs fiables et 6 réciteurs distingués. Lisez, écoutez et méditez les versets d\'Allah.',
+    verses: 'versets',
+  },
+  ur: {
+    title: 'قرآن پاک',
+    index: 'سورتوں کا اشاریہ',
+    settings: 'ترتیبات',
+    home: 'ہوم',
+    athkar: 'اذکار و دعائیں',
+    search: 'تلاش',
+    appearance: 'ظاہری شکل',
+    lightMode: 'روشن موڈ',
+    darkMode: 'تاریک موڈ',
+    language: 'زبان',
+    about: 'ایپ کے بارے میں',
+    aboutText: '14 معتبر تفاسیر اور 6 ممتاز قاریوں کے ساتھ قرآن ایپ۔ اللہ کی آیات پڑھیں، سنیں اور غور کریں۔',
+    verses: 'آیات',
+  },
+  id: {
+    title: 'Al-Quran Al-Karim',
+    index: 'Indeks Surah',
+    settings: 'Pengaturan',
+    home: 'Beranda',
+    athkar: 'Dzikir & Doa',
+    search: 'Pencarian',
+    appearance: 'Tampilan',
+    lightMode: 'Mode Terang',
+    darkMode: 'Mode Gelap',
+    language: 'Bahasa',
+    about: 'Tentang Aplikasi',
+    aboutText: 'Aplikasi Al-Quran dengan 14 Tafsir terpercaya dan 6 qari pilihan. Baca, dengarkan dan renungkan ayat-ayat Allah.',
+    verses: 'ayat',
+  },
+  tr: {
+    title: 'Kur\'an-ı Kerim',
+    index: 'Sure İndeksi',
+    settings: 'Ayarlar',
+    home: 'Ana Sayfa',
+    athkar: 'Zikirler ve Dualar',
+    search: 'Arama',
+    appearance: 'Görünüm',
+    lightMode: 'Açık Mod',
+    darkMode: 'Karanlık Mod',
+    language: 'Dil',
+    about: 'Uygulama Hakkında',
+    aboutText: '14 güvenilir tefsir ve 6 seçkin hafız ile Kur\'an uygulaması. Allah\'ın ayetlerini okuyun, dinleyin ve tefekkür edin.',
+    verses: 'ayet',
+  },
+};
+
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<'index' | 'settings'>('index');
+  const [language, setLanguage] = useState<Language>('ar');
+  const [showLanguages, setShowLanguages] = useState(false);
+
+  const t = translations[language];
+  const isRtl = language === 'ar' || language === 'ur';
 
   const menuItems = [
-    { icon: Home, label: "الرئيسية", to: "/" },
-    { icon: BookOpen, label: "فهرس السور", to: "/quran" },
-    { icon: Heart, label: "الأذكار والأدعية", to: "/athkar" },
-    { icon: Search, label: "البحث", to: "/quran" },
+    { icon: Home, label: t.home, to: "/" },
+    { icon: BookOpen, label: t.index, to: "/quran" },
+    { icon: Heart, label: t.athkar, to: "/athkar" },
+    { icon: Search, label: t.search, to: "/quran" },
   ];
 
   return (
     <>
-      {/* Toggle Button */}
+      {/* Toggle Button - Right Side */}
       <Button
         variant="outline"
         size="icon"
@@ -52,12 +175,13 @@ const LandingSidebar = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Opens from Right */}
       <div 
         className={cn(
           "fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-card border-l border-primary/10 shadow-2xl z-50 transition-transform duration-300",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
+        dir={isRtl ? "rtl" : "ltr"}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-primary/10">
@@ -65,7 +189,7 @@ const LandingSidebar = () => {
             <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center shadow-gold">
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-bold font-arabic text-foreground">القرآن الكريم</span>
+            <span className="font-bold font-arabic text-foreground">{t.title}</span>
           </div>
           <Button
             variant="ghost"
@@ -77,139 +201,115 @@ const LandingSidebar = () => {
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-primary/10">
-          <button
-            onClick={() => setActiveTab('index')}
-            className={cn(
-              "flex-1 py-3 text-sm font-medium transition-colors",
-              activeTab === 'index' 
-                ? "text-primary border-b-2 border-primary bg-primary/5" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <BookOpen className="w-4 h-4 mx-auto mb-1" />
-            فهرس السور
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={cn(
-              "flex-1 py-3 text-sm font-medium transition-colors",
-              activeTab === 'settings' 
-                ? "text-primary border-b-2 border-primary bg-primary/5" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Settings className="w-4 h-4 mx-auto mb-1" />
-            الإعدادات
-          </button>
-        </div>
-
         {/* Content */}
-        <ScrollArea className="h-[calc(100vh-180px)]">
-          {activeTab === 'index' ? (
-            <div className="p-4 space-y-2">
-              {surahIndex.map((surah) => {
-                const hasData = isDataAvailable(surah.id);
-                return (
-                  <Link
-                    key={surah.id}
-                    to={hasData ? `/surah/${surah.id}` : '#'}
-                    onClick={(e) => {
-                      if (!hasData) e.preventDefault();
-                      else setIsOpen(false);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
-                      hasData 
-                        ? "hover:bg-primary/10 cursor-pointer group" 
-                        : "opacity-40 cursor-not-allowed"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm",
-                      hasData 
-                        ? "gradient-gold text-primary-foreground shadow-sm group-hover:scale-105 transition-transform" 
-                        : "bg-muted text-muted-foreground"
-                    )}>
-                      {surah.id}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={cn(
-                        "font-bold font-amiri text-sm truncate",
-                        hasData ? "text-foreground" : "text-muted-foreground"
-                      )}>
-                        {surah.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {surah.versesCount} آية
-                      </p>
-                    </div>
-                    {hasData && (
-                      <ChevronLeft className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-4 space-y-4">
-              {/* Quick Links */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-medium px-1 mb-3">التنقل السريع</p>
-                {menuItems.map((item, i) => (
-                  <Link
-                    key={i}
-                    to={item.to}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
-                      <item.icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                    </div>
-                    <span className="font-medium text-foreground">{item.label}</span>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground mr-auto" />
-                  </Link>
-                ))}
-              </div>
-
-              {/* Divider */}
-              <div className="h-px bg-primary/10 my-4" />
-
-              {/* Theme Toggle */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-medium px-1 mb-3">المظهر</p>
-                <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group"
+        <ScrollArea className="h-[calc(100vh-80px)]">
+          <div className="p-4 space-y-4">
+            {/* Quick Links */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-medium px-1 mb-3">
+                {isRtl ? 'التنقل السريع' : 'Quick Navigation'}
+              </p>
+              {menuItems.map((item, i) => (
+                <Link
+                  key={i}
+                  to={item.to}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group"
                 >
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
-                    {theme === "dark" ? (
-                      <Sun className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                    ) : (
-                      <Moon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                    )}
+                    <item.icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                   </div>
-                  <span className="font-medium text-foreground">
-                    {theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
-                  </span>
-                </button>
-              </div>
-
-              {/* App Info */}
-              <div className="h-px bg-primary/10 my-4" />
-              
-              <div className="p-4 rounded-2xl bg-muted/30 border border-primary/10">
-                <div className="flex items-center gap-3 mb-3">
-                  <Info className="w-5 h-5 text-primary" />
-                  <span className="font-medium text-foreground">عن التطبيق</span>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين. اقرأ واستمع وتدبر آيات الله.
-                </p>
-              </div>
+                  <span className="font-medium text-foreground flex-1">{item.label}</span>
+                  {isRtl ? (
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Link>
+              ))}
             </div>
-          )}
+
+            {/* Divider */}
+            <div className="h-px bg-primary/10 my-4" />
+
+            {/* Settings Header */}
+            <p className="text-xs text-muted-foreground font-medium px-1 mb-3">{t.settings}</p>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                {theme === "dark" ? (
+                  <Sun className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                ) : (
+                  <Moon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                )}
+              </div>
+              <span className="font-medium text-foreground flex-1 text-start">
+                {theme === "dark" ? t.lightMode : t.darkMode}
+              </span>
+            </button>
+
+            {/* Language Selector */}
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowLanguages(!showLanguages)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                  <Globe className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                </div>
+                <span className="font-medium text-foreground flex-1 text-start">{t.language}</span>
+                <span className="text-sm text-muted-foreground">
+                  {languages.find(l => l.code === language)?.nativeName}
+                </span>
+                {isRtl ? (
+                  <ChevronLeft className={cn("w-4 h-4 text-muted-foreground transition-transform", showLanguages && "-rotate-90")} />
+                ) : (
+                  <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform", showLanguages && "rotate-90")} />
+                )}
+              </button>
+
+              {showLanguages && (
+                <div className="space-y-1 px-2 animate-fade-in">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setLanguage(lang.code);
+                        setShowLanguages(false);
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-xl transition-colors w-full",
+                        language === lang.code 
+                          ? "bg-primary/10 text-primary" 
+                          : "hover:bg-muted/50 text-foreground"
+                      )}
+                    >
+                      <span className="font-medium">{lang.nativeName}</span>
+                      <span className="text-sm text-muted-foreground">({lang.name})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-primary/10 my-4" />
+
+            {/* App Info */}
+            <div className="p-4 rounded-2xl bg-muted/30 border border-primary/10">
+              <div className="flex items-center gap-3 mb-3">
+                <Info className="w-5 h-5 text-primary" />
+                <span className="font-medium text-foreground">{t.about}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t.aboutText}
+              </p>
+            </div>
+          </div>
         </ScrollArea>
       </div>
     </>
