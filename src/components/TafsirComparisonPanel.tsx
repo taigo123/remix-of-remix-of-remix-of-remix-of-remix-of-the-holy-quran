@@ -151,12 +151,37 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  // تصدير كصورة - استخدام toDataURL بدلاً من toBlob (أكثر توافقاً)
+  // تصدير كصورة - نفتح نافذة جديدة فوراً لتجنب حظر النوافذ المنبثقة
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
+    const newWindow = window.open('', '_blank');
+    if (!newWindow) {
+      toast({
+        title: 'تعذر فتح نافذة الحفظ',
+        description: 'يبدو أن المتصفح حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsExporting(true);
     try {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>جاري إنشاء الصورة...</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #f0f0f0; }
+              .box { background: white; padding: 16px 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+            </style>
+          </head>
+          <body><div class="box">جاري إنشاء الصورة…</div></body>
+        </html>
+      `);
+      newWindow.document.close();
+
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
         scale: 1.5,
@@ -164,42 +189,44 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      // استخدام toDataURL - يعمل على جميع المتصفحات
       const dataUrl = canvas.toDataURL('image/png');
-      
-      // فتح الصورة في نافذة جديدة (يعمل على الجوال والديسكتوب)
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>مقارنة التفاسير - سورة ${surahNumber}</title>
-              <style>
-                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
-                img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-                .actions { position: fixed; top: 10px; right: 10px; }
-                button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
-              </style>
-            </head>
-            <body>
-              <div class="actions">
-                <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}.png">
-                  <button>💾 حفظ الصورة</button>
-                </a>
-              </div>
-              <img src="${dataUrl}" alt="مقارنة التفاسير" />
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-      }
+
+      newWindow.document.open();
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>مقارنة التفاسير - سورة ${surahNumber}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
+              img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+              .actions { position: fixed; top: 10px; right: 10px; }
+              button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="actions">
+              <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}.png" rel="noopener">
+                <button>💾 حفظ الصورة</button>
+              </a>
+            </div>
+            <img src="${dataUrl}" alt="مقارنة التفاسير" />
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
 
       toast({
         title: 'تم فتح الصورة',
-        description: 'اضغط على زر "حفظ الصورة" في النافذة الجديدة',
+        description: 'إذا لم يبدأ التحميل تلقائياً، اضغط زر "حفظ الصورة" في النافذة الجديدة.',
       });
     } catch (error) {
       console.error('Export image error:', error);
+      try {
+        newWindow.close();
+      } catch {
+        // ignore
+      }
       toast({
         title: 'خطأ',
         description: 'فشل في إنشاء الصورة',
@@ -214,8 +241,33 @@ export const TafsirComparisonPanel = ({
   const exportAsHighQualityImage = async () => {
     if (!contentRef.current) return;
 
+    const newWindow = window.open('', '_blank');
+    if (!newWindow) {
+      toast({
+        title: 'تعذر فتح نافذة الحفظ',
+        description: 'يبدو أن المتصفح حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsExporting(true);
     try {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>جاري إنشاء الصورة...</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #f0f0f0; }
+              .box { background: white; padding: 16px 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+            </style>
+          </head>
+          <body><div class="box">جاري إنشاء الصورة HD…</div></body>
+        </html>
+      `);
+      newWindow.document.close();
+
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
@@ -224,39 +276,43 @@ export const TafsirComparisonPanel = ({
       });
 
       const dataUrl = canvas.toDataURL('image/png');
-      
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>مقارنة التفاسير HD - سورة ${surahNumber}</title>
-              <style>
-                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
-                img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-                .actions { position: fixed; top: 10px; right: 10px; }
-                button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
-              </style>
-            </head>
-            <body>
-              <div class="actions">
-                <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}-HD.png">
-                  <button>💾 حفظ الصورة HD</button>
-                </a>
-              </div>
-              <img src="${dataUrl}" alt="مقارنة التفاسير HD" />
-            </body>
-          </html>
-        `);
-        newWindow.document.close();
-      }
+
+      newWindow.document.open();
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>مقارنة التفاسير HD - سورة ${surahNumber}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
+              img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+              .actions { position: fixed; top: 10px; right: 10px; }
+              button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="actions">
+              <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}-HD.png" rel="noopener">
+                <button>💾 حفظ الصورة HD</button>
+              </a>
+            </div>
+            <img src="${dataUrl}" alt="مقارنة التفاسير HD" />
+          </body>
+        </html>
+      `);
+      newWindow.document.close();
 
       toast({
         title: 'تم فتح الصورة بجودة عالية',
-        description: 'اضغط على زر "حفظ الصورة HD" في النافذة الجديدة',
+        description: 'إذا لم يبدأ التحميل تلقائياً، اضغط زر "حفظ الصورة HD" في النافذة الجديدة.',
       });
     } catch (error) {
       console.error('Export HD image error:', error);
+      try {
+        newWindow.close();
+      } catch {
+        // ignore
+      }
       toast({
         title: 'خطأ',
         description: 'فشل في إنشاء الصورة',
