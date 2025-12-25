@@ -152,7 +152,7 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  // تصدير كصورة - تحميل مباشر
+  // تصدير كصورة
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
@@ -165,20 +165,59 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      const dataUrl = canvas.toDataURL('image/png');
-      
-      // تحميل مباشر
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // محاولة التحميل باستخدام Blob
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          // fallback: فتح في تبويب جديد
+          const dataUrl = canvas.toDataURL('image/png');
+          window.open(dataUrl, '_blank');
+          toast({
+            title: 'تم فتح الصورة',
+            description: 'اضغط مطولاً على الصورة لحفظها',
+          });
+          return;
+        }
 
-      toast({
-        title: 'تم حفظ الصورة',
-        description: 'تم تنزيل الصورة بنجاح',
-      });
+        try {
+          // محاولة استخدام Web Share API على الجوال
+          if (navigator.share && navigator.canShare) {
+            const file = new File([blob], `مقارنة-تفسير-سورة-${surahNumber}.png`, { type: 'image/png' });
+            const shareData = { files: [file] };
+            
+            if (navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+              toast({
+                title: 'تمت المشاركة',
+                description: 'تم مشاركة الصورة بنجاح',
+              });
+              return;
+            }
+          }
+
+          // التحميل المباشر للديسكتوب
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          toast({
+            title: 'تم حفظ الصورة',
+            description: 'تم تنزيل الصورة بنجاح',
+          });
+        } catch {
+          // fallback: فتح في تبويب جديد
+          const dataUrl = canvas.toDataURL('image/png');
+          window.open(dataUrl, '_blank');
+          toast({
+            title: 'تم فتح الصورة',
+            description: 'اضغط مطولاً على الصورة لحفظها',
+          });
+        }
+      }, 'image/png');
     } catch (error) {
       console.error('Export image error:', error);
       toast({
