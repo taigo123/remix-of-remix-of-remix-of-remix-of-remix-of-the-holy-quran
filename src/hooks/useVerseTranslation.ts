@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TranslatedVerse {
   number: number;
-  text: string;
   translation: string;
 }
 
@@ -51,22 +51,15 @@ export const useVerseTranslation = (surahNumber: number) => {
       setError(null);
 
       try {
-        const response = await fetch(
-          `https://alquran-api.pages.dev/api/quran/surah/${surahNumber}?lang=${langCode}`
-        );
+        const { data, error: fnError } = await supabase.functions.invoke('get-verse-translation', {
+          body: { surahNumber, language: langCode }
+        });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch translation');
+        if (fnError) {
+          throw new Error(fnError.message);
         }
 
-        const data = await response.json();
-        
-        // Map the API response to our format
-        const verses: TranslatedVerse[] = data.verses?.map((verse: any) => ({
-          number: verse.number,
-          text: verse.text,
-          translation: verse.translation || verse.text,
-        })) || [];
+        const verses: TranslatedVerse[] = data?.translations || [];
 
         // Cache the result
         translationCache[cacheKey] = verses;
