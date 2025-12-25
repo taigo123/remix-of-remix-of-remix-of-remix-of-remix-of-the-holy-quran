@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { 
   Menu, 
@@ -19,12 +19,25 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage, languages } from "@/contexts/LanguageContext";
+import { Input } from "@/components/ui/input";
 
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t, isRtl } = useLanguage();
   const [showLanguages, setShowLanguages] = useState(false);
+  const [languageSearch, setLanguageSearch] = useState("");
+
+  // Filter languages based on search
+  const filteredLanguages = useMemo(() => {
+    if (!languageSearch.trim()) return languages;
+    const search = languageSearch.toLowerCase();
+    return languages.filter(lang => 
+      lang.name.toLowerCase().includes(search) ||
+      lang.nativeName.toLowerCase().includes(search) ||
+      lang.code.toLowerCase().includes(search)
+    );
+  }, [languageSearch]);
 
   const menuItems = [
     { icon: Home, label: t.home, to: "/" },
@@ -183,26 +196,67 @@ const LandingSidebar = () => {
               </button>
 
               {showLanguages && (
-                <div className="space-y-1 px-2 animate-fade-in">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        setLanguage(lang.code);
-                        setShowLanguages(false);
-                      }}
+                <div className="space-y-2 px-2 animate-fade-in">
+                  {/* Search Input */}
+                  <div className="relative">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder={isRtl ? "ابحث عن لغة..." : "Search language..."}
+                      value={languageSearch}
+                      onChange={(e) => setLanguageSearch(e.target.value)}
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-xl transition-colors w-full",
-                        language === lang.code 
-                          ? "bg-primary/10 text-primary" 
-                          : "hover:bg-muted/50 text-foreground",
-                        isRtl ? "flex-row justify-end" : "flex-row-reverse justify-start"
+                        "h-10 pr-10 bg-background border-primary/20 rounded-xl text-sm",
+                        isRtl ? "text-right" : "text-left"
                       )}
-                    >
-                      <span className="font-medium">{lang.nativeName}</span>
-                      <span className="text-sm text-muted-foreground">({lang.name})</span>
-                    </button>
-                  ))}
+                      dir={isRtl ? "rtl" : "ltr"}
+                    />
+                  </div>
+                  
+                  {/* Languages List */}
+                  <ScrollArea className="h-64">
+                    <div className="space-y-1">
+                      {filteredLanguages.length > 0 ? (
+                        filteredLanguages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              setLanguage(lang.code);
+                              setShowLanguages(false);
+                              setLanguageSearch("");
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 p-3 rounded-xl transition-colors w-full",
+                              language === lang.code 
+                                ? "bg-primary/10 text-primary" 
+                                : "hover:bg-muted/50 text-foreground",
+                              isRtl ? "flex-row justify-end" : "flex-row-reverse justify-start"
+                            )}
+                          >
+                            <span className="font-medium">{lang.nativeName}</span>
+                            <span className="text-sm text-muted-foreground">({lang.name})</span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className={cn(
+                          "p-4 text-center text-muted-foreground text-sm",
+                          isRtl ? "text-right" : "text-left"
+                        )}>
+                          {isRtl ? "لا توجد نتائج" : "No results found"}
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                  
+                  {/* Language Count */}
+                  <div className={cn(
+                    "text-xs text-muted-foreground pt-2 border-t border-primary/10",
+                    isRtl ? "text-right" : "text-left"
+                  )}>
+                    {isRtl 
+                      ? `${languages.length} لغة متاحة` 
+                      : `${languages.length} languages available`}
+                  </div>
                 </div>
               )}
             </div>
