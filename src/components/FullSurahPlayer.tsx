@@ -42,18 +42,18 @@ const RECITERS = [
   { id: "ar.husarymujawwad", name: "الحصري (مجود)", downloadServer: "https://server13.mp3quran.net/husr_mjwd" },
   { id: "ar.hudhaify", name: "علي الحذيفي", downloadServer: "https://server11.mp3quran.net/hthfi" },
   { id: "ar.abdullahbasfar", name: "عبدالله بصفر", downloadServer: "https://server11.mp3quran.net/basf" },
-  { id: "ar.hanirifai", name: "هاني الرفاعي", downloadServer: "https://server8.mp3quran.net/hani" },
   { id: "ar.muhammadayyoub", name: "محمد أيوب", downloadServer: "https://server8.mp3quran.net/ayyub" },
   { id: "ar.shaatree", name: "أبو بكر الشاطري", downloadServer: "https://server11.mp3quran.net/shatri" },
   { id: "ar.muhammadjibreel", name: "محمد جبريل", downloadServer: "https://server8.mp3quran.net/jbrl" },
   { id: "ar.aymanswoaid", name: "أيمن سويد", downloadServer: "https://server6.mp3quran.net/ayman" },
-  { id: "ar.ibrahimakhbar", name: "إبراهيم الأخضر", downloadServer: "https://server8.mp3quran.net/ibrahim" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
   "ar.saoodshuraym": 64,
   "ar.aymanswoaid": 64,
+  "ar.abdurrahmaansudais": 64,
+  "ar.abdullahbasfar": 64,
 };
 
 const surahYasin = getSurahData(36);
