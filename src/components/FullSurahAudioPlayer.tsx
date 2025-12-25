@@ -232,12 +232,13 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
         if (autoScrollRef.current) {
           const verseElement = document.getElementById(`verse-${verseNumber}`);
           if (verseElement) {
-            // التمرير لبداية الآية بدلاً من المنتصف لتظهر كاملة
-            verseElement.scrollIntoView({ behavior: "smooth", block: "start" });
-            // إضافة هامش للرأس
-            setTimeout(() => {
-              window.scrollBy({ top: -80, behavior: "smooth" });
-            }, 300);
+            // حساب موضع الآية مع مراعاة الهيدر الثابت
+            const headerHeight = 100;
+            const elementTop = verseElement.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({
+              top: elementTop - headerHeight,
+              behavior: "smooth"
+            });
           }
         }
       } catch {
@@ -372,10 +373,12 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
           if (autoScrollRef.current) {
             const verseElement = document.getElementById(`verse-${verseNumber}`);
             if (verseElement) {
-              verseElement.scrollIntoView({ behavior: "smooth", block: "start" });
-              setTimeout(() => {
-                window.scrollBy({ top: -80, behavior: "smooth" });
-              }, 300);
+              const headerHeight = 100;
+              const elementTop = verseElement.getBoundingClientRect().top + window.scrollY;
+              window.scrollTo({
+                top: elementTop - headerHeight,
+                behavior: "smooth"
+              });
             }
           }
         })

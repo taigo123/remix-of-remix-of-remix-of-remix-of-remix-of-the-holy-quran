@@ -10,6 +10,7 @@ import { FullSurahAudioPlayer } from '@/components/FullSurahAudioPlayer';
 import { useState } from 'react';
 import { useQuranSettings } from '@/hooks/useQuranSettings';
 import { QuranSettingsPanel } from '@/components/QuranSettingsPanel';
+import { QuickSettingsBar } from '@/components/QuickSettingsBar';
 import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
 import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
@@ -148,25 +149,28 @@ const SurahPage = () => {
               </div>
             </div>
 
-            {/* الإعدادات */}
-            <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
-                  <Settings2 className="w-5 h-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[340px] overflow-y-auto" dir="rtl">
-                <SheetHeader>
-                  <SheetTitle className="text-right font-amiri flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
-                      <Settings2 className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                    إعدادات العرض
-                  </SheetTitle>
-                </SheetHeader>
-                <QuranSettingsPanel className="mt-6" />
-              </SheetContent>
-            </Sheet>
+            {/* الإعدادات السريعة + الإعدادات الكاملة */}
+            <div className="flex items-center gap-2">
+              <QuickSettingsBar />
+              <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 h-9 p-0">
+                    <Settings2 className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[340px] overflow-y-auto" dir="rtl">
+                  <SheetHeader>
+                    <SheetTitle className="text-right font-amiri flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
+                        <Settings2 className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                      إعدادات العرض
+                    </SheetTitle>
+                  </SheetHeader>
+                  <QuranSettingsPanel className="mt-6" />
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </header>
