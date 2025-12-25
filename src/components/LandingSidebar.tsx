@@ -16,153 +16,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { surahIndex } from "@/data/surahIndex";
-import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-type Language = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it';
-
-const languages: { code: Language; name: string; nativeName: string }[] = [
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
-  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
-];
-
-const translations: Record<Language, {
-  title: string;
-  index: string;
-  settings: string;
-  home: string;
-  athkar: string;
-  search: string;
-  appearance: string;
-  lightMode: string;
-  darkMode: string;
-  language: string;
-  about: string;
-  aboutText: string;
-  verses: string;
-}> = {
-  ar: {
-    title: 'القرآن الكريم',
-    index: 'فهرس السور',
-    settings: 'الإعدادات',
-    home: 'الرئيسية',
-    athkar: 'الأذكار والأدعية',
-    search: 'البحث',
-    appearance: 'المظهر',
-    lightMode: 'الوضع النهاري',
-    darkMode: 'الوضع الليلي',
-    language: 'اللغة',
-    about: 'عن التطبيق',
-    aboutText: 'تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين. اقرأ واستمع وتدبر آيات الله.',
-    verses: 'آية',
-  },
-  en: {
-    title: 'The Holy Quran',
-    index: 'Surah Index',
-    settings: 'Settings',
-    home: 'Home',
-    athkar: 'Athkar & Duas',
-    search: 'Search',
-    appearance: 'Appearance',
-    lightMode: 'Light Mode',
-    darkMode: 'Dark Mode',
-    language: 'Language',
-    about: 'About App',
-    aboutText: 'Quran app with 14 trusted Tafsirs and 6 distinguished reciters. Read, listen and reflect on the verses of Allah.',
-    verses: 'verses',
-  },
-  fr: {
-    title: 'Le Saint Coran',
-    index: 'Index des Sourates',
-    settings: 'Paramètres',
-    home: 'Accueil',
-    athkar: 'Athkar & Duas',
-    search: 'Recherche',
-    appearance: 'Apparence',
-    lightMode: 'Mode Clair',
-    darkMode: 'Mode Sombre',
-    language: 'Langue',
-    about: 'À propos',
-    aboutText: 'Application Coran avec 14 Tafsirs fiables et 6 réciteurs distingués. Lisez, écoutez et méditez les versets d\'Allah.',
-    verses: 'versets',
-  },
-  ur: {
-    title: 'قرآن پاک',
-    index: 'سورتوں کا اشاریہ',
-    settings: 'ترتیبات',
-    home: 'ہوم',
-    athkar: 'اذکار و دعائیں',
-    search: 'تلاش',
-    appearance: 'ظاہری شکل',
-    lightMode: 'روشن موڈ',
-    darkMode: 'تاریک موڈ',
-    language: 'زبان',
-    about: 'ایپ کے بارے میں',
-    aboutText: '14 معتبر تفاسیر اور 6 ممتاز قاریوں کے ساتھ قرآن ایپ۔ اللہ کی آیات پڑھیں، سنیں اور غور کریں۔',
-    verses: 'آیات',
-  },
-  id: {
-    title: 'Al-Quran Al-Karim',
-    index: 'Indeks Surah',
-    settings: 'Pengaturan',
-    home: 'Beranda',
-    athkar: 'Dzikir & Doa',
-    search: 'Pencarian',
-    appearance: 'Tampilan',
-    lightMode: 'Mode Terang',
-    darkMode: 'Mode Gelap',
-    language: 'Bahasa',
-    about: 'Tentang Aplikasi',
-    aboutText: 'Aplikasi Al-Quran dengan 14 Tafsir terpercaya dan 6 qari pilihan. Baca, dengarkan dan renungkan ayat-ayat Allah.',
-    verses: 'ayat',
-  },
-  tr: {
-    title: 'Kur\'an-ı Kerim',
-    index: 'Sure İndeksi',
-    settings: 'Ayarlar',
-    home: 'Ana Sayfa',
-    athkar: 'Zikirler ve Dualar',
-    search: 'Arama',
-    appearance: 'Görünüm',
-    lightMode: 'Açık Mod',
-    darkMode: 'Karanlık Mod',
-    language: 'Dil',
-    about: 'Uygulama Hakkında',
-    aboutText: '14 güvenilir tefsir ve 6 seçkin hafız ile Kur\'an uygulaması. Allah\'ın ayetlerini okuyun, dinleyin ve tefekkür edin.',
-    verses: 'ayet',
-  },
-  it: {
-    title: 'Il Sacro Corano',
-    index: 'Indice delle Sure',
-    settings: 'Impostazioni',
-    home: 'Home',
-    athkar: 'Athkar e Dua',
-    search: 'Cerca',
-    appearance: 'Aspetto',
-    lightMode: 'Modalità Chiara',
-    darkMode: 'Modalità Scura',
-    language: 'Lingua',
-    about: 'Informazioni',
-    aboutText: 'App del Corano con 14 Tafsir affidabili e 6 recitatori distinti. Leggi, ascolta e rifletti sui versetti di Allah.',
-    verses: 'versetti',
-  },
-};
+import { useLanguage, languages } from "@/contexts/LanguageContext";
 
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [language, setLanguage] = useState<Language>('ar');
+  const { language, setLanguage, t, isRtl } = useLanguage();
   const [showLanguages, setShowLanguages] = useState(false);
-
-  const t = translations[language];
-  const isRtl = language === 'ar' || language === 'ur';
 
   const menuItems = [
     { icon: Home, label: t.home, to: "/" },
@@ -228,7 +90,7 @@ const LandingSidebar = () => {
                 "text-xs text-muted-foreground font-medium px-1 mb-3",
                 isRtl ? "text-right" : "text-left"
               )}>
-                {isRtl ? 'التنقل السريع' : 'Quick Navigation'}
+                {t.quickNavigation}
               </p>
               {menuItems.map((item, i) => (
                 <Link

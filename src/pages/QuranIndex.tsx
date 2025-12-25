@@ -4,12 +4,11 @@ import {
   Moon, 
   Sun, 
   ChevronLeft,
+  ChevronRight,
   LayoutGrid,
   List,
   Grid3X3,
-  Headphones,
-  MapPin,
-  Search
+  Headphones
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { surahIndex } from '@/data/surahIndex';
@@ -19,16 +18,17 @@ import { QuranSearch } from '@/components/QuranSearch';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type CardStyle = 'grid' | 'list' | 'compact';
 
 const QuranIndex = () => {
   const { theme, setTheme } = useTheme();
+  const { t, isRtl, dir } = useLanguage();
   const [cardStyle, setCardStyle] = useState<CardStyle>(() => {
     const saved = localStorage.getItem('quran-card-style');
     return (saved as CardStyle) || 'grid';
   });
-  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('quran-card-style', cardStyle);
@@ -37,7 +37,7 @@ const QuranIndex = () => {
   return (
     <div 
       className="min-h-screen bg-background transition-all duration-500"
-      dir="rtl"
+      dir={dir}
     >
       {/* خلفية النمط */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none">
@@ -65,7 +65,7 @@ const QuranIndex = () => {
                 className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <Home className="w-4 h-4" />
-                <span className="hidden sm:inline">الرئيسية</span>
+                <span className="hidden sm:inline">{t.home}</span>
               </Button>
             </Link>
 
@@ -76,7 +76,7 @@ const QuranIndex = () => {
               </div>
               <div className="text-center">
                 <h1 className="text-lg font-bold font-amiri bg-gradient-to-l from-primary to-foreground bg-clip-text text-transparent">
-                  فهرس القرآن
+                  {t.surahIndex}
                 </h1>
               </div>
             </div>
@@ -169,8 +169,8 @@ const QuranIndex = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">{surah.englishName}</p>
                   </div>
-                  <div className="text-left shrink-0 flex flex-col items-end gap-2">
-                    <span className="text-sm text-muted-foreground">{surah.versesCount} آية</span>
+                  <div className={cn("shrink-0 flex flex-col items-end gap-2", isRtl ? "text-left" : "text-right")}>
+                    <span className="text-sm text-muted-foreground">{surah.versesCount} {t.verse}</span>
                     <div className="flex items-center gap-2">
                       <span className={cn(
                         'px-2 py-0.5 rounded-full text-xs',
@@ -178,15 +178,22 @@ const QuranIndex = () => {
                           ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' 
                           : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                       )}>
-                        {surah.revelationType}
+                        {surah.revelationType === 'مكية' ? t.meccan : t.medinan}
                       </span>
                       {hasData && <Headphones className="w-4 h-4 text-emerald-500" />}
                     </div>
                   </div>
-                  <ChevronLeft className={cn(
-                    'w-5 h-5 text-muted-foreground transition-transform',
-                    hasData && 'group-hover:-translate-x-1 group-hover:text-primary'
-                  )} />
+                  {isRtl ? (
+                    <ChevronLeft className={cn(
+                      'w-5 h-5 text-muted-foreground transition-transform',
+                      hasData && 'group-hover:-translate-x-1 group-hover:text-primary'
+                    )} />
+                  ) : (
+                    <ChevronRight className={cn(
+                      'w-5 h-5 text-muted-foreground transition-transform',
+                      hasData && 'group-hover:translate-x-1 group-hover:text-primary'
+                    )} />
+                  )}
                 </Link>
               );
             }
@@ -261,21 +268,21 @@ const QuranIndex = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{surah.versesCount} آية</span>
+                    <span className="text-xs text-muted-foreground">{surah.versesCount} {t.verse}</span>
                     <span className={cn(
                       'px-2 py-0.5 rounded-full text-xs',
                       surah.revelationType === 'مكية' 
                         ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' 
                         : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                     )}>
-                      {surah.revelationType}
+                      {surah.revelationType === 'مكية' ? t.meccan : t.medinan}
                     </span>
                   </div>
                   
                   {hasData && (
                     <div className="mt-2 flex items-center gap-1.5 text-emerald-500 text-xs">
                       <Headphones className="w-3.5 h-3.5" />
-                      <span>متوفر</span>
+                      <span>{t.available}</span>
                     </div>
                   )}
                 </div>
@@ -290,10 +297,10 @@ const QuranIndex = () => {
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-primary" />
-            <span className="font-amiri text-foreground">المصحف الإلكتروني</span>
+            <span className="font-amiri text-foreground">{t.electronicMushaf}</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            جميع الحقوق محفوظة © {new Date().getFullYear()}
+            {t.allRightsReserved} © {new Date().getFullYear()}
           </p>
         </div>
       </footer>
