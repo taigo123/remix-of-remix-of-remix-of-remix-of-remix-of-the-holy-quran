@@ -200,88 +200,65 @@ export const TafsirComparisonPanel = ({
     try {
       const element = contentRef.current;
       
-      // جودة عالية للـ PDF
-      const canvas = await html2canvas(element, {
+      // Clone the element to avoid scroll issues
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = element.scrollWidth + 'px';
+      clone.style.height = 'auto';
+      clone.style.overflow = 'visible';
+      clone.style.backgroundColor = '#ffffff';
+      document.body.appendChild(clone);
+      
+      // Wait for render
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(clone, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         logging: false,
+        allowTaint: true,
       });
       
-      // A4 dimensions in mm
+      // Remove clone
+      document.body.removeChild(clone);
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
       
-      const pageWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
+      const pageWidth = 210;
+      const pageHeight = 297;
       const margin = 10;
-      
       const contentWidth = pageWidth - (margin * 2);
+      
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
+      const ratio = contentWidth / imgWidth;
+      const scaledHeight = imgHeight * ratio;
       
-      // حساب الارتفاع المناسب للصورة
-      const imgRatio = imgHeight / imgWidth;
-      const scaledHeight = contentWidth * imgRatio;
-      
-      // إذا كانت الصورة تناسب صفحة واحدة
+      // Add image - if it fits on one page
       if (scaledHeight <= pageHeight - (margin * 2)) {
-        pdf.addImage(
-          canvas.toDataURL('image/jpeg', 0.95),
-          'JPEG',
-          margin,
-          margin,
-          contentWidth,
-          scaledHeight
-        );
+        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, scaledHeight);
       } else {
-        // تقسيم على صفحات متعددة
-        const pageContentHeight = pageHeight - (margin * 2);
-        const totalPages = Math.ceil(scaledHeight / pageContentHeight);
+        // Multi-page: add full image and let jsPDF handle overflow
+        let heightLeft = scaledHeight;
+        let position = margin;
         
-        // إنشاء canvas مؤقت لكل صفحة
-        for (let page = 0; page < totalPages; page++) {
-          if (page > 0) {
-            pdf.addPage();
-          }
-          
-          // حساب الجزء المطلوب من الصورة الأصلية
-          const sourceY = (page * pageContentHeight / scaledHeight) * imgHeight;
-          const sourceHeight = Math.min(
-            (pageContentHeight / scaledHeight) * imgHeight,
-            imgHeight - sourceY
-          );
-          
-          // إنشاء canvas للجزء المطلوب
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = imgWidth;
-          pageCanvas.height = sourceHeight;
-          
-          const ctx = pageCanvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-            ctx.drawImage(
-              canvas,
-              0, sourceY, imgWidth, sourceHeight,
-              0, 0, imgWidth, sourceHeight
-            );
-            
-            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-            const pageScaledHeight = (sourceHeight / imgWidth) * contentWidth;
-            
-            pdf.addImage(
-              pageImgData,
-              'JPEG',
-              margin,
-              margin,
-              contentWidth,
-              pageScaledHeight
-            );
-          }
+        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, scaledHeight);
+        heightLeft -= (pageHeight - margin * 2);
+        
+        while (heightLeft > 0) {
+          position = -(pageHeight - margin * 2) * (Math.ceil((scaledHeight - heightLeft) / (pageHeight - margin * 2)));
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', margin, position + margin, contentWidth, scaledHeight);
+          heightLeft -= (pageHeight - margin * 2);
         }
       }
       
@@ -295,7 +272,7 @@ export const TafsirComparisonPanel = ({
       console.error('Export PDF error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير PDF. جرب تحديد آيات أقل.',
+        description: 'فشل في تصدير PDF',
         variant: 'destructive',
       });
     } finally {
