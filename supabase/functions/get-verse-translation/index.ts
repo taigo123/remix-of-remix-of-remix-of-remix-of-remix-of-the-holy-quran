@@ -68,8 +68,8 @@ const quranComTranslations: Record<string, number> = {
   dv: 86,  // Office of the President
 };
 
-// Languages supported by AlQuran API
-const alQuranApiLanguages = ['en', 'fr', 'ur', 'id', 'tr', 'ru', 'bn', 'hi', 'ms', 'th', 'zh'];
+// Languages supported by AlQuran API (removed: hi, ms, th - not working correctly)
+const alQuranApiLanguages = ['en', 'fr', 'ur', 'id', 'tr', 'ru', 'bn', 'zh'];
 
 serve(async (req) => {
   // Handle CORS preflight requests
