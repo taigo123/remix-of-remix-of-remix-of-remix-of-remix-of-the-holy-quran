@@ -6,7 +6,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -15,24 +14,35 @@ serve(async (req) => {
     const { surahNumber, verseNumber, tafsirId } = await req.json();
 
     if (!surahNumber || !verseNumber || !tafsirId) {
+      console.error('Missing parameters:', { surahNumber, verseNumber, tafsirId });
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const response = await fetch(
-      `https://api.quran-tafseer.com/tafseer/${tafsirId}/${surahNumber}/${verseNumber}`
-    );
+    console.log(`Fetching tafsir: tafsirId=${tafsirId}, surah=${surahNumber}, verse=${verseNumber}`);
+
+    // Use quran.com API v4
+    const url = `https://api.quran.com/api/v4/tafsirs/${tafsirId}/by_ayah/${surahNumber}:${verseNumber}`;
+    console.log('Fetching from URL:', url);
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
+      console.error('API error:', response.status, await response.text());
       throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Received tafsir data:', JSON.stringify(data).substring(0, 200));
+
+    // Extract text from response - remove HTML tags
+    let text = data.tafsir?.text || '';
+    text = text.replace(/<[^>]*>/g, ''); // Remove HTML tags
 
     return new Response(
-      JSON.stringify({ text: data.text || '' }),
+      JSON.stringify({ text }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
