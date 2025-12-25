@@ -198,64 +198,98 @@ export const TafsirComparisonPanel = ({
     
     setIsExporting(true);
     try {
+      const element = contentRef.current;
+      
       // جودة عالية للـ PDF
-      const canvas = await html2canvas(contentRef.current, {
+      const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: contentRef.current.scrollWidth,
-        height: contentRef.current.scrollHeight,
       });
       
-      // استخدام JPEG بجودة عالية (jsPDF يتعامل معه بشكل أفضل)
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      
-      // حساب الحجم المناسب للـ PDF (A4)
-      const pdfWidth = 595.28;
-      const pdfHeight = 841.89;
-      const margin = 20;
-      
-      const contentWidth = pdfWidth - (margin * 2);
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      const ratio = contentWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-      
+      // A4 dimensions in mm
       const pdf = new jsPDF({
         orientation: 'portrait',
-        unit: 'pt',
+        unit: 'mm',
         format: 'a4',
       });
       
-      const contentPerPage = pdfHeight - (margin * 2);
-      const totalPages = Math.ceil(scaledHeight / contentPerPage);
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 10;
       
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
-          pdf.addPage();
-        }
-        
-        const yOffset = -(page * contentPerPage) + margin;
-        
+      const contentWidth = pageWidth - (margin * 2);
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      // حساب الارتفاع المناسب للصورة
+      const imgRatio = imgHeight / imgWidth;
+      const scaledHeight = contentWidth * imgRatio;
+      
+      // إذا كانت الصورة تناسب صفحة واحدة
+      if (scaledHeight <= pageHeight - (margin * 2)) {
         pdf.addImage(
-          imgData, 
-          'JPEG', 
-          margin, 
-          yOffset, 
-          contentWidth, 
+          canvas.toDataURL('image/jpeg', 0.95),
+          'JPEG',
+          margin,
+          margin,
+          contentWidth,
           scaledHeight
         );
+      } else {
+        // تقسيم على صفحات متعددة
+        const pageContentHeight = pageHeight - (margin * 2);
+        const totalPages = Math.ceil(scaledHeight / pageContentHeight);
+        
+        // إنشاء canvas مؤقت لكل صفحة
+        for (let page = 0; page < totalPages; page++) {
+          if (page > 0) {
+            pdf.addPage();
+          }
+          
+          // حساب الجزء المطلوب من الصورة الأصلية
+          const sourceY = (page * pageContentHeight / scaledHeight) * imgHeight;
+          const sourceHeight = Math.min(
+            (pageContentHeight / scaledHeight) * imgHeight,
+            imgHeight - sourceY
+          );
+          
+          // إنشاء canvas للجزء المطلوب
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = imgWidth;
+          pageCanvas.height = sourceHeight;
+          
+          const ctx = pageCanvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            ctx.drawImage(
+              canvas,
+              0, sourceY, imgWidth, sourceHeight,
+              0, 0, imgWidth, sourceHeight
+            );
+            
+            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+            const pageScaledHeight = (sourceHeight / imgWidth) * contentWidth;
+            
+            pdf.addImage(
+              pageImgData,
+              'JPEG',
+              margin,
+              margin,
+              contentWidth,
+              pageScaledHeight
+            );
+          }
+        }
       }
       
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
       
       toast({
-        title: 'تم التصدير',
-        description: `تم حفظ ملف PDF (${totalPages} صفحة)`,
+        title: 'تم التصدير بنجاح',
+        description: 'تم حفظ ملف PDF',
       });
     } catch (error) {
       console.error('Export PDF error:', error);
