@@ -6,8 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Complete mapping of 40+ languages to Quran.com translation IDs
-// Removed: my, km, lo, ig, fil, gu, mr, pa, sr, hr, sl, mk, tg - not available correctly in API
+// Complete mapping of 35+ languages to Quran.com translation IDs
+// Removed: my, km, lo, ig, fil, gu, mr, pa, sr, hr, sl, mk, tg, sk, vi, th, hi - not available correctly in API
 const quranComTranslations: Record<string, number> = {
   // Major European Languages
   en: 131, // Sahih International
@@ -21,7 +21,6 @@ const quranComTranslations: Record<string, number> = {
   ro: 44,  // Grigore
   sv: 48,  // Knut Bernström
   cs: 26,  // Preklad I. Hrbek
-  sk: 47,  // Slovak
   
   // Eastern European & Slavic
   ru: 45,  // Elmir Kuliev
@@ -40,7 +39,6 @@ const quranComTranslations: Record<string, number> = {
   
   // South Asian Languages
   ur: 234, // Fateh Muhammad Jalandhry
-  hi: 122, // Muhammad Farooq Khan
   bn: 163, // Muhiuddin Khan
   ta: 229, // Jan Trust Foundation
   te: 227, // Maulana Abder-Rahim
@@ -51,8 +49,6 @@ const quranComTranslations: Record<string, number> = {
   // Southeast Asian Languages
   id: 134, // Kemenag
   ms: 39,  // Basmeih
-  th: 51,  // King Fahad Complex
-  vi: 177, // Ruwwad
   
   // East Asian Languages
   zh: 56,  // Ma Jian
