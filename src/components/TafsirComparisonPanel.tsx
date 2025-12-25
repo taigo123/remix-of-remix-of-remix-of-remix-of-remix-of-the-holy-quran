@@ -237,91 +237,6 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كصورة عالية الجودة
-  const exportAsHighQualityImage = async () => {
-    if (!contentRef.current) return;
-
-    const newWindow = window.open('', '_blank');
-    if (!newWindow) {
-      toast({
-        title: 'تعذر فتح نافذة الحفظ',
-        description: 'يبدو أن المتصفح حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>جاري إنشاء الصورة...</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <style>
-              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #f0f0f0; }
-              .box { background: white; padding: 16px 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
-            </style>
-          </head>
-          <body><div class="box">جاري إنشاء الصورة HD…</div></body>
-        </html>
-      `);
-      newWindow.document.close();
-
-      const canvas = await html2canvas(contentRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const dataUrl = canvas.toDataURL('image/png');
-
-      newWindow.document.open();
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>مقارنة التفاسير HD - سورة ${surahNumber}</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <style>
-              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
-              img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-              .actions { position: fixed; top: 10px; right: 10px; }
-              button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
-            </style>
-          </head>
-          <body>
-            <div class="actions">
-              <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}-HD.png" rel="noopener">
-                <button>💾 حفظ الصورة HD</button>
-              </a>
-            </div>
-            <img src="${dataUrl}" alt="مقارنة التفاسير HD" />
-          </body>
-        </html>
-      `);
-      newWindow.document.close();
-
-      toast({
-        title: 'تم فتح الصورة بجودة عالية',
-        description: 'إذا لم يبدأ التحميل تلقائياً، اضغط زر "حفظ الصورة HD" في النافذة الجديدة.',
-      });
-    } catch (error) {
-      console.error('Export HD image error:', error);
-      try {
-        newWindow.close();
-      } catch {
-        // ignore
-      }
-      toast({
-        title: 'خطأ',
-        description: 'فشل في إنشاء الصورة',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   // تمييز نص البحث
   const highlightText = (text: string) => {
@@ -350,7 +265,7 @@ export const TafsirComparisonPanel = ({
             </div>
             
             <div className="flex items-center gap-2">
-              {/* أزرار التصدير */}
+              {/* زر التصدير */}
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -360,16 +275,6 @@ export const TafsirComparisonPanel = ({
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
                 <span className="hidden sm:inline mr-1">صورة</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={exportAsHighQualityImage}
-                disabled={isExporting}
-                className="text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span className="hidden sm:inline mr-1">HD</span>
               </Button>
               
               <Button 
