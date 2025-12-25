@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
+  Download,
   Heart,
   ListMusic,
   Loader2,
@@ -26,14 +27,15 @@ import { Switch } from "./ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useReadingStats } from "@/hooks/useReadingStats";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const RECITERS = [
-  { id: "ar.alafasy", name: "مشاري العفاسي" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)" },
-  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي" },
-  { id: "ar.husary", name: "محمود خليل الحصري" },
-  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
+  { id: "ar.alafasy", name: "مشاري العفاسي", downloadServer: "https://server8.mp3quran.net/afs" },
+  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)", downloadServer: "https://server7.mp3quran.net/basit" },
+  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)", downloadServer: "https://server7.mp3quran.net/basit_mjwd" },
+  { id: "ar.minshawi", name: "محمد صديق المنشاوي", downloadServer: "https://server10.mp3quran.net/minsh" },
+  { id: "ar.husary", name: "محمود خليل الحصري", downloadServer: "https://server13.mp3quran.net/husr" },
+  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", downloadServer: "https://server12.mp3quran.net/maher" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
@@ -68,6 +70,7 @@ const getStorageKey = (surahId: number) => `quran_progress_surah_${surahId}`;
 
 export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPlayerProps) => {
   const { toast } = useToast();
+  const { language } = useLanguage();
   const { 
     stats, 
     recordVerseListened, 
@@ -77,6 +80,8 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
     isFavorite, 
     formatTime 
   } = useReadingStats();
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -462,6 +467,49 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
     }
   };
 
+  const handleDownload = async () => {
+    const reciter = RECITERS.find(r => r.id === selectedReciter);
+    if (!reciter) return;
+
+    const surahNumber = String(surah.id).padStart(3, '0');
+    const downloadUrl = `${reciter.downloadServer}/${surahNumber}.mp3`;
+    const fileName = `${surah.name}_${reciter.name}.mp3`;
+
+    setIsDownloading(true);
+    
+    const downloadLabels = {
+      ar: { started: 'جاري التحميل...', success: 'تم بدء التحميل', error: 'فشل التحميل' },
+      en: { started: 'Downloading...', success: 'Download started', error: 'Download failed' },
+    };
+    const labels = downloadLabels[language as keyof typeof downloadLabels] || downloadLabels.en;
+
+    try {
+      toast({ title: labels.started, description: fileName });
+      
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({ title: labels.success, description: fileName });
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback: open in new tab
+      window.open(downloadUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const surahStats = stats.surahProgress[surah.id];
 
   if (!isExpanded) {
@@ -653,6 +701,22 @@ export const FullSurahAudioPlayer = ({ surah, onVerseChange }: FullSurahAudioPla
             <span className="text-xs text-muted-foreground">تمرير تلقائي</span>
             <Switch checked={autoScroll} onCheckedChange={setAutoScroll} className="scale-75" />
           </div>
+
+          {/* Download */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="h-9 px-3 rounded-full gap-1 text-green-600 hover:text-green-700 hover:bg-green-500/10"
+          >
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            <span className="text-xs">{language === 'ar' ? 'تحميل' : 'Download'}</span>
+          </Button>
 
           {/* Share */}
           <Button
