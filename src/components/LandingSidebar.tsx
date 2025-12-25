@@ -150,7 +150,6 @@ const LandingSidebar = () => {
 
   const menuItems = [
     { icon: Home, label: t.home, to: "/" },
-    { icon: BookOpen, label: t.index, to: "/quran" },
     { icon: Heart, label: t.athkar, to: "/athkar" },
     { icon: Search, label: t.search, to: "/quran" },
   ];

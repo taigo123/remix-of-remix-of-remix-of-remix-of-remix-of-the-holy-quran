@@ -274,6 +274,19 @@ const Landing = () => {
                 </div>
               </div>
 
+              {/* Full Index Button */}
+              <div className="text-center mt-8">
+                <Link to="/quran">
+                  <Button
+                    size="lg"
+                    className="gradient-gold text-primary-foreground gap-3 px-8 py-6 text-base rounded-2xl shadow-gold hover:scale-105 transition-transform"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span className="font-amiri font-bold">عرض الفهرس الكامل</span>
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </section>
 
