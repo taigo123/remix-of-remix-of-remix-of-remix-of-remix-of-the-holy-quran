@@ -35,10 +35,7 @@ const SurahPage = () => {
     isPlaying: isTTSPlaying, 
     isLoading: isTTSLoading, 
     playTranslation, 
-    stopPlayback,
-    availableVoices,
-    selectedVoice,
-    setSelectedVoice 
+    stopPlayback
   } = useTranslationTTS();
   const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
   const [showTTSWarning, setShowTTSWarning] = useState(true);
@@ -294,20 +291,6 @@ const SurahPage = () => {
                       </div>
                       {getTranslation(verse.id) && language !== 'ar' && (
                         <div className="flex items-center gap-2 flex-wrap">
-                          {/* Voice selector */}
-                          {availableVoices.length > 1 && (
-                            <select
-                              value={selectedVoice || ''}
-                              onChange={(e) => setSelectedVoice(e.target.value)}
-                              className="text-xs bg-muted border border-border rounded-lg px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 max-w-[120px]"
-                            >
-                              {availableVoices.map((voice) => (
-                                <option key={voice.voiceURI} value={voice.voiceURI}>
-                                  {voice.name.length > 20 ? voice.name.substring(0, 20) + '...' : voice.name}
-                                </option>
-                              ))}
-                            </select>
-                          )}
                           {/* TTS Button */}
                           <Button
                             variant="ghost"
