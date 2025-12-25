@@ -14,6 +14,7 @@ import TafsirList from "./pages/TafsirList";
 import Athkar from "./pages/Athkar";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { PWAUpdatePrompt } from "./components/PWAUpdatePrompt";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/install-guide" element={<InstallGuide />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <PWAUpdatePrompt />
             <PWAInstallPrompt />
           </BrowserRouter>
         </TooltipProvider>
