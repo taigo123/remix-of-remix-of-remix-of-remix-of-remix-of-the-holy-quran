@@ -33,11 +33,13 @@ serve(async (req) => {
 
     const data = await response.json();
 
-    // Extract translations
-    const translations = data.verses?.map((verse: any) => ({
-      number: verse.number,
+    // Extract translations with verse numbers
+    const translations = data.verses?.map((verse: any, index: number) => ({
+      number: verse.number || index + 1,
       translation: verse.translation || verse.text,
     })) || [];
+
+    console.log('Translations fetched:', translations.length);
 
     return new Response(
       JSON.stringify({ translations }),
