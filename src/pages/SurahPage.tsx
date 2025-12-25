@@ -344,11 +344,16 @@ const SurahPage = () => {
                       verseNumber={verse.id} 
                       surahName={surah.name}
                       onPlaybackComplete={() => {
-                        if (autoPlayTranslation && language !== 'ar' && getTranslation(verse.id)) {
-                          setCurrentTTSVerse(verse.id);
-                          playTranslation(getTranslation(verse.id) || '').then(() => {
-                            setCurrentTTSVerse(null);
-                          });
+                        console.log('Verse playback complete, autoPlay:', autoPlayTranslation, 'language:', language);
+                        if (autoPlayTranslation && language !== 'ar') {
+                          const translationText = getTranslation(verse.id);
+                          console.log('Translation text:', translationText?.substring(0, 50));
+                          if (translationText) {
+                            setCurrentTTSVerse(verse.id);
+                            playTranslation(translationText).then(() => {
+                              setCurrentTTSVerse(null);
+                            });
+                          }
                         }
                       }}
                     />
