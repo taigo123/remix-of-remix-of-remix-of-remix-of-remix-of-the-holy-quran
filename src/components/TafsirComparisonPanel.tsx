@@ -151,30 +151,46 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
+  const saveCanvasAsPng = useCallback(async (canvas: HTMLCanvasElement, filename: string) => {
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) throw new Error('تعذر إنشاء ملف الصورة');
+
+    const url = URL.createObjectURL(blob);
+
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // ملاحظة: بعض المتصفحات (خصوصاً داخل WebView) تمنع التنزيل المباشر
+      // لذلك نفتح الصورة في تبويب جديد كخطة بديلة.
+      if (/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    } finally {
+      // نؤخر الإلغاء قليلاً كي لا ينقطع التحميل
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    }
+  }, []);
+
   // تصدير كصورة
   const exportAsImage = async () => {
     if (!contentRef.current) return;
-    
+
     setIsExporting(true);
     try {
-      // تصدير الآية المحددة فقط أو أول 5 آيات لتجنب حجم كبير
-      const maxVerses = showAllVerses ? Math.min(5, versesToShow.length) : 1;
-      const originalShowAll = showAllVerses;
-      
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
         scale: 1.5,
         useCORS: true,
         logging: false,
-        windowWidth: 800,
-        windowHeight: 600,
       });
-      
-      const link = document.createElement('a');
-      link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
-      link.href = canvas.toDataURL('image/png', 0.9);
-      link.click();
-      
+
+      await saveCanvasAsPng(canvas, `مقارنة-تفسير-سورة-${surahNumber}.png`);
+
       toast({
         title: 'تم التصدير',
         description: 'تم حفظ الصورة بنجاح',
@@ -183,7 +199,7 @@ export const TafsirComparisonPanel = ({
       console.error('Export image error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير الصورة. جرب تحديد آية واحدة فقط.',
+        description: error instanceof Error ? error.message : 'فشل في تصدير الصورة',
         variant: 'destructive',
       });
     } finally {
@@ -197,20 +213,15 @@ export const TafsirComparisonPanel = ({
 
     setIsExporting(true);
     try {
-      const element = contentRef.current;
-      
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2, // جودة عالية
+        scale: 2,
         useCORS: true,
         logging: false,
       });
-      
-      const link = document.createElement('a');
-      link.download = `مقارنة-تفسير-سورة-${surahNumber}-HD.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      
+
+      await saveCanvasAsPng(canvas, `مقارنة-تفسير-سورة-${surahNumber}-HD.png`);
+
       toast({
         title: 'تم التصدير',
         description: 'تم حفظ الصورة بجودة عالية',
@@ -219,7 +230,7 @@ export const TafsirComparisonPanel = ({
       console.error('Export HD image error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير الصورة',
+        description: error instanceof Error ? error.message : 'فشل في تصدير الصورة',
         variant: 'destructive',
       });
     } finally {
