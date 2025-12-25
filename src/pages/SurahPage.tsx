@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ const SurahPage = () => {
   const [showAudioNotice, setShowAudioNotice] = useState(true);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const [showTafsir, setShowTafsir] = useState(true);
   
   const {
     selectedSource,
@@ -114,8 +115,28 @@ const SurahPage = () => {
               </div>
             </div>
 
-            {/* مساحة فارغة للتوازن */}
-            <div className="w-9" />
+            {/* زر إظهار/إخفاء التفسير */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowTafsir(!showTafsir)}
+              className={cn(
+                "gap-1.5 text-sm",
+                showTafsir ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              {showTafsir ? (
+                <>
+                  <EyeOff className="w-4 h-4" />
+                  <span className="hidden sm:inline">إخفاء التفسير</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  <span className="hidden sm:inline">إظهار التفسير</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </header>
@@ -237,22 +258,24 @@ const SurahPage = () => {
                 </div>
 
                 {/* التفسير */}
-                <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/10">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-bold text-secondary flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      التفسير
-                    </h4>
-                    {selectedSource !== 'local' && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-lg">
-                        {availableSources.find(s => s.id === selectedSource)?.name}
-                      </span>
-                    )}
+                {showTafsir && (
+                  <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-secondary flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        التفسير
+                      </h4>
+                      {selectedSource !== 'local' && (
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-lg">
+                          {availableSources.find(s => s.id === selectedSource)?.name}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {getTafsir(verse.id, verse.tafsir)}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {getTafsir(verse.id, verse.tafsir)}
-                  </p>
-                </div>
+                )}
 
                 {/* الفوائد */}
                 {verse.benefits && (
