@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { 
   fetchSurahTafsir, 
   AVAILABLE_TAFSIRS,
+  DEFAULT_TAFSIR,
 } from '@/services/tafsirApi';
 
 export type TafsirSource = 'local' | string;
@@ -29,7 +30,8 @@ interface UseTafsirReturn {
 }
 
 export const useTafsir = ({ surahNumber, versesCount = 286, autoLoad = true }: UseTafsirOptions): UseTafsirReturn => {
-  const [selectedSource, setSelectedSource] = useState<TafsirSource>('local');
+  // التفسير الافتراضي هو ابن كثير (الأدق)
+  const [selectedSource, setSelectedSource] = useState<TafsirSource>(DEFAULT_TAFSIR);
   const [tafsirCache, setTafsirCache] = useState<Map<string, Map<number, string>>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,9 +87,9 @@ export const useTafsir = ({ surahNumber, versesCount = 286, autoLoad = true }: U
     }
   }, [selectedSource, autoLoad, loadTafsir]);
 
-  // إعادة تعيين عند تغيير السورة
+  // إعادة تعيين عند تغيير السورة (مع الاحتفاظ بالتفسير الافتراضي)
   useEffect(() => {
-    setSelectedSource('local');
+    setSelectedSource(DEFAULT_TAFSIR);
     setError(null);
   }, [surahNumber]);
 

@@ -226,6 +226,7 @@ const SurahPage = () => {
         {/* لوحة مقارنة التفاسير */}
         <TafsirComparisonPanel
           surahNumber={surahId}
+          surahName={surah.name}
           versesCount={surah.versesCount}
           verses={surah.verses}
           isOpen={isComparisonOpen}
@@ -317,8 +318,8 @@ const SurahPage = () => {
 
       <footer className="bg-muted/50 border-t py-6 px-4 mt-8">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>التفاسير الموثوقة: التفسير الميسر (مجمع الملك فهد) | تفسير الجلالين</p>
-          <p className="mt-1 text-xs">مصدر البيانات: api.alquran.cloud</p>
+          <p>التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين</p>
+          <p className="mt-1 text-xs">مصدر البيانات: quran.com | alquran.cloud</p>
         </div>
       </footer>
     </div>
