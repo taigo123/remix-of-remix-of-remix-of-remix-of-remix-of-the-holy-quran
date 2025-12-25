@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle, SkipForward, Square } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, SkipForward, Square } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 import { useTranslationTTS } from '@/hooks/useTranslationTTS';
-import { Switch } from '@/components/ui/switch';
+
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +39,7 @@ const SurahPage = () => {
   } = useTranslationTTS();
   const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
   const [showTTSWarning, setShowTTSWarning] = useState(true);
-  const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
+  
   
   // Auto-play chain state
   const [isAutoPlayChainActive, setIsAutoPlayChainActive] = useState(false);
@@ -418,17 +418,17 @@ const SurahPage = () => {
                         }
                       }}
                       onPlaybackComplete={() => {
-                        console.log('Verse playback complete, autoPlay:', autoPlayTranslation, 'language:', language, 'chainActive:', isAutoPlayChainActive);
+                        console.log('Verse playback complete, language:', language, 'chainActive:', isAutoPlayChainActive);
                         
-                        // If auto-play translation is enabled
-                        if ((autoPlayTranslation || isAutoPlayChainActive) && language !== 'ar') {
+                        // If chain is active and not Arabic, play translation then next verse
+                        if (isAutoPlayChainActive && language !== 'ar') {
                           const translationText = getTranslation(verse.id);
                           console.log('Translation text:', translationText?.substring(0, 50));
                           if (translationText) {
                             setCurrentTTSVerse(verse.id);
                             playTranslation(translationText, () => {
                               setCurrentTTSVerse(null);
-                              // If chain is active, play next verse
+                              // Play next verse
                               if (autoPlayChainRef.current) {
                                 playNextVerseInChain(verse.id);
                               }
@@ -446,10 +446,10 @@ const SurahPage = () => {
                   </div>
                   
                   {/* Auto-play controls */}
-                  <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border/30">
+                  <div className="flex items-center justify-center mt-2 pt-2 border-t border-border/30">
                     {/* Start/Stop chain play button */}
                     <Button
-                      variant={isAutoPlayChainActive && autoPlayStartVerse === verse.id ? "default" : "outline"}
+                      variant={isAutoPlayChainActive ? "default" : "outline"}
                       size="sm"
                       onClick={() => {
                         if (isAutoPlayChainActive) {
@@ -466,32 +466,15 @@ const SurahPage = () => {
                       {isAutoPlayChainActive ? (
                         <>
                           <Square className="w-3 h-3" />
-                          {isRtl ? 'إيقاف' : 'Stop'}
+                          {isRtl ? 'إيقاف التشغيل المتتابع' : 'Stop Auto-play'}
                         </>
                       ) : (
                         <>
                           <SkipForward className="w-3 h-3" />
-                          {isRtl ? 'تشغيل متتابع' : 'Auto-play'}
+                          {isRtl ? 'تشغيل متتابع من هنا' : 'Auto-play from here'}
                         </>
                       )}
                     </Button>
-                    
-                    {/* Auto-play translation toggle */}
-                    {language !== 'ar' && getTranslation(verse.id) && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          {isRtl ? 'مع الترجمة' : 'With translation'}
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-primary" : "text-muted-foreground")} />
-                          <Switch
-                            checked={autoPlayTranslation}
-                            onCheckedChange={setAutoPlayTranslation}
-                            className="scale-75"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
