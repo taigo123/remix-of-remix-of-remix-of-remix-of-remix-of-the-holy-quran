@@ -183,8 +183,11 @@ const LandingSidebar = () => {
         dir={isRtl ? "rtl" : "ltr"}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-primary/10">
-          <div className="flex items-center gap-2">
+        <div className={cn(
+          "flex items-center justify-between p-4 border-b border-primary/10",
+          isRtl ? "flex-row" : "flex-row-reverse"
+        )}>
+          <div className={cn("flex items-center gap-2", isRtl ? "flex-row" : "flex-row-reverse")}>
             <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center shadow-gold">
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
@@ -205,7 +208,10 @@ const LandingSidebar = () => {
           <div className="p-4 space-y-4">
             {/* Quick Links */}
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium px-1 mb-3">
+              <p className={cn(
+                "text-xs text-muted-foreground font-medium px-1 mb-3",
+                isRtl ? "text-right" : "text-left"
+              )}>
                 {isRtl ? 'التنقل السريع' : 'Quick Navigation'}
               </p>
               {menuItems.map((item, i) => (
@@ -213,12 +219,18 @@ const LandingSidebar = () => {
                   key={i}
                   to={item.to}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group"
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors group",
+                    isRtl ? "flex-row" : "flex-row-reverse"
+                  )}
                 >
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
                     <item.icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                   </div>
-                  <span className="font-medium text-foreground flex-1">{item.label}</span>
+                  <span className={cn(
+                    "font-medium text-foreground flex-1",
+                    isRtl ? "text-right" : "text-left"
+                  )}>{item.label}</span>
                   {isRtl ? (
                     <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                   ) : (
@@ -232,12 +244,18 @@ const LandingSidebar = () => {
             <div className="h-px bg-primary/10 my-4" />
 
             {/* Settings Header */}
-            <p className="text-xs text-muted-foreground font-medium px-1 mb-3">{t.settings}</p>
+            <p className={cn(
+              "text-xs text-muted-foreground font-medium px-1 mb-3",
+              isRtl ? "text-right" : "text-left"
+            )}>{t.settings}</p>
 
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group"
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
+                isRtl ? "flex-row" : "flex-row-reverse"
+              )}
             >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
                 {theme === "dark" ? (
@@ -246,7 +264,10 @@ const LandingSidebar = () => {
                   <Moon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 )}
               </div>
-              <span className="font-medium text-foreground flex-1 text-start">
+              <span className={cn(
+                "font-medium text-foreground flex-1",
+                isRtl ? "text-right" : "text-left"
+              )}>
                 {theme === "dark" ? t.lightMode : t.darkMode}
               </span>
             </button>
@@ -255,12 +276,18 @@ const LandingSidebar = () => {
             <div className="space-y-2">
               <button
                 onClick={() => setShowLanguages(!showLanguages)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group"
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
+                  isRtl ? "flex-row" : "flex-row-reverse"
+                )}
               >
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
                   <Globe className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <span className="font-medium text-foreground flex-1 text-start">{t.language}</span>
+                <span className={cn(
+                  "font-medium text-foreground flex-1",
+                  isRtl ? "text-right" : "text-left"
+                )}>{t.language}</span>
                 <span className="text-sm text-muted-foreground">
                   {languages.find(l => l.code === language)?.nativeName}
                 </span>
@@ -284,7 +311,8 @@ const LandingSidebar = () => {
                         "flex items-center gap-3 p-3 rounded-xl transition-colors w-full",
                         language === lang.code 
                           ? "bg-primary/10 text-primary" 
-                          : "hover:bg-muted/50 text-foreground"
+                          : "hover:bg-muted/50 text-foreground",
+                        isRtl ? "flex-row justify-end" : "flex-row-reverse justify-start"
                       )}
                     >
                       <span className="font-medium">{lang.nativeName}</span>
@@ -300,11 +328,17 @@ const LandingSidebar = () => {
 
             {/* App Info */}
             <div className="p-4 rounded-2xl bg-muted/30 border border-primary/10">
-              <div className="flex items-center gap-3 mb-3">
+              <div className={cn(
+                "flex items-center gap-3 mb-3",
+                isRtl ? "flex-row" : "flex-row-reverse"
+              )}>
                 <Info className="w-5 h-5 text-primary" />
                 <span className="font-medium text-foreground">{t.about}</span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className={cn(
+                "text-sm text-muted-foreground leading-relaxed",
+                isRtl ? "text-right" : "text-left"
+              )}>
                 {t.aboutText}
               </p>
             </div>
