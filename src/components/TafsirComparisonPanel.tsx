@@ -29,6 +29,7 @@ import { fetchSurahTafsir, AVAILABLE_TAFSIRS, DEFAULT_TAFSIR } from '@/services/
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface TafsirSourceInfo {
   id: TafsirSource;
@@ -151,85 +152,157 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  // تصدير كصورة - نفتح نافذة جديدة فوراً لتجنب حظر النوافذ المنبثقة
+  // تصدير كصورة - تحميل مباشر
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
-    const newWindow = window.open('', '_blank');
-    if (!newWindow) {
-      toast({
-        title: 'تعذر فتح نافذة الحفظ',
-        description: 'يبدو أن المتصفح حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة ثم أعد المحاولة.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setIsExporting(true);
     try {
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>جاري إنشاء الصورة...</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <style>
-              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #f0f0f0; }
-              .box { background: white; padding: 16px 18px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
-            </style>
-          </head>
-          <body><div class="box">جاري إنشاء الصورة…</div></body>
-        </html>
-      `);
-      newWindow.document.close();
-
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         logging: false,
       });
 
       const dataUrl = canvas.toDataURL('image/png');
-
-      newWindow.document.open();
-      newWindow.document.write(`
-        <html>
-          <head>
-            <title>مقارنة التفاسير - سورة ${surahNumber}</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <style>
-              body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
-              img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-              .actions { position: fixed; top: 10px; right: 10px; }
-              button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
-            </style>
-          </head>
-          <body>
-            <div class="actions">
-              <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}.png" rel="noopener">
-                <button>💾 حفظ الصورة</button>
-              </a>
-            </div>
-            <img src="${dataUrl}" alt="مقارنة التفاسير" />
-          </body>
-        </html>
-      `);
-      newWindow.document.close();
+      
+      // تحميل مباشر
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
       toast({
-        title: 'تم فتح الصورة',
-        description: 'إذا لم يبدأ التحميل تلقائياً، اضغط زر "حفظ الصورة" في النافذة الجديدة.',
+        title: 'تم حفظ الصورة',
+        description: 'تم تنزيل الصورة بنجاح',
       });
     } catch (error) {
       console.error('Export image error:', error);
-      try {
-        newWindow.close();
-      } catch {
-        // ignore
-      }
       toast({
         title: 'خطأ',
         description: 'فشل في إنشاء الصورة',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // تصدير كـ PDF نصي
+  const exportAsPdf = async () => {
+    setIsExporting(true);
+    try {
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      // إعداد الخط العربي
+      pdf.setFont('Helvetica');
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 15;
+      const contentWidth = pageWidth - margin * 2;
+      let yPos = 20;
+      const lineHeight = 7;
+
+      // العنوان
+      pdf.setFontSize(18);
+      const title = `مقارنة التفاسير - سورة ${surahName || surahNumber}`;
+      pdf.text(title, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 15;
+
+      // أسماء التفاسير
+      pdf.setFontSize(12);
+      const leftName = getSourceName(leftSource);
+      const rightName = getSourceName(rightSource);
+      pdf.text(`التفسير الأول: ${leftName}`, pageWidth - margin, yPos, { align: 'right' });
+      yPos += lineHeight;
+      pdf.text(`التفسير الثاني: ${rightName}`, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 15;
+
+      // الآيات
+      for (const verse of versesToShow) {
+        // التحقق من الحاجة لصفحة جديدة
+        if (yPos > 270) {
+          pdf.addPage();
+          yPos = 20;
+        }
+
+        // رقم الآية
+        pdf.setFontSize(14);
+        pdf.setTextColor(16, 185, 129); // أخضر
+        pdf.text(`الآية ${verse.id}`, pageWidth - margin, yPos, { align: 'right' });
+        yPos += lineHeight;
+
+        // نص الآية
+        pdf.setFontSize(11);
+        pdf.setTextColor(0, 0, 0);
+        const arabicLines = pdf.splitTextToSize(verse.arabicText, contentWidth);
+        for (const line of arabicLines) {
+          if (yPos > 280) {
+            pdf.addPage();
+            yPos = 20;
+          }
+          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
+          yPos += lineHeight;
+        }
+        yPos += 3;
+
+        // التفسير الأول
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`[${leftName}]`, pageWidth - margin, yPos, { align: 'right' });
+        yPos += lineHeight;
+        
+        pdf.setTextColor(50, 50, 50);
+        const leftTafsir = leftCache.get(verse.id) || verse.tafsir;
+        const leftLines = pdf.splitTextToSize(leftTafsir, contentWidth);
+        for (const line of leftLines) {
+          if (yPos > 280) {
+            pdf.addPage();
+            yPos = 20;
+          }
+          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
+          yPos += lineHeight - 1;
+        }
+        yPos += 5;
+
+        // التفسير الثاني
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(`[${rightName}]`, pageWidth - margin, yPos, { align: 'right' });
+        yPos += lineHeight;
+        
+        pdf.setTextColor(50, 50, 50);
+        const rightTafsir = rightCache.get(verse.id) || verse.tafsir;
+        const rightLines = pdf.splitTextToSize(rightTafsir, contentWidth);
+        for (const line of rightLines) {
+          if (yPos > 280) {
+            pdf.addPage();
+            yPos = 20;
+          }
+          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
+          yPos += lineHeight - 1;
+        }
+        yPos += 15;
+      }
+
+      // حفظ الملف
+      pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
+
+      toast({
+        title: 'تم حفظ PDF',
+        description: 'تم تنزيل الملف بنجاح',
+      });
+    } catch (error) {
+      console.error('Export PDF error:', error);
+      toast({
+        title: 'خطأ',
+        description: 'فشل في إنشاء ملف PDF',
         variant: 'destructive',
       });
     } finally {
@@ -265,7 +338,7 @@ export const TafsirComparisonPanel = ({
             </div>
             
             <div className="flex items-center gap-2">
-              {/* زر التصدير */}
+              {/* زر تصدير صورة */}
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -275,6 +348,18 @@ export const TafsirComparisonPanel = ({
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
                 <span className="hidden sm:inline mr-1">صورة</span>
+              </Button>
+              
+              {/* زر تصدير PDF */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={exportAsPdf}
+                disabled={isExporting}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                <span className="hidden sm:inline mr-1">PDF</span>
               </Button>
               
               <Button 
