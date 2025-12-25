@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface AudioPlayerProps {
   verseNumber: number;
+  onRecitationEnd?: () => void;
 }
 
 const RECITERS = [
@@ -32,7 +33,7 @@ const formatTime = (seconds: number) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export const AudioPlayer = ({ verseNumber }: AudioPlayerProps) => {
+export const AudioPlayer = ({ verseNumber, onRecitationEnd }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -66,6 +67,8 @@ export const AudioPlayer = ({ verseNumber }: AudioPlayerProps) => {
       } else {
         setIsPlaying(false);
         setCurrentRepeat(0);
+        // Call the callback when recitation ends (after all repeats)
+        onRecitationEnd?.();
       }
     };
 
