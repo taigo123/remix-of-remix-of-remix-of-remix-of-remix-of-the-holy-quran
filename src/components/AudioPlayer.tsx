@@ -46,11 +46,19 @@ const formatTime = (seconds: number) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
+const RECITER_STORAGE_KEY = "quran_preferred_reciter";
+
 export const AudioPlayer = ({ verseNumber, onRecitationEnd }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
+  const [selectedReciter, setSelectedReciter] = useState(() => {
+    const saved = localStorage.getItem(RECITER_STORAGE_KEY);
+    if (saved && RECITERS.some(r => r.id === saved)) {
+      return saved;
+    }
+    return RECITERS[0].id;
+  });
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -191,6 +199,7 @@ export const AudioPlayer = ({ verseNumber, onRecitationEnd }: AudioPlayerProps) 
 
   const handleReciterChange = (reciterId: string) => {
     setSelectedReciter(reciterId);
+    localStorage.setItem(RECITER_STORAGE_KEY, reciterId);
     setError(null);
     setCurrentTime(0);
     setDuration(0);

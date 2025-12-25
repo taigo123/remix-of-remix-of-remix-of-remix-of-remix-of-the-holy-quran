@@ -44,6 +44,7 @@ const RECITER_BITRATE: Record<string, number> = {
 };
 
 const REPEAT_OPTIONS = [0, 2, 3, 5, 7, 10];
+const RECITER_STORAGE_KEY = "quran_preferred_reciter";
 
 // عدد الآيات في كل سورة (للحساب الصحيح)
 const VERSE_COUNTS = [
@@ -68,7 +69,13 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
+  const [selectedReciter, setSelectedReciter] = useState(() => {
+    const saved = localStorage.getItem(RECITER_STORAGE_KEY);
+    if (saved && RECITERS.some(r => r.id === saved)) {
+      return saved;
+    }
+    return RECITERS[0].id;
+  });
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -232,6 +239,7 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
 
   const handleReciterChange = (reciterId: string) => {
     setSelectedReciter(reciterId);
+    localStorage.setItem(RECITER_STORAGE_KEY, reciterId);
     setError(null);
     setCurrentTime(0);
     setDuration(0);
