@@ -158,15 +158,22 @@ export const TafsirComparisonPanel = ({
     
     setIsExporting(true);
     try {
+      // تصدير الآية المحددة فقط أو أول 5 آيات لتجنب حجم كبير
+      const maxVerses = showAllVerses ? Math.min(5, versesToShow.length) : 1;
+      const originalShowAll = showAllVerses;
+      
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
+        logging: false,
+        windowWidth: 800,
+        windowHeight: 600,
       });
       
       const link = document.createElement('a');
       link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png', 0.9);
       link.click();
       
       toast({
@@ -174,9 +181,10 @@ export const TafsirComparisonPanel = ({
         description: 'تم حفظ الصورة بنجاح',
       });
     } catch (error) {
+      console.error('Export image error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير الصورة',
+        description: 'فشل في تصدير الصورة. جرب تحديد آية واحدة فقط.',
         variant: 'destructive',
       });
     } finally {
@@ -192,18 +200,42 @@ export const TafsirComparisonPanel = ({
     try {
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 1,
         useCORS: true,
+        logging: false,
+        windowWidth: 800,
       });
       
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // حساب الحجم المناسب للـ PDF (A4)
+      const pdfWidth = 595; // A4 width in points
+      const pdfHeight = 842; // A4 height in points
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      // حساب عدد الصفحات المطلوبة
+      const ratio = pdfWidth / imgWidth;
+      const scaledHeight = imgHeight * ratio;
+      const pageCount = Math.ceil(scaledHeight / pdfHeight);
+      
       const pdf = new jsPDF({
-        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4',
       });
       
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      // إضافة الصورة على صفحات متعددة إذا لزم الأمر
+      let position = 0;
+      for (let i = 0; i < pageCount; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, scaledHeight);
+        position -= pdfHeight;
+      }
+      
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
       
       toast({
@@ -211,9 +243,10 @@ export const TafsirComparisonPanel = ({
         description: 'تم حفظ ملف PDF بنجاح',
       });
     } catch (error) {
+      console.error('Export PDF error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير PDF',
+        description: 'فشل في تصدير PDF. جرب تحديد آيات أقل.',
         variant: 'destructive',
       });
     } finally {
