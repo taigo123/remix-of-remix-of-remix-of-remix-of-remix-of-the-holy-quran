@@ -22,22 +22,56 @@ serve(async (req) => {
       );
     }
 
-    // Fetch from AlQuran API
-    const response = await fetch(
-      `https://alquran-api.pages.dev/api/quran/surah/${surahNumber}?lang=${language}`
-    );
+    // Language to translation ID mapping for Quran.com API (fallback)
+    const quranComTranslations: Record<string, number> = {
+      en: 131, // Sahih International
+      fr: 136, // French - Muhammad Hamidullah
+      ur: 234, // Urdu - Fateh Muhammad Jalandhry
+      id: 134, // Indonesian - Kemenag
+      tr: 210, // Turkish - Diyanet Vakfi
+      it: 153, // Italian - Hamza Roberto Piccardo
+    };
 
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+    let translations: any[] = [];
+
+    // Try AlQuran API first (except for Italian which isn't supported)
+    if (language !== 'it') {
+      try {
+        const response = await fetch(
+          `https://alquran-api.pages.dev/api/quran/surah/${surahNumber}?lang=${language}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          translations = data.verses?.map((verse: any, index: number) => ({
+            number: verse.number || index + 1,
+            translation: verse.translation || verse.text,
+          })) || [];
+        }
+      } catch (e) {
+        console.log('AlQuran API failed, trying fallback');
+      }
     }
 
-    const data = await response.json();
-
-    // Extract translations with verse numbers
-    const translations = data.verses?.map((verse: any, index: number) => ({
-      number: verse.number || index + 1,
-      translation: verse.translation || verse.text,
-    })) || [];
+    // Fallback to Quran.com API if needed
+    if (translations.length === 0 && quranComTranslations[language]) {
+      try {
+        const translationId = quranComTranslations[language];
+        const response = await fetch(
+          `https://api.quran.com/api/v4/quran/translations/${translationId}?chapter_number=${surahNumber}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          translations = data.translations?.map((t: any, index: number) => ({
+            number: index + 1,
+            translation: t.text?.replace(/<[^>]*>/g, '') || '', // Remove HTML tags
+          })) || [];
+        }
+      } catch (e) {
+        console.log('Quran.com API also failed');
+      }
+    }
 
     console.log('Translations fetched:', translations.length);
 
