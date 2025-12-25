@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { useTafsir } from '@/hooks/useTafsir';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
+import { useTranslationTTS } from '@/hooks/useTranslationTTS';
+import { Switch } from '@/components/ui/switch';
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +29,12 @@ const SurahPage = () => {
   
   // Verse translations
   const { getTranslation, showTranslation, isLoading: isTranslationLoading } = useVerseTranslation(surahId);
+  
+  // Translation TTS
+  const { isPlaying: isTTSPlaying, isLoading: isTTSLoading, playTranslation, stopPlayback } = useTranslationTTS();
+  const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
+  const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
+  
   const {
     selectedSource,
     setSelectedSource,
@@ -35,6 +43,18 @@ const SurahPage = () => {
     error: tafsirError,
     availableSources,
   } = useTafsir({ surahNumber: surahId, versesCount: surah?.versesCount || 7 });
+  
+  // Handle TTS play for a specific verse
+  const handlePlayTranslation = async (verseId: number, text: string) => {
+    if (currentTTSVerse === verseId && isTTSPlaying) {
+      stopPlayback();
+      setCurrentTTSVerse(null);
+    } else {
+      setCurrentTTSVerse(verseId);
+      await playTranslation(text);
+      setCurrentTTSVerse(null);
+    }
+  };
 
 
   if (!surah || !surahInfo) {
@@ -255,11 +275,43 @@ const SurahPage = () => {
                 {/* Translation */}
                 {showTranslation && (
                   <div className="mb-6 p-4 bg-secondary/10 border border-secondary/20 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2 text-secondary">
-                      <Globe className="w-4 h-4" />
-                      <span className="text-sm font-medium">{t.translation}</span>
-                      {isTranslationLoading && (
-                        <span className="text-xs text-muted-foreground animate-pulse">{isRtl ? 'جاري التحميل...' : 'Loading...'}</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-secondary">
+                        <Globe className="w-4 h-4" />
+                        <span className="text-sm font-medium">{t.translation}</span>
+                        {isTranslationLoading && (
+                          <span className="text-xs text-muted-foreground animate-pulse">{isRtl ? 'جاري التحميل...' : 'Loading...'}</span>
+                        )}
+                      </div>
+                      {getTranslation(verse.id) && (
+                        <div className="flex items-center gap-2">
+                          {/* Auto-play toggle */}
+                          <div className="flex items-center gap-1.5" title={isRtl ? "تشغيل تلقائي بعد التلاوة" : "Auto-play after recitation"}>
+                            <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-secondary" : "text-muted-foreground")} />
+                            <Switch
+                              checked={autoPlayTranslation}
+                              onCheckedChange={setAutoPlayTranslation}
+                              className="scale-75"
+                            />
+                          </div>
+                          {/* TTS Button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePlayTranslation(verse.id, getTranslation(verse.id) || '')}
+                            disabled={isTTSLoading && currentTTSVerse === verse.id}
+                            className="h-8 w-8 p-0 rounded-full hover:bg-secondary/20"
+                            aria-label={currentTTSVerse === verse.id && isTTSPlaying ? "إيقاف" : "استماع للترجمة"}
+                          >
+                            {isTTSLoading && currentTTSVerse === verse.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-secondary" />
+                            ) : currentTTSVerse === verse.id && isTTSPlaying ? (
+                              <VolumeX className="w-4 h-4 text-secondary" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 text-secondary" />
+                            )}
+                          </Button>
+                        </div>
                       )}
                     </div>
                     <p
