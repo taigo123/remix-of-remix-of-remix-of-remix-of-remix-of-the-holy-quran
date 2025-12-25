@@ -197,7 +197,6 @@ export const TafsirComparisonPanel = ({
 
     setIsExporting(true);
     try {
-      // تحويل المحتوى لصورة
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
@@ -205,57 +204,65 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
+      const imgWidthPx = canvas.width;
+      const imgHeightPx = canvas.height;
 
-      // حساب أبعاد الصفحة
       const pdf = new jsPDF({
-        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        orientation: imgWidthPx > imgHeightPx ? 'landscape' : 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const availableWidth = pageWidth - margin * 2;
-      const availableHeight = pageHeight - margin * 2;
+      const pageWidthMm = pdf.internal.pageSize.getWidth();
+      const pageHeightMm = pdf.internal.pageSize.getHeight();
+      const marginMm = 10;
+      const availableWidthMm = pageWidthMm - marginMm * 2;
+      const availableHeightMm = pageHeightMm - marginMm * 2;
 
-      // حساب النسبة
-      const ratio = Math.min(availableWidth / (imgWidth / 3.78), availableHeight / (imgHeight / 3.78));
-      const scaledWidth = (imgWidth / 3.78) * ratio;
-      const scaledHeight = (imgHeight / 3.78) * ratio;
+      // تحويل px إلى mm (على أساس 96dpi)
+      const pxToMm = 0.264583;
 
-      // إذا كانت الصورة أطول من صفحة واحدة، نقسمها
-      const pxPerPage = (availableHeight * 3.78) / ratio;
-      const totalPages = Math.ceil(imgHeight / pxPerPage);
+      // مقياس الطباعة داخل صفحة A4
+      const scale = Math.min(
+        availableWidthMm / (imgWidthPx * pxToMm),
+        availableHeightMm / (imgHeightPx * pxToMm)
+      );
+
+      const scaledWidthMm = imgWidthPx * pxToMm * scale;
+
+      // إذا كانت الصورة أطول من صفحة واحدة، نقسمها (بالـ px)
+      const pxPerPage = Math.floor(availableHeightMm / (pxToMm * scale));
+      const totalPages = Math.max(1, Math.ceil(imgHeightPx / pxPerPage));
 
       for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
-          pdf.addPage();
-        }
+        if (page > 0) pdf.addPage();
 
-        // قص جزء من الصورة لكل صفحة
+        const sy = page * pxPerPage;
+        const sliceHeightPx = Math.min(pxPerPage, imgHeightPx - sy);
+
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = imgWidth;
-        tempCanvas.height = Math.min(pxPerPage, imgHeight - page * pxPerPage);
+        tempCanvas.width = imgWidthPx;
+        tempCanvas.height = Math.max(1, Math.floor(sliceHeightPx));
+
         const ctx = tempCanvas.getContext('2d');
-        
-        if (ctx) {
-          ctx.drawImage(
-            canvas,
-            0, page * pxPerPage,
-            imgWidth, tempCanvas.height,
-            0, 0,
-            imgWidth, tempCanvas.height
-          );
-          
-          const pageImgData = tempCanvas.toDataURL('image/png');
-          const pageImgHeight = (tempCanvas.height / 3.78) * ratio;
-          
-          pdf.addImage(pageImgData, 'PNG', margin, margin, scaledWidth, pageImgHeight);
-        }
+        if (!ctx) continue;
+
+        ctx.drawImage(
+          canvas,
+          0,
+          sy,
+          imgWidthPx,
+          sliceHeightPx,
+          0,
+          0,
+          imgWidthPx,
+          sliceHeightPx
+        );
+
+        const sliceHeightMm = sliceHeightPx * pxToMm * scale;
+
+        // تمرير الـ canvas مباشرة لـ jsPDF لتفادي مشاكل "wrong PNG signature"
+        pdf.addImage(tempCanvas, 'PNG', marginMm, marginMm, scaledWidthMm, sliceHeightMm);
       }
 
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
