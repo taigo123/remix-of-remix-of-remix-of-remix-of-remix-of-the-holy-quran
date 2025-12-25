@@ -29,7 +29,6 @@ import { fetchSurahTafsir, AVAILABLE_TAFSIRS, DEFAULT_TAFSIR } from '@/services/
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 interface TafsirSourceInfo {
   id: TafsirSource;
@@ -192,119 +191,38 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF بجودة عالية (مع تقسيم صحيح للصفحات)
-  const exportAsPDF = async () => {
+  // تصدير كصورة عالية الجودة (Canvas)
+  const exportAsHighQualityImage = async () => {
     if (!contentRef.current) return;
 
     setIsExporting(true);
-    let clone: HTMLElement | null = null;
-
     try {
       const element = contentRef.current;
-
-      // Clone خارج منطقة الـ scroll لضمان أن html2canvas يلتقط كل المحتوى
-      clone = element.cloneNode(true) as HTMLElement;
-      clone.style.position = 'absolute';
-      // ملاحظة: إبعاد شديد جداً قد يجعل المتصفح لا يرسم العنصر -> PDF فارغ
-      clone.style.left = '-10000px';
-      clone.style.top = '0';
-      clone.style.width = `${Math.max(element.scrollWidth, element.clientWidth)}px`;
-      clone.style.height = 'auto';
-      clone.style.overflow = 'visible';
-      clone.style.maxWidth = 'none';
-      clone.style.backgroundColor = '#ffffff';
-      document.body.appendChild(clone);
-
-      // انتظار بسيط لتثبيت الـ layout
-      await new Promise((r) => setTimeout(r, 150));
-
-      const canvas = await html2canvas(clone, {
+      
+      const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 2, // جودة عالية
         useCORS: true,
         logging: false,
       });
-
-      if (!canvas.width || !canvas.height) {
-        throw new Error('Empty canvas');
-      }
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidthMm = 210;
-      const pageHeightMm = 297;
-      const marginMm = 10;
-      const contentWidthMm = pageWidthMm - marginMm * 2;
-      const contentHeightMm = pageHeightMm - marginMm * 2;
-
-      // نحول ارتفاع الصفحة من mm إلى px بناءً على عرض الصورة
-      const pxPerMm = canvas.width / contentWidthMm;
-      const pageHeightPx = Math.floor(contentHeightMm * pxPerMm);
-
-      // صورة لكل صفحة (slice) لتفادي صفحات فارغة
-      let y = 0;
-      let pageIndex = 0;
-
-      while (y < canvas.height) {
-        const sliceHeight = Math.min(pageHeightPx, canvas.height - y);
-        if (sliceHeight <= 0) break;
-
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeight;
-
-        const ctx = pageCanvas.getContext('2d');
-        if (!ctx) break;
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        ctx.drawImage(
-          canvas,
-          0,
-          y,
-          canvas.width,
-          sliceHeight,
-          0,
-          0,
-          canvas.width,
-          sliceHeight
-        );
-
-        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-        const sliceHeightMm = sliceHeight / pxPerMm;
-
-        if (pageIndex > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, sliceHeightMm);
-
-        y += sliceHeight;
-        pageIndex += 1;
-      }
-
-      pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
-
+      
+      const link = document.createElement('a');
+      link.download = `مقارنة-تفسير-سورة-${surahNumber}-HD.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
       toast({
-        title: 'تم التصدير بنجاح',
-        description: `تم حفظ ملف PDF (${pageIndex} صفحة)`,
+        title: 'تم التصدير',
+        description: 'تم حفظ الصورة بجودة عالية',
       });
     } catch (error) {
-      console.error('Export PDF error:', error);
+      console.error('Export HD image error:', error);
       toast({
         title: 'خطأ',
-        description: 'فشل في تصدير PDF',
+        description: 'فشل في تصدير الصورة',
         variant: 'destructive',
       });
     } finally {
-      if (clone) {
-        try {
-          document.body.removeChild(clone);
-        } catch {
-          // ignore
-        }
-      }
       setIsExporting(false);
     }
   };
@@ -350,12 +268,12 @@ export const TafsirComparisonPanel = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={exportAsPDF}
+                onClick={exportAsHighQualityImage}
                 disabled={isExporting}
                 className="text-primary-foreground hover:bg-primary-foreground/10"
               >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                <span className="hidden sm:inline mr-1">PDF</span>
+                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                <span className="hidden sm:inline mr-1">HD</span>
               </Button>
               
               <Button 
