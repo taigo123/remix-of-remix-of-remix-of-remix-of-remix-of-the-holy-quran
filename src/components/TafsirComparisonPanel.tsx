@@ -191,97 +191,6 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF - باستخدام الصورة للحفاظ على النص العربي
-  const exportAsPdf = async () => {
-    if (!contentRef.current) return;
-
-    setIsExporting(true);
-    try {
-      const canvas = await html2canvas(contentRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgWidthPx = canvas.width;
-      const imgHeightPx = canvas.height;
-
-      const pdf = new jsPDF({
-        orientation: imgWidthPx > imgHeightPx ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidthMm = pdf.internal.pageSize.getWidth();
-      const pageHeightMm = pdf.internal.pageSize.getHeight();
-      const marginMm = 10;
-      const availableWidthMm = pageWidthMm - marginMm * 2;
-      const availableHeightMm = pageHeightMm - marginMm * 2;
-
-      // تحويل px إلى mm (على أساس 96dpi)
-      const pxToMm = 0.264583;
-
-      // مقياس الطباعة داخل صفحة A4
-      const scale = Math.min(
-        availableWidthMm / (imgWidthPx * pxToMm),
-        availableHeightMm / (imgHeightPx * pxToMm)
-      );
-
-      const scaledWidthMm = imgWidthPx * pxToMm * scale;
-
-      // إذا كانت الصورة أطول من صفحة واحدة، نقسمها (بالـ px)
-      const pxPerPage = Math.floor(availableHeightMm / (pxToMm * scale));
-      const totalPages = Math.max(1, Math.ceil(imgHeightPx / pxPerPage));
-
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) pdf.addPage();
-
-        const sy = page * pxPerPage;
-        const sliceHeightPx = Math.min(pxPerPage, imgHeightPx - sy);
-
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = imgWidthPx;
-        tempCanvas.height = Math.max(1, Math.floor(sliceHeightPx));
-
-        const ctx = tempCanvas.getContext('2d');
-        if (!ctx) continue;
-
-        ctx.drawImage(
-          canvas,
-          0,
-          sy,
-          imgWidthPx,
-          sliceHeightPx,
-          0,
-          0,
-          imgWidthPx,
-          sliceHeightPx
-        );
-
-        const sliceHeightMm = sliceHeightPx * pxToMm * scale;
-
-        // تمرير الـ canvas مباشرة لـ jsPDF لتفادي مشاكل "wrong PNG signature"
-        pdf.addImage(tempCanvas, 'PNG', marginMm, marginMm, scaledWidthMm, sliceHeightMm);
-      }
-
-      pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
-
-      toast({
-        title: 'تم حفظ PDF',
-        description: 'تم تنزيل الملف بنجاح',
-      });
-    } catch (error) {
-      console.error('Export PDF error:', error);
-      toast({
-        title: 'خطأ',
-        description: 'فشل في إنشاء ملف PDF',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
 
   // تمييز نص البحث
@@ -321,18 +230,6 @@ export const TafsirComparisonPanel = ({
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileImage className="w-4 h-4" />}
                 <span className="hidden sm:inline mr-1">صورة</span>
-              </Button>
-              
-              {/* زر تصدير PDF */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={exportAsPdf}
-                disabled={isExporting}
-                className="text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                <span className="hidden sm:inline mr-1">PDF</span>
               </Button>
               
               <Button 
