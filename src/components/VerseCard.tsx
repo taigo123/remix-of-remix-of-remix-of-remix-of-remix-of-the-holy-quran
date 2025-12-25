@@ -39,91 +39,81 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
     ref
   ) => {
     const { t, language } = useLanguage();
-    type Language = typeof language;
     const { toast } = useToast();
     const { isPlaying, isLoading, playTranslation, stopPlayback } = useTranslationTTS();
     const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
     const [isDownloadingAudio, setIsDownloadingAudio] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const isRTL = ['ar', 'ur'].includes(language);
-    const isArabic = language === 'ar' as Language;
-    // Download translation audio as TTS
+    const isArabicLang = language === 'ar';
+
+    // Download translation audio as MP3 using TTS service
     const handleDownloadTranslationAudio = async () => {
-      if (!translation || isArabic) return;
+      if (!translation || isArabicLang) return;
       
       setIsDownloadingAudio(true);
       setDownloadProgress(0);
       
       const labels = {
-        ar: { started: 'جاري إنشاء الملف الصوتي...', success: 'تم التحميل', error: 'فشل التحميل' },
+        ar: { started: 'جاري إنشاء الملف الصوتي...', success: 'تم التحميل بنجاح', error: 'فشل التحميل' },
         en: { started: 'Generating audio...', success: 'Download complete', error: 'Download failed' },
+        fr: { started: 'Génération audio...', success: 'Téléchargement terminé', error: 'Échec du téléchargement' },
+        de: { started: 'Audio wird generiert...', success: 'Download abgeschlossen', error: 'Download fehlgeschlagen' },
+        es: { started: 'Generando audio...', success: 'Descarga completa', error: 'Error en la descarga' },
+        tr: { started: 'Ses oluşturuluyor...', success: 'İndirme tamamlandı', error: 'İndirme başarısız' },
+        ur: { started: 'آڈیو بنایا جا رہا ہے...', success: 'ڈاؤن لوڈ مکمل', error: 'ڈاؤن لوڈ ناکام' },
+        id: { started: 'Membuat audio...', success: 'Unduhan selesai', error: 'Unduhan gagal' },
       };
       const currentLabels = labels[language as keyof typeof labels] || labels.en;
       
       try {
         toast({ title: currentLabels.started });
         
-        // Use browser's speechSynthesis to generate and download
-        const utterance = new SpeechSynthesisUtterance(translation);
-        utterance.lang = language === 'en' ? 'en-US' : language;
-        utterance.rate = 0.9;
+        // Simulate initial progress
+        setDownloadProgress(10);
         
-        // Create MediaRecorder to capture audio
-        const audioContext = new AudioContext();
-        const destination = audioContext.createMediaStreamDestination();
-        const mediaRecorder = new MediaRecorder(destination.stream);
-        const chunks: BlobPart[] = [];
+        // Call the TTS edge function
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ 
+              text: translation,
+              language: language 
+            }),
+          }
+        );
         
-        // Simulate progress
-        const progressInterval = setInterval(() => {
-          setDownloadProgress(prev => Math.min(prev + 10, 90));
-        }, 200);
+        setDownloadProgress(50);
         
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunks.push(e.data);
-        };
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('TTS error:', errorData);
+          throw new Error('TTS generation failed');
+        }
         
-        mediaRecorder.onstop = () => {
-          clearInterval(progressInterval);
-          setDownloadProgress(100);
-          
-          const blob = new Blob(chunks, { type: 'audio/webm' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `translation_verse_${verse.id}.webm`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          
-          toast({ title: currentLabels.success });
-          setTimeout(() => {
-            setIsDownloadingAudio(false);
-            setDownloadProgress(0);
-          }, 1000);
-        };
+        setDownloadProgress(80);
         
-        // Use simpler approach: just play and let user know they can download
-        // Since browser TTS doesn't easily export to file, we'll use a workaround
-        // by creating a text file with the translation that can be used with TTS tools
+        // Get the audio blob
+        const audioBlob = await response.blob();
+        const url = URL.createObjectURL(audioBlob);
         
-        // Alternative: Create downloadable text file
-        const textBlob = new Blob([translation], { type: 'text/plain' });
-        const textUrl = URL.createObjectURL(textBlob);
-        const textLink = document.createElement('a');
-        textLink.href = textUrl;
-        textLink.download = `translation_verse_${verse.id}.txt`;
-        document.body.appendChild(textLink);
-        textLink.click();
-        document.body.removeChild(textLink);
-        URL.revokeObjectURL(textUrl);
+        // Create download link
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `translation_verse_${verse.id}.mp3`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
         
         setDownloadProgress(100);
-        toast({ 
-          title: currentLabels.success, 
-          description: language === 'ar' ? 'تم تحميل نص الترجمة' : 'Translation text downloaded' 
-        });
+        toast({ title: currentLabels.success });
         
         setTimeout(() => {
           setIsDownloadingAudio(false);
@@ -140,10 +130,10 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
 
     // Callback when Arabic recitation ends
     const handleRecitationEnd = useCallback(() => {
-      if (autoPlayTranslation && showTranslation && translation && !isArabic) {
+      if (autoPlayTranslation && showTranslation && translation && !isArabicLang) {
         playTranslation(translation);
       }
-    }, [autoPlayTranslation, showTranslation, translation, isArabic, playTranslation]);
+    }, [autoPlayTranslation, showTranslation, translation, isArabicLang, playTranslation]);
 
     return (
       <div
@@ -220,7 +210,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
                   />
                 </div>
                 {/* Download translation audio */}
-                {!isArabic && (
+                {!isArabicLang && (
                   <div className="flex flex-col items-center">
                     <Button
                       variant="ghost"
@@ -228,7 +218,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
                       onClick={handleDownloadTranslationAudio}
                       disabled={isDownloadingAudio}
                       className="h-8 w-8 p-0 rounded-full hover:bg-green-500/20 text-green-600"
-                      aria-label={isArabic ? 'تحميل الترجمة' : 'Download translation'}
+                      aria-label={isArabicLang ? 'تحميل الترجمة' : 'Download translation'}
                     >
                       {isDownloadingAudio ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
