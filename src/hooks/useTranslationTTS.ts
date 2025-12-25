@@ -9,51 +9,96 @@ interface UseTranslationTTSReturn {
   stopPlayback: () => void;
 }
 
+// Priority list of known male voice names/patterns
+const MALE_VOICE_PRIORITY = [
+  // English male voices (most common)
+  'david', 'james', 'john', 'mark', 'paul', 'michael', 'daniel', 'george', 
+  'richard', 'thomas', 'robert', 'william', 'alex', 'fred', 'tom', 'bruce',
+  'lee', 'guy', 'grandpa', 'grandma', 'reed', 'rocko', 'sandy', 'shelley',
+  'aaron', 'reed', 'rishi', 'samson', 'gordon', 'junior', 'ralph',
+  // Arabic male voices
+  'ahmed', 'mohammad', 'ali', 'omar', 'khalid', 'youssef', 'majed', 'fahad', 
+  'naayf', 'maged', 'tarik', 'hamed', 'saleh', 'fares', 'nasser',
+  // Generic male patterns
+  'male', 'man', 'boy',
+  // Google voices that tend to be male
+  'uk english male', 'us english male', 'australian male',
+];
+
+// Known female voice patterns to definitely avoid
+const FEMALE_VOICE_PATTERNS = [
+  'female', 'woman', 'girl', 'samantha', 'victoria', 'karen', 'susan', 
+  'linda', 'sarah', 'emma', 'olivia', 'sophia', 'zira', 'hazel', 'alice', 
+  'ellen', 'fiona', 'kate', 'moira', 'veena', 'tessa', 'mariam', 'laila', 
+  'fatima', 'amira', 'nora', 'hala', 'mona', 'dalia', 'siri', 'cortana',
+  'alexa', 'jenny', 'emily', 'mary', 'anna', 'lisa', 'nancy', 'helen',
+  'margaret', 'elizabeth', 'barbara', 'betty', 'dorothy', 'ruth', 'rose',
+  'martha', 'marie', 'catherine', 'ann', 'carol', 'janet', 'joyce', 'diane',
+  'frances', 'gloria', 'marie', 'teresa', 'julia', 'judy', 'megan', 'amy',
+  'melissa', 'michelle', 'angela', 'stephanie', 'rebecca', 'laura', 'sharon',
+  'cynthia', 'jessica', 'rachel', 'nicole', 'amanda', 'kelly', 'natalie',
+];
+
+const isFemaleVoice = (voiceName: string): boolean => {
+  const lowerName = voiceName.toLowerCase();
+  return FEMALE_VOICE_PATTERNS.some(pattern => lowerName.includes(pattern));
+};
+
+const getMaleVoiceScore = (voiceName: string): number => {
+  const lowerName = voiceName.toLowerCase();
+  
+  // High penalty for female voices
+  if (isFemaleVoice(voiceName)) {
+    return -1000;
+  }
+  
+  // Score based on male voice priority list
+  for (let i = 0; i < MALE_VOICE_PRIORITY.length; i++) {
+    if (lowerName.includes(MALE_VOICE_PRIORITY[i])) {
+      return 100 - i; // Higher score for earlier matches
+    }
+  }
+  
+  return 0; // Neutral score for unknown voices
+};
+
 // Get the best male voice for a language
 const getMaleVoice = (voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null => {
-  // Male voice name patterns
-  const malePatterns = [
-    /male/i, /man/i, /david/i, /james/i, /john/i, /mark/i, /paul/i,
-    /michael/i, /daniel/i, /george/i, /richard/i, /thomas/i, /robert/i,
-    /ahmed/i, /mohammad/i, /ali/i, /omar/i, /khalid/i, /youssef/i,
-    /majed/i, /fahad/i, /naayf/i, /maged/i
-  ];
-  
-  // Female voice name patterns to exclude
-  const femalePatterns = [
-    /female/i, /woman/i, /girl/i, /samantha/i, /victoria/i, /karen/i,
-    /susan/i, /linda/i, /sarah/i, /emma/i, /olivia/i, /sophia/i,
-    /zira/i, /hazel/i, /alice/i, /ellen/i, /fiona/i, /kate/i,
-    /moira/i, /veena/i, /tessa/i, /mariam/i, /laila/i, /fatima/i,
-    /amira/i, /nora/i, /hala/i, /mona/i, /dalia/i
-  ];
-  
   // Filter voices by language
   const langCode = lang === 'en' ? 'en' : lang === 'ar' ? 'ar' : lang;
-  const langVoices = voices.filter(v => v.lang.startsWith(langCode));
+  const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(langCode.toLowerCase()));
   
-  if (langVoices.length === 0) return null;
-  
-  // First: try to find explicitly male voices
-  const maleVoice = langVoices.find(v => 
-    malePatterns.some(pattern => pattern.test(v.name))
-  );
-  if (maleVoice) {
-    console.log('Found male voice:', maleVoice.name);
-    return maleVoice;
+  if (langVoices.length === 0) {
+    // Try broader match
+    const broadVoices = voices.filter(v => 
+      v.lang.toLowerCase().includes(langCode.toLowerCase()) ||
+      langCode.toLowerCase().includes(v.lang.toLowerCase().split('-')[0])
+    );
+    if (broadVoices.length === 0) return null;
+    
+    // Score and sort
+    const scored = broadVoices.map(v => ({ voice: v, score: getMaleVoiceScore(v.name) }));
+    scored.sort((a, b) => b.score - a.score);
+    
+    console.log('Broad voice scores:', scored.map(s => `${s.voice.name}: ${s.score}`));
+    return scored[0]?.voice || null;
   }
   
-  // Second: find voices that are NOT female
-  const nonFemaleVoice = langVoices.find(v => 
-    !femalePatterns.some(pattern => pattern.test(v.name))
-  );
-  if (nonFemaleVoice) {
-    console.log('Found non-female voice:', nonFemaleVoice.name);
-    return nonFemaleVoice;
+  // Score all language voices
+  const scoredVoices = langVoices.map(v => ({ voice: v, score: getMaleVoiceScore(v.name) }));
+  scoredVoices.sort((a, b) => b.score - a.score);
+  
+  console.log('Voice scores:', scoredVoices.map(s => `${s.voice.name}: ${s.score}`));
+  
+  // Return highest scoring non-female voice
+  const bestVoice = scoredVoices.find(s => s.score > -1000);
+  if (bestVoice) {
+    console.log('Selected voice:', bestVoice.voice.name, 'score:', bestVoice.score);
+    return bestVoice.voice;
   }
   
-  // Fallback: return first available voice for the language
-  console.log('Using fallback voice:', langVoices[0].name);
+  // All voices are female, return first one anyway
+  console.log('All voices appear female, using first:', langVoices[0].name);
   return langVoices[0];
 };
 
@@ -72,7 +117,7 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       const availableVoices = window.speechSynthesis.getVoices();
       if (availableVoices.length > 0) {
         setVoices(availableVoices);
-        console.log('Loaded voices:', availableVoices.map(v => `${v.name} (${v.lang})`));
+        console.log('Available voices:', availableVoices.map(v => `${v.name} (${v.lang})`));
       }
     };
 
@@ -129,12 +174,12 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
         console.log('No specific voice found, using lang:', utterance.lang);
       }
 
-      // Voice settings for better quality
-      utterance.rate = 0.9; // Slightly slower for clarity
-      utterance.pitch = 0.9; // Slightly lower pitch for male voice
+      // Voice settings - MUCH lower pitch to sound more masculine
+      utterance.rate = 0.85; // Slightly slower for clarity
+      utterance.pitch = 0.5; // Very low pitch for deep male voice
 
       utterance.onstart = () => {
-        console.log('TTS started');
+        console.log('TTS started with pitch:', utterance.pitch);
         setIsPlaying(true);
         setIsLoading(false);
       };
