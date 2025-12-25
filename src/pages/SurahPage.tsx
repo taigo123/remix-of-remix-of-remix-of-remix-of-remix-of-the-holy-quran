@@ -3,7 +3,6 @@ import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Col
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SurahAudioPlayer } from '@/components/SurahAudioPlayer';
 import { FullSurahAudioPlayer } from '@/components/FullSurahAudioPlayer';
@@ -12,6 +11,7 @@ import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
 import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +22,7 @@ const SurahPage = () => {
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [showTafsir, setShowTafsir] = useState(true);
+  const { t, isRtl, dir } = useLanguage();
   
   const {
     selectedSource,
@@ -35,22 +36,22 @@ const SurahPage = () => {
 
   if (!surah || !surahInfo) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={dir}>
         <div className="text-center p-8">
           <Book className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-2xl font-bold mb-2">السورة غير متوفرة حالياً</h1>
-          <p className="text-muted-foreground mb-6">سيتم إضافة سورة {surahInfo?.name || ''} قريباً إن شاء الله</p>
+          <h1 className="text-2xl font-bold mb-2">{isRtl ? 'السورة غير متوفرة حالياً' : 'Surah not available'}</h1>
+          <p className="text-muted-foreground mb-6">{isRtl ? `سيتم إضافة سورة ${surahInfo?.name || ''} قريباً إن شاء الله` : `Surah ${surahInfo?.name || ''} will be added soon`}</p>
           <div className="flex gap-3 justify-center">
             <Link to="/quran">
               <Button>
-                <BookOpen className="w-4 h-4 ml-2" />
-                فهرس القرآن
+                <BookOpen className={cn("w-4 h-4", isRtl ? "ml-2" : "mr-2")} />
+                {t.surahIndex}
               </Button>
             </Link>
             <Link to="/">
               <Button variant="outline">
-                <Home className="w-4 h-4 ml-2" />
-                الرئيسية
+                <Home className={cn("w-4 h-4", isRtl ? "ml-2" : "mr-2")} />
+                {t.home}
               </Button>
             </Link>
           </div>
@@ -65,7 +66,7 @@ const SurahPage = () => {
   return (
     <div 
       className="min-h-screen bg-background" 
-      dir="rtl"
+      dir={dir}
     >
       {/* خلفية */}
       <div className="fixed inset-0 opacity-[0.02] pointer-events-none">
@@ -89,8 +90,8 @@ const SurahPage = () => {
             <div className="flex items-center gap-2">
               <Link to="/quran">
                 <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                  <ArrowRight className="w-4 h-4" />
-                  <span className="hidden sm:inline">الفهرس</span>
+                  {isRtl ? <ArrowRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{t.index}</span>
                 </Button>
               </Link>
               <Link to="/">
@@ -106,11 +107,11 @@ const SurahPage = () => {
                 <span className="text-sm font-bold text-primary-foreground">{surah.id}</span>
               </div>
               <div className="text-center">
-                <h1 className="text-lg font-bold font-amiri text-foreground">سورة {surah.name}</h1>
+                <h1 className="text-lg font-bold font-amiri text-foreground">{t.surah} {surah.name}</h1>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{surah.versesCount} آية</span>
+                  <span>{surah.versesCount} {t.verse}</span>
                   <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-                  <span>{surah.revelationType}</span>
+                  <span>{surah.revelationType === 'مكية' ? t.meccan : t.medinan}</span>
                 </div>
               </div>
             </div>
@@ -128,12 +129,12 @@ const SurahPage = () => {
               {showTafsir ? (
                 <>
                   <EyeOff className="w-4 h-4" />
-                  <span className="hidden sm:inline">إخفاء التفسير</span>
+                  <span className="hidden sm:inline">{t.hideTafsir}</span>
                 </>
               ) : (
                 <>
                   <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline">إظهار التفسير</span>
+                  <span className="hidden sm:inline">{t.showTafsir}</span>
                 </>
               )}
             </Button>
@@ -150,14 +151,14 @@ const SurahPage = () => {
                 <Music className="w-5 h-5 text-emerald-500" />
               </div>
               <p className="text-sm text-muted-foreground">
-                استمع لتلاوة كل آية بصوت 6 قراء مختلفين
+                {t.listenToRecitation}
               </p>
             </div>
             <button 
               onClick={() => setShowAudioNotice(false)}
               className="text-muted-foreground hover:text-foreground text-sm px-3 py-1 rounded-lg hover:bg-muted/50 transition-colors shrink-0"
             >
-              إخفاء
+              {isRtl ? 'إخفاء' : 'Hide'}
             </button>
           </div>
         )}
@@ -175,7 +176,7 @@ const SurahPage = () => {
           <div className="mb-6 p-5 bg-primary/5 border border-primary/10 rounded-2xl">
             <h2 className="font-bold text-foreground mb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              نبذة عن السورة
+              {t.aboutSurah}
             </h2>
             <p className="text-muted-foreground text-sm leading-relaxed">{surah.description}</p>
             {surah.virtues && (
@@ -199,7 +200,7 @@ const SurahPage = () => {
               className="gap-2 rounded-xl"
             >
               <Columns2 className="w-4 h-4" />
-              مقارنة تفسيرين
+              {t.compareTafsirs}
             </Button>
           </div>
           {tafsirError && (
@@ -244,7 +245,7 @@ const SurahPage = () => {
               
               {/* النص القرآني */}
               <div className="p-6">
-                <p className="font-arabic text-foreground text-right text-2xl md:text-3xl leading-loose mb-6">
+                <p className="font-arabic text-foreground text-right text-2xl md:text-3xl leading-loose mb-6" dir="rtl">
                   {verse.arabicText}
                 </p>
                 
@@ -263,7 +264,7 @@ const SurahPage = () => {
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-bold text-secondary flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
-                        التفسير
+                        {t.tafsir}
                       </h4>
                       {selectedSource !== 'local' && (
                         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-lg">
@@ -282,7 +283,7 @@ const SurahPage = () => {
                   <div className="mt-4 p-4 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
                     <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      الفوائد
+                      {t.benefits}
                     </h4>
                     <p className="text-sm text-muted-foreground">{verse.benefits}</p>
                   </div>
@@ -297,16 +298,16 @@ const SurahPage = () => {
           {prevSurah && isDataAvailable(prevSurah.id) ? (
             <Link to={`/surah/${prevSurah.id}`}>
               <Button variant="outline" className="gap-2 rounded-xl">
-                <ChevronRight className="w-5 h-5" />
-                سورة {prevSurah.name}
+                {isRtl ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+                {t.surah} {prevSurah.name}
               </Button>
             </Link>
           ) : <div />}
           {nextSurah && isDataAvailable(nextSurah.id) ? (
             <Link to={`/surah/${nextSurah.id}`}>
               <Button variant="outline" className="gap-2 rounded-xl">
-                سورة {nextSurah.name}
-                <ChevronLeft className="w-5 h-5" />
+                {t.surah} {nextSurah.name}
+                {isRtl ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
               </Button>
             </Link>
           ) : <div />}
@@ -318,10 +319,10 @@ const SurahPage = () => {
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-primary" />
-            <span className="font-amiri text-foreground">المصحف الإلكتروني</span>
+            <span className="font-amiri text-foreground">{t.electronicMushaf}</span>
           </div>
           <p className="text-xs text-muted-foreground">
-            التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين
+            {t.trustedTafsirsList}
           </p>
         </div>
       </footer>
