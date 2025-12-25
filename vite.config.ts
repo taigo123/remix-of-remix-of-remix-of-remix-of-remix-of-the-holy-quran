@@ -48,6 +48,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        // يساعد على تفعيل الإصدار الجديد بسرعة في الـPWA
+        clientsClaim: true,
+        skipWaiting: true,
+        cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
