@@ -168,7 +168,7 @@ const UI_LABELS: Record<string, UILabels> = {
     suggestedLabel: 'الترجمة الصحيحة المقترحة',
     messageLabel: 'رسالتك',
     messagePlaceholder: 'اكتب اقتراحك أو ملاحظتك هنا...',
-    contextLabel: 'تفاصيل إضافية (اختياري)',
+    contextLabel: 'تفاصيل إضافية',
     contextPlaceholder: 'مثال: في الصفحة الرئيسية، زر البحث',
     submit: 'إرسال',
     success: 'شكراً لك! تم إرسال ملاحظتك بنجاح',
@@ -184,7 +184,7 @@ const UI_LABELS: Record<string, UILabels> = {
     suggestedLabel: 'Suggested Correct Translation',
     messageLabel: 'Your Message',
     messagePlaceholder: 'Write your suggestion here...',
-    contextLabel: 'Additional Details (optional)',
+    contextLabel: 'Additional Details',
     contextPlaceholder: 'Example: on the homepage, search button',
     submit: 'Submit',
     success: 'Thank you! Your feedback has been submitted',
@@ -877,12 +877,22 @@ export const UserFeedback = () => {
 
             {/* Context / Additional Details */}
             <div className="space-y-2">
-              <Label htmlFor="context">{labels.contextLabel}</Label>
+              <Label htmlFor="context">
+                {labels.contextLabel}
+                {isTranslation ? (
+                  <span className="text-red-500 mx-1">*</span>
+                ) : (
+                  <span className="text-muted-foreground text-xs mx-1">
+                    ({language === 'ar' ? 'اختياري' : 'optional'})
+                  </span>
+                )}
+              </Label>
               <Input
                 id="context"
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder={labels.contextPlaceholder}
+                required={isTranslation}
                 dir="auto"
               />
             </div>
@@ -890,7 +900,7 @@ export const UserFeedback = () => {
             <Button 
               type="submit" 
               className="w-full gap-2" 
-              disabled={isSubmitting || !suggestedText.trim()}
+              disabled={isSubmitting || !suggestedText.trim() || (isTranslation && !context.trim())}
             >
               <Send className="h-4 w-4" />
               {labels.submit}
