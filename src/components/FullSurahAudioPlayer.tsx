@@ -31,12 +31,35 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const RECITERS = [
+  // القراء المميزون - الأفضل في المقدمة
+  { id: "ar.yasserdossari", name: "ياسر الدوسري", downloadServer: "https://server11.mp3quran.net/yasser" },
   { id: "ar.alafasy", name: "مشاري العفاسي", downloadServer: "https://server8.mp3quran.net/afs" },
+  { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس", downloadServer: "https://server11.mp3quran.net/sds" },
+  { id: "ar.saaborimaa", name: "سعود الشريم", downloadServer: "https://server7.mp3quran.net/shur" },
+  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", downloadServer: "https://server12.mp3quran.net/maher" },
+  { id: "ar.saaborim", name: "سعد الغامدي", downloadServer: "https://server7.mp3quran.net/s_gmd" },
+  { id: "ar.ahmedajamy", name: "أحمد العجمي", downloadServer: "https://server10.mp3quran.net/ajm" },
+  { id: "ar.nasserqatami", name: "ناصر القطامي", downloadServer: "https://server6.mp3quran.net/qtm" },
+  { id: "ar.faresabbad", name: "فارس عباد", downloadServer: "https://server8.mp3quran.net/frs_a" },
   { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)", downloadServer: "https://server7.mp3quran.net/basit" },
   { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)", downloadServer: "https://server7.mp3quran.net/basit_mjwd" },
   { id: "ar.minshawi", name: "محمد صديق المنشاوي", downloadServer: "https://server10.mp3quran.net/minsh" },
   { id: "ar.husary", name: "محمود خليل الحصري", downloadServer: "https://server13.mp3quran.net/husr" },
-  { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", downloadServer: "https://server12.mp3quran.net/maher" },
+  { id: "ar.hudhaify", name: "علي الحذيفي", downloadServer: "https://server11.mp3quran.net/hthfi" },
+  { id: "ar.abdullahbasfar", name: "عبدالله بصفر", downloadServer: "https://server11.mp3quran.net/basf" },
+  { id: "ar.ibrahimakhdar", name: "إبراهيم الأخضر", downloadServer: "https://server8.mp3quran.net/akhdr" },
+  { id: "ar.bandarbalila", name: "بندر بليلة", downloadServer: "https://server12.mp3quran.net/balilah" },
+  { id: "ar.haborimo", name: "هاني الرفاعي", downloadServer: "https://server8.mp3quran.net/hani" },
+  { id: "ar.idreesakbar", name: "إدريس أبكر", downloadServer: "https://server6.mp3quran.net/abkr" },
+  { id: "ar.muhammadluhaidan", name: "محمد اللحيدان", downloadServer: "https://server8.mp3quran.net/lhdan" },
+  { id: "ar.muhammadayyub", name: "محمد أيوب", downloadServer: "https://server8.mp3quran.net/ayyub" },
+  { id: "ar.abdulmohsenqasim", name: "عبد المحسن القاسم", downloadServer: "https://server6.mp3quran.net/qasm" },
+  { id: "ar.khalidjalil", name: "خالد الجليل", downloadServer: "https://server11.mp3quran.net/k_jleel" },
+  { id: "ar.abdullahjuhany", name: "عبدالله الجهني", downloadServer: "https://server9.mp3quran.net/jhn" },
+  { id: "ar.abdulazizahmed", name: "عبد العزيز الأحمد", downloadServer: "https://server7.mp3quran.net/s_ahmad" },
+  { id: "ar.nabilrifa3i", name: "نبيل الرفاعي", downloadServer: "https://server8.mp3quran.net/nabil" },
+  { id: "ar.salahbukhatir", name: "صلاح بوخاطر", downloadServer: "https://server6.mp3quran.net/bukhatir" },
+  { id: "ar.muhammadtablawi", name: "محمد الطبلاوي", downloadServer: "https://server7.mp3quran.net/tblawi" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
