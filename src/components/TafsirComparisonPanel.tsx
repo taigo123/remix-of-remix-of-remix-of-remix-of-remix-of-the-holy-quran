@@ -205,16 +205,18 @@ export const TafsirComparisonPanel = ({
       // Clone خارج منطقة الـ scroll لضمان أن html2canvas يلتقط كل المحتوى
       clone = element.cloneNode(true) as HTMLElement;
       clone.style.position = 'absolute';
-      clone.style.left = '-99999px';
+      // ملاحظة: إبعاد شديد جداً قد يجعل المتصفح لا يرسم العنصر -> PDF فارغ
+      clone.style.left = '-10000px';
       clone.style.top = '0';
-      clone.style.width = `${element.scrollWidth}px`;
+      clone.style.width = `${Math.max(element.scrollWidth, element.clientWidth)}px`;
       clone.style.height = 'auto';
       clone.style.overflow = 'visible';
+      clone.style.maxWidth = 'none';
       clone.style.backgroundColor = '#ffffff';
       document.body.appendChild(clone);
 
       // انتظار بسيط لتثبيت الـ layout
-      await new Promise((r) => setTimeout(r, 120));
+      await new Promise((r) => setTimeout(r, 150));
 
       const canvas = await html2canvas(clone, {
         backgroundColor: '#ffffff',
@@ -222,6 +224,10 @@ export const TafsirComparisonPanel = ({
         useCORS: true,
         logging: false,
       });
+
+      if (!canvas.width || !canvas.height) {
+        throw new Error('Empty canvas');
+      }
 
       const pdf = new jsPDF({
         orientation: 'portrait',
