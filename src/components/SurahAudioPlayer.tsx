@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Download, Loader2, Pause, Play, Repeat, Volume2, VolumeX, Music } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { Download, Loader2, Pause, Play, Repeat, Volume2, VolumeX } from "lucide-react";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { useToast } from "@/hooks/use-toast";
@@ -61,19 +61,33 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const onPlaybackCompleteRef = useRef(onPlaybackComplete);
+  const repeatCountRef = useRef(repeatCount);
+  const currentRepeatRef = useRef(currentRepeat);
 
-  // Keep callback ref updated
+  // Keep refs updated
   useEffect(() => {
     onPlaybackCompleteRef.current = onPlaybackComplete;
   }, [onPlaybackComplete]);
 
+  useEffect(() => {
+    repeatCountRef.current = repeatCount;
+  }, [repeatCount]);
+
+  useEffect(() => {
+    currentRepeatRef.current = currentRepeat;
+  }, [currentRepeat]);
+
+  // Initialize audio element once
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "metadata";
     audioRef.current = audio;
 
     const onEnded = () => {
-      if (repeatCount > 0 && currentRepeat < repeatCount - 1) {
+      const currentRepeatVal = currentRepeatRef.current;
+      const repeatCountVal = repeatCountRef.current;
+      
+      if (repeatCountVal > 0 && currentRepeatVal < repeatCountVal - 1) {
         setCurrentRepeat((prev) => prev + 1);
         audio.currentTime = 0;
         audio.play().catch(() => setIsPlaying(false));
@@ -82,7 +96,12 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
         setCurrentRepeat(0);
         // Call the completion callback when playback finishes
         console.log('Audio ended, calling onPlaybackComplete');
-        onPlaybackCompleteRef.current?.();
+        if (onPlaybackCompleteRef.current) {
+          // Use setTimeout to avoid state update issues
+          setTimeout(() => {
+            onPlaybackCompleteRef.current?.();
+          }, 100);
+        }
       }
     };
 
@@ -111,7 +130,7 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audioRef.current = null;
     };
-  }, [repeatCount, currentRepeat]);
+  }, []); // Only run once
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted;
@@ -129,18 +148,18 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
     setCurrentRepeat(0);
   }, [surahId, verseNumber]);
 
-  const getGlobalVerseNumber = () => {
+  const getGlobalVerseNumber = useCallback(() => {
     let globalVerse = 0;
     for (let i = 0; i < surahId - 1; i++) {
       globalVerse += VERSE_COUNTS[i];
     }
     return globalVerse + verseNumber;
-  };
+  }, [surahId, verseNumber]);
 
-  const getAudioUrl = () => {
+  const getAudioUrl = useCallback(() => {
     const bitrate = RECITER_BITRATE[selectedReciter] ?? 128;
     return `https://cdn.islamic.network/quran/audio/${bitrate}/${selectedReciter}/${getGlobalVerseNumber()}.mp3`;
-  };
+  }, [selectedReciter, getGlobalVerseNumber]);
 
   const togglePlay = async () => {
     if (!audioRef.current) return;
