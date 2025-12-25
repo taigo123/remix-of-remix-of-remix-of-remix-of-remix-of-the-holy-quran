@@ -1,6 +1,7 @@
 import * as React from "react";
 import { BookOpen, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TranslationFeedback } from "@/components/TranslationFeedback";
 
 export const Footer = React.forwardRef<HTMLElement, React.ComponentPropsWithoutRef<"footer">>(
   ({ className, ...props }, ref) => {
@@ -27,6 +28,11 @@ export const Footer = React.forwardRef<HTMLElement, React.ComponentPropsWithoutR
               </span>
             </div>
 
+            {/* Translation Feedback Button */}
+            <div className="mt-6 flex justify-center">
+              <TranslationFeedback />
+            </div>
+
             <div className="mt-6 pt-6 border-t border-primary-foreground/10">
               <p className="font-naskh text-sm text-primary-foreground/50" dir="rtl">
                 ﴿ إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ ﴾
@@ -40,4 +46,3 @@ export const Footer = React.forwardRef<HTMLElement, React.ComponentPropsWithoutR
 );
 
 Footer.displayName = "Footer";
-
