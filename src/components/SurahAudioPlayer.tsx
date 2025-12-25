@@ -17,18 +17,30 @@ export interface SurahAudioPlayerRef {
   pause: () => void;
 }
 
+// القراء المتاحون في Islamic Network API للآيات (تم توحيدها مع باقي التطبيق)
 const RECITERS = [
   { id: "ar.alafasy", name: "مشاري العفاسي" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)" },
-  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي" },
-  { id: "ar.husary", name: "محمود خليل الحصري" },
+  { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس" },
+  { id: "ar.saoodshuraym", name: "سعود الشريم" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
+  { id: "ar.ahmedajamy", name: "أحمد العجمي" },
+  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد" },
+  { id: "ar.husary", name: "محمود خليل الحصري" },
+  { id: "ar.husarymujawwad", name: "الحصري (مجود)" },
+  { id: "ar.hudhaify", name: "علي الحذيفي" },
+  { id: "ar.abdullahbasfar", name: "عبدالله بصفر" },
+  { id: "ar.hanirifai", name: "هاني الرفاعي" },
+  { id: "ar.muhammadayyoub", name: "محمد أيوب" },
+  { id: "ar.shaatree", name: "أبو بكر الشاطري" },
+  { id: "ar.muhammadjibreel", name: "محمد جبريل" },
+  { id: "ar.aymanswoaid", name: "أيمن سويد" },
+  { id: "ar.ibrahimakhbar", name: "إبراهيم الأخضر" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
-  "ar.abdulbasitmurattal": 64,
+  "ar.saoodshuraym": 64,
+  "ar.aymanswoaid": 64,
 };
 
 const REPEAT_OPTIONS = [0, 2, 3, 5, 7, 10];
