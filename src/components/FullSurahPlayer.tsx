@@ -23,6 +23,7 @@ import {
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
+import { Progress } from "./ui/progress";
 import { getSurahData } from "@/data/surahsData";
 import { useToast } from "@/hooks/use-toast";
 import { useReadingStats } from "@/hooks/useReadingStats";
@@ -80,6 +81,7 @@ export const FullSurahPlayer = ({
   } = useReadingStats();
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -454,10 +456,11 @@ export const FullSurahPlayer = ({
     const fileName = `${SURAH_NAME}_${reciter.name}.mp3`;
 
     setIsDownloading(true);
+    setDownloadProgress(0);
     
     const downloadLabels = {
-      ar: { started: 'جاري التحميل...', success: 'تم بدء التحميل', error: 'فشل التحميل' },
-      en: { started: 'Downloading...', success: 'Download started', error: 'Download failed' },
+      ar: { started: 'جاري التحميل...', success: 'تم التحميل بنجاح', error: 'فشل التحميل' },
+      en: { started: 'Downloading...', success: 'Download complete', error: 'Download failed' },
     };
     const labels = downloadLabels[language as keyof typeof downloadLabels] || downloadLabels.en;
 
@@ -467,7 +470,30 @@ export const FullSurahPlayer = ({
       const response = await fetch(downloadUrl);
       if (!response.ok) throw new Error('Download failed');
       
-      const blob = await response.blob();
+      const contentLength = response.headers.get('content-length');
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      
+      const chunks: BlobPart[] = [];
+      let received = 0;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        chunks.push(value);
+        received += value.length;
+        
+        if (total > 0) {
+          setDownloadProgress(Math.round((received / total) * 100));
+        } else {
+          setDownloadProgress(Math.min(received / 10000, 95));
+        }
+      }
+      
+      const blob = new Blob(chunks, { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       
       const link = document.createElement('a');
@@ -478,13 +504,16 @@ export const FullSurahPlayer = ({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
+      setDownloadProgress(100);
       toast({ title: labels.success, description: fileName });
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback: open in new tab
       window.open(downloadUrl, '_blank');
     } finally {
-      setIsDownloading(false);
+      setTimeout(() => {
+        setIsDownloading(false);
+        setDownloadProgress(0);
+      }, 1000);
     }
   };
 
@@ -632,20 +661,28 @@ export const FullSurahPlayer = ({
             </div>
 
             {/* Download */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="h-9 px-3 rounded-full gap-1 text-green-600 hover:text-green-700 hover:bg-green-500/10"
-            >
-              {isDownloading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
+            <div className="flex flex-col items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="h-9 px-3 rounded-full gap-1 text-green-600 hover:text-green-700 hover:bg-green-500/10"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                <span className="text-xs">{language === 'ar' ? 'تحميل' : 'Download'}</span>
+              </Button>
+              {isDownloading && (
+                <div className="w-20">
+                  <Progress value={downloadProgress} className="h-1" />
+                  <span className="text-[10px] text-muted-foreground">{downloadProgress}%</span>
+                </div>
               )}
-              <span className="text-xs">{language === 'ar' ? 'تحميل' : 'Download'}</span>
-            </Button>
+            </div>
 
             {/* Share */}
             <Button variant="ghost" size="sm" onClick={handleShare} className="h-9 px-3 rounded-full gap-1">
