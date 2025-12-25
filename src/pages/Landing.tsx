@@ -4,32 +4,27 @@ import {
   BookOpen, 
   ChevronLeft, 
   ChevronRight,
-  Moon, 
   Sparkles, 
   Star, 
-  Sun, 
   Book, 
-  Feather,
   Headphones,
   Languages,
   Search,
   Heart,
   Volume2,
   BookMarked,
-  Users,
   Mic2,
   FileText,
   GripHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
 import { Helmet } from "react-helmet";
 import { surahIndex } from "@/data/surahIndex";
 import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
+import LandingSidebar from "@/components/LandingSidebar";
 
 const Landing = () => {
-  const { theme, setTheme } = useTheme();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -111,21 +106,8 @@ const Landing = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/10 to-transparent rounded-full" />
         </div>
 
-        {/* Theme Toggle */}
-        <div className="absolute top-6 left-6 z-20">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-12 w-12 p-0 rounded-2xl border-primary/20 bg-background/50 backdrop-blur-xl hover:bg-primary/10 transition-all duration-300 hover:scale-110 hover:border-primary shadow-lg"
-          >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5 text-primary" />
-            ) : (
-              <Moon className="w-5 h-5 text-primary" />
-            )}
-          </Button>
-        </div>
+        {/* Sidebar */}
+        <LandingSidebar />
 
         {/* Main Content */}
         <div className="relative z-10 min-h-screen">
@@ -432,23 +414,10 @@ const Landing = () => {
             </div>
           </section>
 
-          {/* Footer CTA */}
-          <section className="py-16 px-4 bg-gradient-to-b from-transparent to-muted/30">
+          {/* Quote Footer */}
+          <section className="py-12 px-4 bg-gradient-to-b from-transparent to-muted/30">
             <div className="container mx-auto max-w-4xl text-center">
-              <h2 className="text-2xl md:text-3xl font-bold font-arabic text-foreground mb-6">
-                ابدأ رحلتك مع كتاب الله
-              </h2>
-              <Link to="/quran">
-                <Button
-                  size="lg"
-                  className="gradient-gold text-primary-foreground gap-3 px-10 py-7 text-lg rounded-2xl shadow-gold hover:scale-105 transition-transform"
-                >
-                  <BookOpen className="w-6 h-6" />
-                  <span className="font-amiri font-bold">افتح الفهرس</span>
-                  <ChevronLeft className="w-6 h-6" />
-                </Button>
-              </Link>
-              <p className="mt-8 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 تفسير مجمّع من أمهات كتب التفسير الإسلامية
               </p>
             </div>
