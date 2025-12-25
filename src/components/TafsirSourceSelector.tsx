@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -5,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Loader2, Info } from "lucide-react";
+import { BookOpen, Loader2, Info, ExternalLink } from "lucide-react";
 import { TafsirSource } from "@/hooks/useTafsir";
 import {
   Tooltip,
@@ -76,14 +77,23 @@ export const TafsirSourceSelector = ({
       
       {/* وصف التفسير المختار */}
       {selectedInfo && (
-        <div className="flex items-start gap-2 p-3 bg-background/50 rounded-lg text-sm">
-          <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <div>
-            <span className="text-muted-foreground">{selectedInfo.description}</span>
-            {selectedInfo.author && selectedInfo.id !== 'local' && (
-              <span className="text-primary mr-2">— {selectedInfo.author}</span>
-            )}
+        <div className="flex items-start justify-between gap-2 p-3 bg-background/50 rounded-lg text-sm">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div>
+              <span className="text-muted-foreground">{selectedInfo.description}</span>
+              {selectedInfo.author && selectedInfo.id !== 'local' && (
+                <span className="text-primary mr-2">— {selectedInfo.author}</span>
+              )}
+            </div>
           </div>
+          <Link 
+            to="/tafsir-list" 
+            className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0"
+          >
+            <span>تعرف على التفاسير</span>
+            <ExternalLink className="w-3 h-3" />
+          </Link>
         </div>
       )}
     </div>
