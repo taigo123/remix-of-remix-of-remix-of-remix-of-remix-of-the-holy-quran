@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 import { useTranslationTTS } from '@/hooks/useTranslationTTS';
-import { Switch } from '@/components/ui/switch';
+
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,8 +31,15 @@ const SurahPage = () => {
   const { getTranslation, showTranslation, isLoading: isTranslationLoading } = useVerseTranslation(surahId);
   
   // Translation TTS
-  const { isPlaying: isTTSPlaying, isLoading: isTTSLoading, playTranslation, stopPlayback } = useTranslationTTS();
-  const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
+  const { 
+    isPlaying: isTTSPlaying, 
+    isLoading: isTTSLoading, 
+    playTranslation, 
+    stopPlayback,
+    availableVoices,
+    selectedVoice,
+    setSelectedVoice 
+  } = useTranslationTTS();
   const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
   const [showTTSWarning, setShowTTSWarning] = useState(true);
   
@@ -285,16 +292,21 @@ const SurahPage = () => {
                         )}
                       </div>
                       {getTranslation(verse.id) && language !== 'ar' && (
-                        <div className="flex items-center gap-2">
-                          {/* Auto-play toggle */}
-                          <div className="flex items-center gap-1.5" title={isRtl ? "تشغيل تلقائي بعد التلاوة" : "Auto-play after recitation"}>
-                            <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-secondary" : "text-muted-foreground")} />
-                            <Switch
-                              checked={autoPlayTranslation}
-                              onCheckedChange={setAutoPlayTranslation}
-                              className="scale-75"
-                            />
-                          </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Voice selector */}
+                          {availableVoices.length > 1 && (
+                            <select
+                              value={selectedVoice || ''}
+                              onChange={(e) => setSelectedVoice(e.target.value)}
+                              className="text-xs bg-muted border border-border rounded-lg px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-secondary/50 max-w-[120px]"
+                            >
+                              {availableVoices.map((voice) => (
+                                <option key={voice.voiceURI} value={voice.voiceURI}>
+                                  {voice.name.length > 20 ? voice.name.substring(0, 20) + '...' : voice.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                           {/* TTS Button */}
                           <Button
                             variant="ghost"

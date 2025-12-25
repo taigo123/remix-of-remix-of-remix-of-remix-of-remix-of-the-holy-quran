@@ -1,22 +1,31 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+export interface TTSVoice {
+  name: string;
+  lang: string;
+  voiceURI: string;
+}
 
 interface UseTranslationTTSReturn {
   isPlaying: boolean;
   isLoading: boolean;
   error: string | null;
-  playTranslation: (text: string) => Promise<void>;
+  availableVoices: TTSVoice[];
+  selectedVoice: string | null;
+  setSelectedVoice: (voiceURI: string) => void;
+  playTranslation: (text: string, onComplete?: () => void) => Promise<void>;
   stopPlayback: () => void;
 }
 
 // Language to speech synthesis voice mapping
 const languageVoiceMap: Record<string, string> = {
-  en: 'en-US',
-  fr: 'fr-FR',
-  ur: 'ur-PK',
-  id: 'id-ID',
-  tr: 'tr-TR',
-  it: 'it-IT',
+  en: 'en',
+  fr: 'fr',
+  ur: 'ur',
+  id: 'id',
+  tr: 'tr',
+  it: 'it',
 };
 
 export const useTranslationTTS = (): UseTranslationTTSReturn => {
@@ -24,17 +33,64 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<TTSVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const onCompleteRef = useRef<(() => void) | null>(null);
+
+  // Load available voices for current language
+  useEffect(() => {
+    const loadVoices = () => {
+      if (!('speechSynthesis' in window)) return;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const langPrefix = languageVoiceMap[language] || 'en';
+      
+      const filteredVoices = voices
+        .filter(v => v.lang.toLowerCase().startsWith(langPrefix.toLowerCase()))
+        .map(v => ({
+          name: v.name,
+          lang: v.lang,
+          voiceURI: v.voiceURI,
+        }));
+      
+      setAvailableVoices(filteredVoices);
+      
+      // Auto-select first voice if none selected
+      if (filteredVoices.length > 0 && !selectedVoice) {
+        setSelectedVoice(filteredVoices[0].voiceURI);
+      }
+    };
+
+    loadVoices();
+    
+    // Chrome loads voices asynchronously
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, [language, selectedVoice]);
+
+  // Reset selected voice when language changes
+  useEffect(() => {
+    setSelectedVoice(null);
+  }, [language]);
 
   const stopPlayback = useCallback(() => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     utteranceRef.current = null;
+    onCompleteRef.current = null;
     setIsPlaying(false);
   }, []);
 
-  const playTranslation = useCallback(async (text: string) => {
+  const playTranslation = useCallback(async (text: string, onComplete?: () => void) => {
     // Don't play for Arabic
     if (language === 'ar') {
       return;
@@ -51,21 +107,32 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
 
     setIsLoading(true);
     setError(null);
+    onCompleteRef.current = onComplete || null;
 
     try {
       const utterance = new SpeechSynthesisUtterance(text);
       utteranceRef.current = utterance;
 
       // Set the language
-      const voiceLang = languageVoiceMap[language] || 'en-US';
-      utterance.lang = voiceLang;
+      const langPrefix = languageVoiceMap[language] || 'en';
+      utterance.lang = langPrefix;
       utterance.rate = 0.9; // Slightly slower for clarity
 
-      // Try to find a voice for the language
+      // Use selected voice if available
       const voices = window.speechSynthesis.getVoices();
-      const voice = voices.find(v => v.lang.startsWith(voiceLang.split('-')[0]));
-      if (voice) {
-        utterance.voice = voice;
+      if (selectedVoice) {
+        const voice = voices.find(v => v.voiceURI === selectedVoice);
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang;
+        }
+      } else {
+        // Fallback to first matching voice
+        const voice = voices.find(v => v.lang.toLowerCase().startsWith(langPrefix.toLowerCase()));
+        if (voice) {
+          utterance.voice = voice;
+          utterance.lang = voice.lang;
+        }
       }
 
       utterance.onstart = () => {
@@ -74,7 +141,13 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       };
 
       utterance.onend = () => {
-        stopPlayback();
+        setIsPlaying(false);
+        utteranceRef.current = null;
+        // Call completion callback
+        if (onCompleteRef.current) {
+          onCompleteRef.current();
+          onCompleteRef.current = null;
+        }
       };
 
       utterance.onerror = (e) => {
@@ -91,12 +164,15 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       stopPlayback();
       setIsLoading(false);
     }
-  }, [language, stopPlayback]);
+  }, [language, selectedVoice, stopPlayback]);
 
   return {
     isPlaying,
     isLoading,
     error,
+    availableVoices,
+    selectedVoice,
+    setSelectedVoice,
     playTranslation,
     stopPlayback,
   };
