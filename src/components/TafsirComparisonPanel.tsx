@@ -29,6 +29,8 @@ import { fetchSurahTafsir, AVAILABLE_TAFSIRS, DEFAULT_TAFSIR } from '@/services/
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import jsPDF from 'jspdf';
 
 interface TafsirSourceInfo {
@@ -152,7 +154,7 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  // تصدير كصورة
+  // تصدير كصورة (بدون فتح تبويب/مشاركة)
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
@@ -165,64 +167,53 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      // محاولة التحميل باستخدام Blob
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          // fallback: فتح في تبويب جديد
-          const dataUrl = canvas.toDataURL('image/png');
-          window.open(dataUrl, '_blank');
-          toast({
-            title: 'تم فتح الصورة',
-            description: 'اضغط مطولاً على الصورة لحفظها',
-          });
-          return;
-        }
+      const fileName = `مقارنة-تفسير-سورة-${surahNumber}.png`;
 
-        try {
-          // محاولة استخدام Web Share API على الجوال
-          if (navigator.share && navigator.canShare) {
-            const file = new File([blob], `مقارنة-تفسير-سورة-${surahNumber}.png`, { type: 'image/png' });
-            const shareData = { files: [file] };
-            
-            if (navigator.canShare(shareData)) {
-              await navigator.share(shareData);
-              toast({
-                title: 'تمت المشاركة',
-                description: 'تم مشاركة الصورة بنجاح',
-              });
-              return;
-            }
-          }
+      // في تطبيق الجوال (Capacitor): احفظ في "التنزيلات" (Documents)
+      if (Capacitor.isNativePlatform()) {
+        const dataUrl = canvas.toDataURL('image/png');
+        const base64 = dataUrl.split(',')[1] || '';
 
-          // التحميل المباشر للديسكتوب
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `مقارنة-تفسير-سورة-${surahNumber}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Documents,
+        });
 
-          toast({
-            title: 'تم حفظ الصورة',
-            description: 'تم تنزيل الصورة بنجاح',
-          });
-        } catch {
-          // fallback: فتح في تبويب جديد
-          const dataUrl = canvas.toDataURL('image/png');
-          window.open(dataUrl, '_blank');
-          toast({
-            title: 'تم فتح الصورة',
-            description: 'اضغط مطولاً على الصورة لحفظها',
-          });
-        }
-      }, 'image/png');
+        toast({
+          title: 'تم حفظ الصورة',
+          description: 'تم حفظها داخل ملفات الجهاز (Documents).',
+        });
+        return;
+      }
+
+      // على الويب: تحميل مباشر
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/png');
+      });
+
+      if (!blob) {
+        throw new Error('Failed to create image blob');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'تم حفظ الصورة',
+        description: 'تم تنزيل الصورة بنجاح',
+      });
     } catch (error) {
       console.error('Export image error:', error);
       toast({
-        title: 'خطأ',
-        description: 'فشل في إنشاء الصورة',
+        title: 'فشل التنزيل',
+        description: 'لم يتمكن المتصفح/النظام من حفظ الصورة.',
         variant: 'destructive',
       });
     } finally {
