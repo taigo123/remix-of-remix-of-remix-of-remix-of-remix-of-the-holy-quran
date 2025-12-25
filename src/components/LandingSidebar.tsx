@@ -77,6 +77,26 @@ const FEEDBACK_TYPE_LABELS: Record<string, Record<string, string>> = {
   other: { ar: 'أخرى', en: 'Other' }
 };
 
+const FEEDBACK_LABELS: Record<string, { feedback: string; newFeedback: string }> = {
+  ar: { feedback: 'ملاحظات', newFeedback: 'ملاحظة جديدة!' },
+  en: { feedback: 'Feedback', newFeedback: 'New feedback!' },
+  fr: { feedback: 'Commentaires', newFeedback: 'Nouveau commentaire!' },
+  de: { feedback: 'Feedback', newFeedback: 'Neues Feedback!' },
+  es: { feedback: 'Comentarios', newFeedback: '¡Nuevo comentario!' },
+  pt: { feedback: 'Feedback', newFeedback: 'Novo feedback!' },
+  ru: { feedback: 'Отзывы', newFeedback: 'Новый отзыв!' },
+  tr: { feedback: 'Geri Bildirim', newFeedback: 'Yeni geri bildirim!' },
+  ur: { feedback: 'رائے', newFeedback: 'نئی رائے!' },
+  fa: { feedback: 'بازخورد', newFeedback: 'بازخورد جدید!' },
+  id: { feedback: 'Umpan Balik', newFeedback: 'Umpan balik baru!' },
+  ms: { feedback: 'Maklum Balas', newFeedback: 'Maklum balas baru!' },
+  bn: { feedback: 'প্রতিক্রিয়া', newFeedback: 'নতুন প্রতিক্রিয়া!' },
+  hi: { feedback: 'प्रतिक्रिया', newFeedback: 'नई प्रतिक्रिया!' },
+  zh: { feedback: '反馈', newFeedback: '新反馈！' },
+  ja: { feedback: 'フィードバック', newFeedback: '新しいフィードバック！' },
+  ko: { feedback: '피드백', newFeedback: '새 피드백!' },
+};
+
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -557,8 +577,8 @@ const LandingSidebar = () => {
                     hasNewFeedback && "text-amber-500 font-bold"
                   )}>
                     {hasNewFeedback 
-                      ? (isRtl ? "📬 ملاحظة جديدة!" : "📬 New feedback!") 
-                      : (isRtl ? "ملاحظات" : "Feedback")}
+                      ? `📬 ${FEEDBACK_LABELS[language]?.newFeedback || FEEDBACK_LABELS.en.newFeedback}` 
+                      : (FEEDBACK_LABELS[language]?.feedback || FEEDBACK_LABELS.en.feedback)}
                   </span>
                   <ChevronDown className={cn(
                     "w-4 h-4 text-amber-500 transition-transform",
