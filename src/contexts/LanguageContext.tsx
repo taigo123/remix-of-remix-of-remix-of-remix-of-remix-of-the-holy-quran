@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Extended language support - 50+ languages from Quran.com
-// Removed: my (Burmese), km (Khmer), lo (Lao), ig (Igbo), fil (Filipino) - not available correctly in API
+// Extended language support - 40+ languages from Quran.com
+// Removed: my, km, lo, ig, fil, gu, mr, pa, sr, hr, sl, mk, tg - not available correctly in API
 export type Language = 
   | 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it' | 'de' | 'es' | 'pt' 
   | 'ru' | 'bn' | 'fa' | 'hi' | 'ms' | 'nl' | 'pl' | 'ro' | 'sv' | 'th'
-  | 'vi' | 'zh' | 'ja' | 'ko' | 'tg' | 'uz' | 'az' | 'kk' | 'ky' | 'tt'
-  | 'bs' | 'sq' | 'mk' | 'bg' | 'cs' | 'sk' | 'uk' | 'sr' | 'hr' | 'sl'
-  | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ml' | 'ta' | 'te' | 'gu'
-  | 'mr' | 'pa' | 'si' | 'ne' | 'dv';
+  | 'vi' | 'zh' | 'ja' | 'ko' | 'uz' | 'az' | 'kk' | 'ky' | 'tt'
+  | 'bs' | 'sq' | 'bg' | 'cs' | 'sk' | 'uk'
+  | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ml' | 'ta' | 'te'
+  | 'si' | 'ne' | 'dv';
 
 export type LanguageRegion = 'original' | 'european' | 'asian' | 'african' | 'middleeast';
 
@@ -50,11 +50,7 @@ export const languages: LanguageInfo[] = [
   { code: 'ru', name: 'Russian', nativeName: 'Русский', translationId: 45, translator: 'Elmir Kuliev', source: 'King Fahd Complex', region: 'european' },
   { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', translationId: 217, translator: 'Mykhaylo Yakubovych', source: 'Quran.com', region: 'european' },
   { code: 'bg', name: 'Bulgarian', nativeName: 'Български', translationId: 237, translator: 'Tzvetan Theophanov', source: 'Quran.com', region: 'european' },
-  { code: 'sr', name: 'Serbian', nativeName: 'Српски', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex', region: 'european' },
-  { code: 'hr', name: 'Croatian', nativeName: 'Hrvatski', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex', region: 'european' },
   { code: 'bs', name: 'Bosnian', nativeName: 'Bosanski', translationId: 25, translator: 'Besim Korkut', source: 'King Fahd Complex', region: 'european' },
-  { code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex', region: 'european' },
-  { code: 'mk', name: 'Macedonian', nativeName: 'Македонски', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex', region: 'european' },
   { code: 'sq', name: 'Albanian', nativeName: 'Shqip', translationId: 89, translator: 'Sherif Ahmeti', source: 'King Fahd Complex', region: 'european' },
   
   // Middle Eastern Languages
@@ -70,9 +66,6 @@ export const languages: LanguageInfo[] = [
   { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', translationId: 229, translator: 'Jan Trust Foundation', source: 'Quran.com', region: 'asian' },
   { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', translationId: 227, translator: 'Maulana Abder-Rahim', source: 'Quran.com', region: 'asian' },
   { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', translationId: 37, translator: 'Abdul-Hamid Haidar', source: 'King Fahd Complex', region: 'asian' },
-  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', translationId: 169, translator: 'Rauf Siddiqui', source: 'Quran.com', region: 'asian' },
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', translationId: 179, translator: "Muhammad Shafi'i", source: 'Quran.com', region: 'asian' },
-  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', translationId: 180, translator: 'Arif Mahmood', source: 'Quran.com', region: 'asian' },
   { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', translationId: 228, translator: 'Ruwwad Center', source: 'Quran.com', region: 'asian' },
   { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', translationId: 108, translator: 'Ahl Al-Hadith', source: 'Quran.com', region: 'asian' },
   { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', translationId: 134, translator: 'Kementerian Agama', source: 'Kemenag RI', region: 'asian' },
@@ -86,7 +79,7 @@ export const languages: LanguageInfo[] = [
   { code: 'kk', name: 'Kazakh', nativeName: 'Қазақ', translationId: 222, translator: 'Khalifa Altay', source: 'King Fahd Complex', region: 'asian' },
   { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргыз', translationId: 223, translator: 'Sooronbay Jdanov', source: 'Quran.com', region: 'asian' },
   { code: 'tt', name: 'Tatar', nativeName: 'Татар', translationId: 53, translator: 'Yakub Ibn Nugman', source: 'King Fahd Complex', region: 'asian' },
-  { code: 'tg', name: 'Tajik', nativeName: 'Тоҷикӣ', translationId: 50, translator: 'Khoja Mirzo', source: 'King Fahd Complex', region: 'asian' },
+  
   
   // African Languages
   { code: 'am', name: 'Amharic', nativeName: 'አማርኛ', translationId: 87, translator: 'Sadiq & Sani', source: 'King Fahd Complex', region: 'african' },
@@ -316,7 +309,6 @@ export const translations: Record<Language, TranslationStrings> = {
   zh: { ...englishTranslations, title: '神圣古兰经', language: '语言', translation: '翻译' },
   ja: { ...englishTranslations, title: '聖クルアーン', language: '言語', translation: '翻訳' },
   ko: { ...englishTranslations, title: '성 꾸란', language: '언어', translation: '번역' },
-  tg: { ...englishTranslations, title: 'Қуръони Карим', language: 'Забон', translation: 'Тарҷума' },
   uz: { ...englishTranslations, title: 'Qur\'oni Karim', language: 'Til', translation: 'Tarjima' },
   az: { ...englishTranslations, title: 'Müqəddəs Quran', language: 'Dil', translation: 'Tərcümə' },
   kk: { ...englishTranslations, title: 'Құран Кәрім', language: 'Тіл', translation: 'Аударма' },
@@ -324,14 +316,10 @@ export const translations: Record<Language, TranslationStrings> = {
   tt: { ...englishTranslations, title: 'Коръән Кәрим', language: 'Тел', translation: 'Тәрҗемә' },
   bs: { ...englishTranslations, title: 'Sveti Kuran', language: 'Jezik', translation: 'Prijevod' },
   sq: { ...englishTranslations, title: 'Kurani i Shenjtë', language: 'Gjuha', translation: 'Përkthimi' },
-  mk: { ...englishTranslations, title: 'Свети Куран', language: 'Јазик', translation: 'Превод' },
   bg: { ...englishTranslations, title: 'Свещеният Коран', language: 'Език', translation: 'Превод' },
   cs: { ...englishTranslations, title: 'Svatý Korán', language: 'Jazyk', translation: 'Překlad' },
   sk: { ...englishTranslations, title: 'Svätý Korán', language: 'Jazyk', translation: 'Preklad' },
   uk: { ...englishTranslations, title: 'Священний Коран', language: 'Мова', translation: 'Переклад' },
-  sr: { ...englishTranslations, title: 'Свети Куран', language: 'Језик', translation: 'Превод' },
-  hr: { ...englishTranslations, title: 'Sveti Kuran', language: 'Jezik', translation: 'Prijevod' },
-  sl: { ...englishTranslations, title: 'Sveti Koran', language: 'Jezik', translation: 'Prevod' },
   am: { ...englishTranslations, title: 'ቅዱስ ቁርዓን', language: 'ቋንቋ', translation: 'ትርጉም' },
   so: { ...englishTranslations, title: 'Quraanka Kariimka', language: 'Luuqadda', translation: 'Turjumaad' },
   sw: { ...englishTranslations, title: 'Qurani Tukufu', language: 'Lugha', translation: 'Tafsiri' },
@@ -340,9 +328,6 @@ export const translations: Record<Language, TranslationStrings> = {
   ml: { ...englishTranslations, title: 'വിശുദ്ധ ഖുർആൻ', language: 'ഭാഷ', translation: 'വിവർത്തനം' },
   ta: { ...englishTranslations, title: 'புனித குர்ஆன்', language: 'மொழி', translation: 'மொழிபெயர்ப்பு' },
   te: { ...englishTranslations, title: 'పవిత్ర ఖురాన్', language: 'భాష', translation: 'అనువాదం' },
-  gu: { ...englishTranslations, title: 'પવિત્ર કુરાન', language: 'ભાષા', translation: 'અનુવાદ' },
-  mr: { ...englishTranslations, title: 'पवित्र कुराण', language: 'भाषा', translation: 'भाषांतर' },
-  pa: { ...englishTranslations, title: 'ਪਵਿੱਤਰ ਕੁਰਾਨ', language: 'ਭਾਸ਼ਾ', translation: 'ਅਨੁਵਾਦ' },
   si: { ...englishTranslations, title: 'ශුද්ධ වූ කුර්ආනය', language: 'භාෂාව', translation: 'පරිවර්තනය' },
   ne: { ...englishTranslations, title: 'पवित्र कुरान', language: 'भाषा', translation: 'अनुवाद' },
   dv: { ...englishTranslations, title: 'ކީރިތި ޤުރުއާން', language: 'ބަސް', translation: 'ތަރުޖަމާ' },
