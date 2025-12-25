@@ -5,15 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Voice mapping for different languages
-const languageVoiceMap: Record<string, string> = {
-  en: 'alloy',      // English
-  fr: 'nova',       // French
-  ur: 'onyx',       // Urdu
-  id: 'shimmer',    // Indonesian
-  tr: 'echo',       // Turkish
-  it: 'fable',      // Italian
-};
+// Always use 'onyx' - it's the deep male voice in OpenAI TTS
+const MALE_VOICE = 'onyx';
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -36,10 +29,7 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Select voice based on language
-    const voice = languageVoiceMap[language] || 'alloy';
-
-    console.log(`Generating TTS for language: ${language}, voice: ${voice}, text length: ${text.length}`);
+    console.log(`Generating TTS with male voice: ${MALE_VOICE}, text length: ${text.length}`);
 
     // Generate speech from text using OpenAI TTS
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -51,7 +41,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'tts-1',
         input: text,
-        voice: voice,
+        voice: MALE_VOICE,
         response_format: 'mp3',
         speed: 0.9, // Slightly slower for better clarity
       }),
