@@ -11,7 +11,7 @@ import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
 import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, languages } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 import { useTranslationTTS } from '@/hooks/useTranslationTTS';
 
@@ -350,10 +350,23 @@ const SurahPage = () => {
                 {/* Translation */}
                 {showTranslation && (
                   <div className="mb-6 p-4 bg-secondary/10 border border-secondary/20 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-secondary">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 text-secondary flex-wrap">
                         <Globe className="w-4 h-4" />
                         <span className="text-sm font-medium">{t.translation}</span>
+                        {/* Translator Info */}
+                        {(() => {
+                          const currentLang = languages.find(l => l.code === language);
+                          if (currentLang?.translator && language !== 'ar') {
+                            return (
+                              <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                                {currentLang.translator}
+                                {currentLang.source && ` • ${currentLang.source}`}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
                         {isTranslationLoading && (
                           <span className="text-xs text-muted-foreground animate-pulse">{isRtl ? 'جاري التحميل...' : 'Loading...'}</span>
                         )}

@@ -9,85 +9,94 @@ export type Language =
   | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ig' | 'ml' | 'ta' | 'te' | 'gu'
   | 'mr' | 'pa' | 'si' | 'ne' | 'my' | 'km' | 'lo' | 'fil' | 'dv';
 
-export const languages: { code: Language; name: string; nativeName: string; translationId?: number }[] = [
+export interface LanguageInfo {
+  code: Language;
+  name: string;
+  nativeName: string;
+  translationId?: number;
+  translator?: string;
+  source?: string;
+}
+
+export const languages: LanguageInfo[] = [
   // Arabic (Original - no translation needed)
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', translator: 'النص الأصلي', source: 'القرآن الكريم' },
   
   // Major European Languages
-  { code: 'en', name: 'English', nativeName: 'English', translationId: 131 }, // Sahih International
-  { code: 'fr', name: 'French', nativeName: 'Français', translationId: 136 }, // Muhammad Hamidullah
-  { code: 'de', name: 'German', nativeName: 'Deutsch', translationId: 27 }, // Bubenheim & Elyas
-  { code: 'es', name: 'Spanish', nativeName: 'Español', translationId: 140 }, // Muhammad Isa Garcia
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português', translationId: 43 }, // Samir El-Hayek
-  { code: 'it', name: 'Italian', nativeName: 'Italiano', translationId: 153 }, // Hamza Roberto Piccardo
-  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', translationId: 235 }, // Sofian S. Siregar
-  { code: 'pl', name: 'Polish', nativeName: 'Polski', translationId: 42 }, // Józef Bielawski
-  { code: 'ro', name: 'Romanian', nativeName: 'Română', translationId: 44 }, // Grigore
-  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', translationId: 48 }, // Knut Bernström
-  { code: 'cs', name: 'Czech', nativeName: 'Čeština', translationId: 26 }, // Preklad I. Hrbek
-  { code: 'sk', name: 'Slovak', nativeName: 'Slovenčina', translationId: 47 }, // Slovak
+  { code: 'en', name: 'English', nativeName: 'English', translationId: 131, translator: 'Sahih International', source: 'Dar Abul-Qasim Publishing' },
+  { code: 'fr', name: 'French', nativeName: 'Français', translationId: 136, translator: 'Muhammad Hamidullah', source: 'King Fahd Complex' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', translationId: 27, translator: 'Bubenheim & Elyas', source: 'King Fahd Complex' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', translationId: 140, translator: 'Muhammad Isa Garcia', source: 'King Fahd Complex' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', translationId: 43, translator: 'Samir El-Hayek', source: 'King Fahd Complex' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', translationId: 153, translator: 'Hamza Roberto Piccardo', source: 'UCOII' },
+  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', translationId: 235, translator: 'Sofian S. Siregar', source: 'Quran.com' },
+  { code: 'pl', name: 'Polish', nativeName: 'Polski', translationId: 42, translator: 'Józef Bielawski', source: 'King Fahd Complex' },
+  { code: 'ro', name: 'Romanian', nativeName: 'Română', translationId: 44, translator: 'George Grigore', source: 'King Fahd Complex' },
+  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', translationId: 48, translator: 'Knut Bernström', source: 'King Fahd Complex' },
+  { code: 'cs', name: 'Czech', nativeName: 'Čeština', translationId: 26, translator: 'Ivan Hrbek', source: 'King Fahd Complex' },
+  { code: 'sk', name: 'Slovak', nativeName: 'Slovenčina', translationId: 47, translator: 'Slovak Translation', source: 'King Fahd Complex' },
   
   // Eastern European & Slavic Languages
-  { code: 'ru', name: 'Russian', nativeName: 'Русский', translationId: 45 }, // Elmir Kuliev
-  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', translationId: 217 }, // Mykhaylo Yakubovych
-  { code: 'bg', name: 'Bulgarian', nativeName: 'Български', translationId: 237 }, // Tzvetan Theophanov
-  { code: 'sr', name: 'Serbian', nativeName: 'Српски', translationId: 215 }, // Korkut
-  { code: 'hr', name: 'Croatian', nativeName: 'Hrvatski', translationId: 215 }, // Besim Korkut
-  { code: 'bs', name: 'Bosnian', nativeName: 'Bosanski', translationId: 25 }, // Besim Korkut
-  { code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina', translationId: 215 }, // Korkut
-  { code: 'mk', name: 'Macedonian', nativeName: 'Македонски', translationId: 215 }, // Korkut
-  { code: 'sq', name: 'Albanian', nativeName: 'Shqip', translationId: 89 }, // Sherif Ahmeti
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', translationId: 45, translator: 'Elmir Kuliev', source: 'King Fahd Complex' },
+  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', translationId: 217, translator: 'Mykhaylo Yakubovych', source: 'Quran.com' },
+  { code: 'bg', name: 'Bulgarian', nativeName: 'Български', translationId: 237, translator: 'Tzvetan Theophanov', source: 'Quran.com' },
+  { code: 'sr', name: 'Serbian', nativeName: 'Српски', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex' },
+  { code: 'hr', name: 'Croatian', nativeName: 'Hrvatski', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex' },
+  { code: 'bs', name: 'Bosnian', nativeName: 'Bosanski', translationId: 25, translator: 'Besim Korkut', source: 'King Fahd Complex' },
+  { code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex' },
+  { code: 'mk', name: 'Macedonian', nativeName: 'Македонски', translationId: 215, translator: 'Besim Korkut', source: 'King Fahd Complex' },
+  { code: 'sq', name: 'Albanian', nativeName: 'Shqip', translationId: 89, translator: 'Sherif Ahmeti', source: 'King Fahd Complex' },
   
   // Turkish & Turkic Languages
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', translationId: 210 }, // Diyanet Vakfi
-  { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', translationId: 23 }, // Vasim Mammadaliyev
-  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbek', translationId: 127 }, // Muhammad Sodik
-  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақ', translationId: 222 }, // Khalifa Altay
-  { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргыз', translationId: 223 }, // Sooronbay Jdanov
-  { code: 'tt', name: 'Tatar', nativeName: 'Татар', translationId: 53 }, // Yakub Ibn Nugman
-  { code: 'tg', name: 'Tajik', nativeName: 'Тоҷикӣ', translationId: 50 }, // Khoja Mirzo
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', translationId: 210, translator: 'Diyanet Vakfı', source: 'Diyanet İşleri' },
+  { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', translationId: 23, translator: 'Vasim Mammadaliyev', source: 'King Fahd Complex' },
+  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbek', translationId: 127, translator: 'Muhammad Sodik', source: 'King Fahd Complex' },
+  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақ', translationId: 222, translator: 'Khalifa Altay', source: 'King Fahd Complex' },
+  { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргыз', translationId: 223, translator: 'Sooronbay Jdanov', source: 'Quran.com' },
+  { code: 'tt', name: 'Tatar', nativeName: 'Татар', translationId: 53, translator: 'Yakub Ibn Nugman', source: 'King Fahd Complex' },
+  { code: 'tg', name: 'Tajik', nativeName: 'Тоҷикӣ', translationId: 50, translator: 'Khoja Mirzo', source: 'King Fahd Complex' },
   
   // South Asian Languages
-  { code: 'ur', name: 'Urdu', nativeName: 'اردو', translationId: 234 }, // Fateh Muhammad Jalandhry
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', translationId: 122 }, // Muhammad Farooq Khan
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', translationId: 163 }, // Muhiuddin Khan
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', translationId: 229 }, // Jan Trust Foundation
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', translationId: 227 }, // Maulana Abder-Rahim
-  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', translationId: 37 }, // Abdul-Hamid Haidar
-  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', translationId: 169 }, // Rauf Siddiqui
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', translationId: 179 }, // Muhammad Shafi'i
-  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', translationId: 180 }, // Punjabi
-  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', translationId: 228 }, // Ruwwad Center
-  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', translationId: 108 }, // Ahl Al-Hadith
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو', translationId: 234, translator: 'Fateh Muhammad Jalandhry', source: 'King Fahd Complex' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', translationId: 122, translator: 'Muhammad Farooq Khan', source: 'King Fahd Complex' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', translationId: 163, translator: 'Muhiuddin Khan', source: 'King Fahd Complex' },
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', translationId: 229, translator: 'Jan Trust Foundation', source: 'Quran.com' },
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', translationId: 227, translator: 'Maulana Abder-Rahim', source: 'Quran.com' },
+  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', translationId: 37, translator: 'Abdul-Hamid Haidar', source: 'King Fahd Complex' },
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', translationId: 169, translator: 'Rauf Siddiqui', source: 'Quran.com' },
+  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', translationId: 179, translator: "Muhammad Shafi'i", source: 'Quran.com' },
+  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', translationId: 180, translator: 'Arif Mahmood', source: 'Quran.com' },
+  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', translationId: 228, translator: 'Ruwwad Center', source: 'Quran.com' },
+  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', translationId: 108, translator: 'Ahl Al-Hadith', source: 'Quran.com' },
   
   // Southeast Asian Languages
-  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', translationId: 134 }, // Kemenag
-  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', translationId: 39 }, // Basmeih
-  { code: 'th', name: 'Thai', nativeName: 'ไทย', translationId: 51 }, // King Fahad Complex
-  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', translationId: 177 }, // Ruwwad
-  { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', translationId: 233 }, // Sani Taher
-  { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', translationId: 224 }, // Cambodia
-  { code: 'lo', name: 'Lao', nativeName: 'ລາວ', translationId: 226 }, // Lao
-  { code: 'fil', name: 'Filipino', nativeName: 'Filipino', translationId: 211 }, // Diyanet
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', translationId: 134, translator: 'Kementerian Agama', source: 'Kemenag RI' },
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', translationId: 39, translator: 'Abdullah Basmeih', source: 'King Fahd Complex' },
+  { code: 'th', name: 'Thai', nativeName: 'ไทย', translationId: 51, translator: 'King Fahad Complex', source: 'King Fahd Complex' },
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', translationId: 177, translator: 'Ruwwad Center', source: 'Quran.com' },
+  { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', translationId: 233, translator: 'Sani Taher', source: 'Quran.com' },
+  { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', translationId: 224, translator: 'Cambodia Islamic Center', source: 'Quran.com' },
+  { code: 'lo', name: 'Lao', nativeName: 'ລາວ', translationId: 226, translator: 'Lao Translation', source: 'Quran.com' },
+  { code: 'fil', name: 'Filipino', nativeName: 'Filipino', translationId: 211, translator: 'Diyanet Center', source: 'Quran.com' },
   
   // East Asian Languages
-  { code: 'zh', name: 'Chinese', nativeName: '中文', translationId: 56 }, // Ma Jian
-  { code: 'ja', name: 'Japanese', nativeName: '日本語', translationId: 35 }, // Ryoichi Mita
-  { code: 'ko', name: 'Korean', nativeName: '한국어', translationId: 36 }, // Korean
+  { code: 'zh', name: 'Chinese', nativeName: '中文', translationId: 56, translator: 'Ma Jian', source: 'King Fahd Complex' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', translationId: 35, translator: 'Ryoichi Mita', source: 'King Fahd Complex' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', translationId: 36, translator: 'Korean Translation', source: 'King Fahd Complex' },
   
   // Middle Eastern & Persian
-  { code: 'fa', name: 'Persian', nativeName: 'فارسی', translationId: 29 }, // Fooladvand
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی', translationId: 29, translator: 'Hussain Fooladvand', source: 'King Fahd Complex' },
   
   // African Languages
-  { code: 'am', name: 'Amharic', nativeName: 'አማርኛ', translationId: 87 }, // Sadiq & Sani
-  { code: 'so', name: 'Somali', nativeName: 'Soomaali', translationId: 46 }, // Mahmud Abduh
-  { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', translationId: 49 }, // Al-Barwani
-  { code: 'ha', name: 'Hausa', nativeName: 'Hausa', translationId: 32 }, // Abubakar Gumi
-  { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', translationId: 125 }, // Shaykh Abu Rahimah
-  { code: 'ig', name: 'Igbo', nativeName: 'Igbo', translationId: 181 }, // Igbo
+  { code: 'am', name: 'Amharic', nativeName: 'አማርኛ', translationId: 87, translator: 'Sadiq & Sani', source: 'King Fahd Complex' },
+  { code: 'so', name: 'Somali', nativeName: 'Soomaali', translationId: 46, translator: 'Mahmud Muhammad Abduh', source: 'King Fahd Complex' },
+  { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', translationId: 49, translator: 'Ali Muhsin Al-Barwani', source: 'King Fahd Complex' },
+  { code: 'ha', name: 'Hausa', nativeName: 'Hausa', translationId: 32, translator: 'Abubakar Mahmud Gumi', source: 'King Fahd Complex' },
+  { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', translationId: 125, translator: 'Shaykh Abu Rahimah', source: 'Quran.com' },
+  { code: 'ig', name: 'Igbo', nativeName: 'Igbo', translationId: 181, translator: 'Igbo Translation', source: 'Quran.com' },
   
   // Maldivian
-  { code: 'dv', name: 'Dhivehi', nativeName: 'ދިވެހި', translationId: 86 }, // Office of the President
+  { code: 'dv', name: 'Dhivehi', nativeName: 'ދިވެހި', translationId: 86, translator: "Office of the President", source: 'Maldives Government' },
 ];
 
 // Basic UI translations (we'll keep Arabic, English as primary, others will use English fallback for UI)

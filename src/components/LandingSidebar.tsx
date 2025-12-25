@@ -226,15 +226,29 @@ const LandingSidebar = () => {
                               setLanguageSearch("");
                             }}
                             className={cn(
-                              "flex items-center gap-3 p-3 rounded-xl transition-colors w-full",
+                              "flex flex-col gap-1 p-3 rounded-xl transition-colors w-full",
                               language === lang.code 
                                 ? "bg-primary/10 text-primary" 
                                 : "hover:bg-muted/50 text-foreground",
-                              isRtl ? "flex-row justify-end" : "flex-row-reverse justify-start"
+                              isRtl ? "items-end text-right" : "items-start text-left"
                             )}
                           >
-                            <span className="font-medium">{lang.nativeName}</span>
-                            <span className="text-sm text-muted-foreground">({lang.name})</span>
+                            <div className={cn(
+                              "flex items-center gap-2",
+                              isRtl ? "flex-row" : "flex-row-reverse"
+                            )}>
+                              <span className="font-medium">{lang.nativeName}</span>
+                              <span className="text-sm text-muted-foreground">({lang.name})</span>
+                            </div>
+                            {lang.translator && lang.code !== 'ar' && (
+                              <div className="text-xs text-muted-foreground/70">
+                                {isRtl ? `المترجم: ${lang.translator}` : `Translator: ${lang.translator}`}
+                                {lang.source && (
+                                  <span className="mx-1">•</span>
+                                )}
+                                {lang.source && lang.source}
+                              </div>
+                            )}
                           </button>
                         ))
                       ) : (
