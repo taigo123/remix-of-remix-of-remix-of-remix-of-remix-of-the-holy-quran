@@ -15,7 +15,12 @@ import {
   Info,
   Globe,
   MessageSquare,
-  Bell
+  Bell,
+  BellOff,
+  Volume2,
+  VolumeX,
+  ChevronDown,
+  Clock
 } from "lucide-react";
 import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
@@ -25,6 +30,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage, languages, regionLabels, LanguageRegion, LanguageInfo } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+
+interface FeedbackItem {
+  id: string;
+  feedback_type: string;
+  suggested_text: string;
+  created_at: string;
+  language_code: string | null;
+}
 
 // Notification sound using Web Audio API
 const playNotificationSound = () => {
@@ -50,6 +63,14 @@ const playNotificationSound = () => {
   }
 };
 
+const FEEDBACK_TYPE_LABELS: Record<string, Record<string, string>> = {
+  translation: { ar: 'تصحيح ترجمة', en: 'Translation' },
+  feature: { ar: 'اقتراح ميزة', en: 'Feature' },
+  improvement: { ar: 'تحسين', en: 'Improvement' },
+  bug: { ar: 'مشكلة', en: 'Bug' },
+  other: { ar: 'أخرى', en: 'Other' }
+};
+
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -57,16 +78,46 @@ const LandingSidebar = () => {
   const [showLanguages, setShowLanguages] = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
+  const [recentFeedbacks, setRecentFeedbacks] = useState<FeedbackItem[]>([]);
+  const [showFeedbackList, setShowFeedbackList] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('feedbackSoundMuted') === 'true';
+    }
+    return false;
+  });
+
+  // Save mute preference
+  const toggleMute = () => {
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    localStorage.setItem('feedbackSoundMuted', String(newMuted));
+    toast.info(
+      newMuted 
+        ? (language === 'ar' ? '🔇 تم كتم صوت الإشعارات' : '🔇 Notifications muted')
+        : (language === 'ar' ? '🔊 تم تفعيل صوت الإشعارات' : '🔊 Notifications unmuted')
+    );
+  };
 
   useEffect(() => {
-    // Fetch initial count
-    const fetchFeedbackCount = async () => {
+    // Fetch initial count and recent feedbacks
+    const fetchFeedbacks = async () => {
       const { count } = await supabase
         .from('user_feedback')
         .select('*', { count: 'exact', head: true });
       setFeedbackCount(count || 0);
+
+      const { data } = await supabase
+        .from('user_feedback')
+        .select('id, feedback_type, suggested_text, created_at, language_code')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (data) {
+        setRecentFeedbacks(data);
+      }
     };
-    fetchFeedbackCount();
+    fetchFeedbacks();
 
     // Subscribe to realtime changes
     const channel = supabase
@@ -82,15 +133,23 @@ const LandingSidebar = () => {
           console.log('New feedback received:', payload);
           setFeedbackCount(prev => prev + 1);
           setHasNewFeedback(true);
-          playNotificationSound();
+          
+          // Add to recent feedbacks
+          const newFeedback = payload.new as FeedbackItem;
+          setRecentFeedbacks(prev => [newFeedback, ...prev.slice(0, 4)]);
+          
+          // Play sound if not muted
+          if (!isMuted) {
+            playNotificationSound();
+          }
           
           // Show toast notification
           toast.success(
             language === 'ar' ? '📬 وصلت ملاحظة جديدة!' : '📬 New feedback received!',
             {
               description: language === 'ar' 
-                ? `نوع الملاحظة: ${payload.new.feedback_type}` 
-                : `Type: ${payload.new.feedback_type}`,
+                ? `نوع الملاحظة: ${FEEDBACK_TYPE_LABELS[payload.new.feedback_type]?.ar || payload.new.feedback_type}` 
+                : `Type: ${FEEDBACK_TYPE_LABELS[payload.new.feedback_type]?.en || payload.new.feedback_type}`,
               duration: 5000,
             }
           );
@@ -104,7 +163,7 @@ const LandingSidebar = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [language]);
+  }, [language, isMuted]);
   const [languageSearch, setLanguageSearch] = useState("");
 
   // Filter languages based on search
@@ -389,43 +448,114 @@ const LandingSidebar = () => {
               )}
             </div>
 
-            {/* Feedback Button */}
-            <div className={cn(
-              "flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group cursor-pointer",
-              isRtl ? "flex-row text-right" : "flex-row-reverse text-left",
-              hasNewFeedback && "bg-amber-500/20 animate-pulse"
-            )}>
+            {/* Feedback Section */}
+            <div className="space-y-2">
+              {/* Feedback Header with Controls */}
               <div className={cn(
-                "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300 relative",
-                isRtl ? "order-first" : "order-last",
-                hasNewFeedback && "bg-amber-500 animate-bounce"
-              )}>
-                {hasNewFeedback ? (
-                  <Bell className="w-5 h-5 text-white animate-shake" />
-                ) : (
-                  <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-                )}
-                {feedbackCount > 0 && (
-                  <span className={cn(
-                    "absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center",
-                    hasNewFeedback ? "animate-ping" : "animate-pulse"
-                  )}>
-                    {feedbackCount > 99 ? '99+' : feedbackCount}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={cn(
-                  "font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
-                  isRtl ? "order-last" : "order-first",
-                  hasNewFeedback && "text-amber-500 font-bold"
+                "flex items-center gap-2 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group cursor-pointer",
+                isRtl ? "flex-row text-right" : "flex-row-reverse text-left",
+                hasNewFeedback && "bg-amber-500/20 animate-pulse"
+              )}
+              onClick={() => setShowFeedbackList(!showFeedbackList)}
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300 relative",
+                  isRtl ? "order-first" : "order-last",
+                  hasNewFeedback && "bg-amber-500 animate-bounce"
                 )}>
-                  {hasNewFeedback 
-                    ? (isRtl ? "📬 ملاحظة جديدة!" : "📬 New feedback!") 
-                    : (isRtl ? "ملاحظات" : "Feedback")}
-                </span>
+                  {hasNewFeedback ? (
+                    <Bell className="w-5 h-5 text-white animate-shake" />
+                  ) : (
+                    <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                  )}
+                  {feedbackCount > 0 && (
+                    <span className={cn(
+                      "absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center",
+                      hasNewFeedback ? "animate-ping" : "animate-pulse"
+                    )}>
+                      {feedbackCount > 99 ? '99+' : feedbackCount}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 flex items-center gap-2">
+                  <span className={cn(
+                    "font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
+                    isRtl ? "order-last" : "order-first",
+                    hasNewFeedback && "text-amber-500 font-bold"
+                  )}>
+                    {hasNewFeedback 
+                      ? (isRtl ? "📬 ملاحظة جديدة!" : "📬 New feedback!") 
+                      : (isRtl ? "ملاحظات" : "Feedback")}
+                  </span>
+                  <ChevronDown className={cn(
+                    "w-4 h-4 text-amber-500 transition-transform",
+                    showFeedbackList && "rotate-180"
+                  )} />
+                </div>
+                {/* Mute Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMute();
+                  }}
+                  className={cn(
+                    "p-2 rounded-lg transition-colors",
+                    isMuted 
+                      ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
+                      : "bg-green-500/20 text-green-500 hover:bg-green-500/30",
+                    isRtl ? "order-last mr-auto" : "order-first ml-auto"
+                  )}
+                  title={isMuted ? (isRtl ? "تفعيل الصوت" : "Unmute") : (isRtl ? "كتم الصوت" : "Mute")}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
                 <UserFeedback />
               </div>
+
+              {/* Feedback List */}
+              {showFeedbackList && (
+                <div className="mx-3 p-3 rounded-xl bg-muted/50 border border-amber-500/20 space-y-2 animate-fade-in">
+                  <div className={cn(
+                    "text-xs font-medium text-muted-foreground mb-2",
+                    isRtl ? "text-right" : "text-left"
+                  )}>
+                    {isRtl ? "آخر الملاحظات" : "Recent Feedback"}
+                  </div>
+                  {recentFeedbacks.length > 0 ? (
+                    recentFeedbacks.map((feedback) => (
+                      <div
+                        key={feedback.id}
+                        className={cn(
+                          "p-2 rounded-lg bg-background/50 border border-border/50 text-xs",
+                          isRtl ? "text-right" : "text-left"
+                        )}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-medium">
+                            {FEEDBACK_TYPE_LABELS[feedback.feedback_type]?.[isRtl ? 'ar' : 'en'] || feedback.feedback_type}
+                          </span>
+                          <span className="text-muted-foreground text-[10px] flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(feedback.created_at).toLocaleDateString(isRtl ? 'ar' : 'en', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-foreground/80 line-clamp-2">
+                          {feedback.suggested_text}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-muted-foreground text-xs py-4">
+                      {isRtl ? "لا توجد ملاحظات بعد" : "No feedback yet"}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Divider */}
