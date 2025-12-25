@@ -25,42 +25,8 @@ import {
 import { MessageSquarePlus, Send, Check, Languages, Lightbulb, Wrench, Bug, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const LANGUAGES = [
-  { code: 'ar', name: 'العربية' },
-  { code: 'en', name: 'English' },
-  { code: 'fr', name: 'Français' },
-  { code: 'de', name: 'Deutsch' },
-  { code: 'es', name: 'Español' },
-  { code: 'pt', name: 'Português' },
-  { code: 'ru', name: 'Русский' },
-  { code: 'tr', name: 'Türkçe' },
-  { code: 'ur', name: 'اردو' },
-  { code: 'fa', name: 'فارسی' },
-  { code: 'id', name: 'Bahasa Indonesia' },
-  { code: 'ms', name: 'Bahasa Melayu' },
-  { code: 'bn', name: 'বাংলা' },
-  { code: 'hi', name: 'हिन्दी' },
-  { code: 'zh', name: '中文' },
-  { code: 'ja', name: '日本語' },
-  { code: 'ko', name: '한국어' },
-  { code: 'it', name: 'Italiano' },
-  { code: 'nl', name: 'Nederlands' },
-  { code: 'pl', name: 'Polski' },
-  { code: 'th', name: 'ไทย' },
-  { code: 'vi', name: 'Tiếng Việt' },
-  { code: 'sw', name: 'Kiswahili' },
-  { code: 'ha', name: 'Hausa' },
-  { code: 'am', name: 'አማርኛ' },
-  { code: 'so', name: 'Soomaali' },
-  { code: 'uz', name: 'Oʻzbek' },
-  { code: 'az', name: 'Azərbaycan' },
-  { code: 'kk', name: 'Қазақ' },
-  { code: 'tg', name: 'Тоҷикӣ' },
-  { code: 'ku', name: 'Kurdî' },
-  { code: 'ta', name: 'தமிழ்' },
-  { code: 'te', name: 'తెలుగు' },
-  { code: 'ml', name: 'മലയാളം' },
-];
+// Language selection removed; we store the current UI language automatically.
+
 
 type FeedbackType = 'translation' | 'feature' | 'improvement' | 'bug' | 'other';
 
@@ -145,37 +111,25 @@ const FEEDBACK_TYPES: FeedbackTypeOption[] = [
 
 // Translation context options - mandatory for translation corrections
 const TRANSLATION_CONTEXT_OPTIONS = [
-  { 
-    value: 'surah_name', 
-    labels: { ar: 'اسم السورة', en: 'Surah Name', fr: 'Nom de la sourate', de: 'Surenname', es: 'Nombre de la sura', tr: 'Sure adı', ur: 'سورت کا نام', fa: 'نام سوره' }
+  {
+    value: 'ui_button',
+    labels: { ar: 'زر في الواجهة', en: 'UI Button', fr: 'Bouton UI', de: 'UI-Schaltfläche', es: 'Botón de UI', tr: 'Arayüz düğmesi', ur: 'انٹرفیس بٹن', fa: 'دکمه رابط' },
   },
-  { 
-    value: 'verse_translation', 
-    labels: { ar: 'ترجمة الآية', en: 'Verse Translation', fr: 'Traduction du verset', de: 'Versübersetzung', es: 'Traducción del verso', tr: 'Ayet çevirisi', ur: 'آیت کا ترجمہ', fa: 'ترجمه آیه' }
+  {
+    value: 'ui_label',
+    labels: { ar: 'نص في الواجهة', en: 'UI Label/Text', fr: 'Texte UI', de: 'UI-Text', es: 'Texto de UI', tr: 'Arayüz metni', ur: 'انٹرفیس ٹیکسٹ', fa: 'متن رابط' },
   },
-  { 
-    value: 'tafsir', 
-    labels: { ar: 'التفسير', en: 'Tafsir', fr: 'Tafsir', de: 'Tafsir', es: 'Tafsir', tr: 'Tefsir', ur: 'تفسیر', fa: 'تفسیر' }
+  {
+    value: 'menu',
+    labels: { ar: 'القائمة', en: 'Menu', fr: 'Menu', de: 'Menü', es: 'Menú', tr: 'Menü', ur: 'مینو', fa: 'منو' },
   },
-  { 
-    value: 'ui_button', 
-    labels: { ar: 'زر في الواجهة', en: 'UI Button', fr: 'Bouton UI', de: 'UI-Schaltfläche', es: 'Botón de UI', tr: 'Arayüz düğmesi', ur: 'انٹرفیس بٹن', fa: 'دکمه رابط' }
+  {
+    value: 'athkar',
+    labels: { ar: 'الأذكار والأدعية', en: 'Athkar/Duas', fr: 'Athkar/Duas', de: 'Athkar/Duas', es: 'Athkar/Duas', tr: 'Zikirler/Dualar', ur: 'اذکار/دعائیں', fa: 'اذکار/دعا' },
   },
-  { 
-    value: 'ui_label', 
-    labels: { ar: 'نص في الواجهة', en: 'UI Label/Text', fr: 'Texte UI', de: 'UI-Text', es: 'Texto de UI', tr: 'Arayüz metni', ur: 'انٹرفیس ٹیکسٹ', fa: 'متن رابط' }
-  },
-  { 
-    value: 'menu', 
-    labels: { ar: 'القائمة', en: 'Menu', fr: 'Menu', de: 'Menü', es: 'Menú', tr: 'Menü', ur: 'مینو', fa: 'منو' }
-  },
-  { 
-    value: 'athkar', 
-    labels: { ar: 'الأذكار والأدعية', en: 'Athkar/Duas', fr: 'Athkar/Duas', de: 'Athkar/Duas', es: 'Athkar/Duas', tr: 'Zikirler/Dualar', ur: 'اذکار/دعائیں', fa: 'اذکار/دعا' }
-  },
-  { 
-    value: 'other', 
-    labels: { ar: 'أخرى', en: 'Other', fr: 'Autre', de: 'Andere', es: 'Otro', tr: 'Diğer', ur: 'دیگر', fa: 'سایر' }
+  {
+    value: 'other',
+    labels: { ar: 'أخرى', en: 'Other', fr: 'Autre', de: 'Andere', es: 'Otro', tr: 'Diğer', ur: 'دیگر', fa: 'سایر' },
   },
 ];
 
@@ -751,7 +705,7 @@ export const UserFeedback = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('feature');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(language);
+  
   const [originalText, setOriginalText] = useState('');
   const [suggestedText, setSuggestedText] = useState('');
   const [context, setContext] = useState('');
@@ -800,7 +754,7 @@ export const UserFeedback = () => {
     try {
       const { error } = await supabase.from('user_feedback').insert({
         feedback_type: feedbackType,
-        language_code: isTranslation ? selectedLanguage : null,
+        language_code: isTranslation ? language : null,
         original_text: isTranslation ? (originalText.trim() || null) : null,
         suggested_text: suggestedText.trim(),
         context: context.trim() || null,
@@ -896,36 +850,19 @@ export const UserFeedback = () => {
               </div>
             </div>
 
-            {/* Language Selection - only for translation feedback */}
+            {/* Original Text - only for translation feedback */}
             {isTranslation && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="language">{labels.languageLabel}</Label>
-                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="original">{labels.originalLabel}</Label>
-                  <Input
-                    id="original"
-                    value={originalText}
-                    onChange={(e) => setOriginalText(e.target.value)}
-                    dir="auto"
-                  />
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label htmlFor="original">{labels.originalLabel}</Label>
+                <Input
+                  id="original"
+                  value={originalText}
+                  onChange={(e) => setOriginalText(e.target.value)}
+                  dir="auto"
+                />
+              </div>
             )}
+
 
             {/* Main Message */}
             <div className="space-y-2">
