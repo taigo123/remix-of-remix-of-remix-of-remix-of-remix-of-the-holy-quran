@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Settings2 } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Settings2, Columns2 } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useQuranSettings } from '@/hooks/useQuranSettings';
 import { QuranSettingsPanel } from '@/components/QuranSettingsPanel';
 import { TafsirSourceSelector } from '@/components/TafsirSourceSelector';
+import { TafsirComparisonPanel } from '@/components/TafsirComparisonPanel';
 import { useTafsir } from '@/hooks/useTafsir';
 import {
   Sheet,
@@ -29,6 +30,7 @@ const SurahPage = () => {
   const [showAudioNotice, setShowAudioNotice] = useState(true);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<number | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const { settings, isLoaded } = useQuranSettings();
   
   // إعدادات التفسير
@@ -200,16 +202,35 @@ const SurahPage = () => {
 
         {/* اختيار مصدر التفسير */}
         <div className="mb-6">
-          <TafsirSourceSelector
-            selectedSource={selectedSource}
-            onSourceChange={setSelectedSource}
-            availableSources={availableSources}
-            isLoading={isTafsirLoading}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <TafsirSourceSelector
+              selectedSource={selectedSource}
+              onSourceChange={setSelectedSource}
+              availableSources={availableSources}
+              isLoading={isTafsirLoading}
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => setIsComparisonOpen(true)}
+              className="gap-2"
+            >
+              <Columns2 className="w-4 h-4" />
+              مقارنة تفسيرين
+            </Button>
+          </div>
           {tafsirError && (
             <p className="mt-2 text-sm text-destructive">{tafsirError}</p>
           )}
         </div>
+
+        {/* لوحة مقارنة التفاسير */}
+        <TafsirComparisonPanel
+          surahNumber={surahId}
+          versesCount={surah.versesCount}
+          verses={surah.verses}
+          isOpen={isComparisonOpen}
+          onClose={() => setIsComparisonOpen(false)}
+        />
 
         <div className="space-y-4">
           {surah.verses.map((verse) => (
