@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getViewerId } from '@/hooks/useViewerId';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -767,6 +768,7 @@ export const UserFeedback = () => {
         original_text: isTranslation ? (originalText.trim() || null) : null,
         suggested_text: suggestedText.trim(),
         context: context.trim() || null,
+        viewer_id: getViewerId(),
       });
 
       if (error) throw error;

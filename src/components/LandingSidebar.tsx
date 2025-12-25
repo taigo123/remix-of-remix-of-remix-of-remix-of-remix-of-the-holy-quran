@@ -21,7 +21,10 @@ import {
   VolumeX,
   ChevronDown,
   Clock,
-  Trash2
+  Trash2,
+  Pencil,
+  Check,
+  XCircle
 } from "lucide-react";
 import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage, languages, regionLabels, LanguageRegion, LanguageInfo } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useViewerId } from "@/hooks/useViewerId";
 
 interface FeedbackItem {
   id: string;
@@ -38,6 +42,7 @@ interface FeedbackItem {
   suggested_text: string;
   created_at: string;
   language_code: string | null;
+  viewer_id: string | null;
 }
 
 // Notification sound using Web Audio API
@@ -76,11 +81,14 @@ const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t, isRtl } = useLanguage();
+  const viewerId = useViewerId();
   const [showLanguages, setShowLanguages] = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [hasNewFeedback, setHasNewFeedback] = useState(false);
   const [recentFeedbacks, setRecentFeedbacks] = useState<FeedbackItem[]>([]);
   const [showFeedbackList, setShowFeedbackList] = useState(false);
+  const [editingFeedback, setEditingFeedback] = useState<FeedbackItem | null>(null);
+  const [editText, setEditText] = useState('');
   const [isMuted, setIsMuted] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('feedbackSoundMuted') === 'true';
@@ -100,22 +108,67 @@ const LandingSidebar = () => {
     );
   };
 
-  // Delete feedback
-  const deleteFeedback = async (id: string) => {
+  // Delete feedback (only own)
+  const deleteFeedback = async (feedback: FeedbackItem) => {
+    if (feedback.viewer_id !== viewerId) {
+      toast.error(language === 'ar' ? 'لا يمكنك حذف ملاحظة غيرك' : 'You can only delete your own feedback');
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from('user_feedback')
         .delete()
-        .eq('id', id);
+        .eq('id', feedback.id)
+        .eq('viewer_id', viewerId);
       
       if (error) throw error;
       
-      setRecentFeedbacks(prev => prev.filter(f => f.id !== id));
+      setRecentFeedbacks(prev => prev.filter(f => f.id !== feedback.id));
       setFeedbackCount(prev => Math.max(0, prev - 1));
-      toast.success(language === 'ar' ? '🗑️ تم حذف الملاحظة' : '🗑️ Feedback deleted');
+      toast.success(language === 'ar' ? '🗑️ تم حذف ملاحظتك' : '🗑️ Your feedback deleted');
     } catch (error) {
       console.error('Error deleting feedback:', error);
       toast.error(language === 'ar' ? 'حدث خطأ أثناء الحذف' : 'Error deleting feedback');
+    }
+  };
+
+  // Edit feedback (only own)
+  const startEditing = (feedback: FeedbackItem) => {
+    if (feedback.viewer_id !== viewerId) {
+      toast.error(language === 'ar' ? 'لا يمكنك تعديل ملاحظة غيرك' : 'You can only edit your own feedback');
+      return;
+    }
+    setEditingFeedback(feedback);
+    setEditText(feedback.suggested_text);
+  };
+
+  const cancelEditing = () => {
+    setEditingFeedback(null);
+    setEditText('');
+  };
+
+  const saveEdit = async () => {
+    if (!editingFeedback || !editText.trim()) return;
+    
+    try {
+      const { error } = await supabase
+        .from('user_feedback')
+        .update({ suggested_text: editText.trim() })
+        .eq('id', editingFeedback.id)
+        .eq('viewer_id', viewerId);
+      
+      if (error) throw error;
+      
+      setRecentFeedbacks(prev => prev.map(f => 
+        f.id === editingFeedback.id ? { ...f, suggested_text: editText.trim() } : f
+      ));
+      setEditingFeedback(null);
+      setEditText('');
+      toast.success(language === 'ar' ? '✏️ تم تعديل ملاحظتك' : '✏️ Your feedback updated');
+    } catch (error) {
+      console.error('Error updating feedback:', error);
+      toast.error(language === 'ar' ? 'حدث خطأ أثناء التعديل' : 'Error updating feedback');
     }
   };
 
@@ -129,9 +182,9 @@ const LandingSidebar = () => {
 
       const { data } = await supabase
         .from('user_feedback')
-        .select('id, feedback_type, suggested_text, created_at, language_code')
+        .select('id, feedback_type, suggested_text, created_at, language_code, viewer_id')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
       
       if (data) {
         setRecentFeedbacks(data);
@@ -546,14 +599,22 @@ const LandingSidebar = () => {
                       <div
                         key={feedback.id}
                         className={cn(
-                          "p-2 rounded-lg bg-background/50 border border-border/50 text-xs group/item relative",
-                          isRtl ? "text-right" : "text-left"
+                          "p-2 rounded-lg bg-background/50 border text-xs group/item relative",
+                          isRtl ? "text-right" : "text-left",
+                          feedback.viewer_id === viewerId 
+                            ? "border-primary/30 bg-primary/5" 
+                            : "border-border/50"
                         )}
                       >
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-medium">
                             {FEEDBACK_TYPE_LABELS[feedback.feedback_type]?.[isRtl ? 'ar' : 'en'] || feedback.feedback_type}
                           </span>
+                          {feedback.viewer_id === viewerId && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-medium">
+                              {isRtl ? "ملاحظتك" : "Yours"}
+                            </span>
+                          )}
                           <span className="text-muted-foreground text-[10px] flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {new Date(feedback.created_at).toLocaleDateString(isRtl ? 'ar' : 'en', {
@@ -563,21 +624,64 @@ const LandingSidebar = () => {
                               minute: '2-digit'
                             })}
                           </span>
-                          {/* Delete Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteFeedback(feedback.id);
-                            }}
-                            className="ml-auto p-1 rounded-md opacity-0 group-hover/item:opacity-100 transition-opacity bg-red-500/20 text-red-500 hover:bg-red-500/30"
-                            title={isRtl ? "حذف" : "Delete"}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          {/* Edit/Delete Buttons - Only for own feedback */}
+                          {feedback.viewer_id === viewerId && (
+                            <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditing(feedback);
+                                }}
+                                className="p-1 rounded-md bg-blue-500/20 text-blue-500 hover:bg-blue-500/30"
+                                title={isRtl ? "تعديل" : "Edit"}
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteFeedback(feedback);
+                                }}
+                                className="p-1 rounded-md bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                                title={isRtl ? "حذف" : "Delete"}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-foreground/80 line-clamp-2">
-                          {feedback.suggested_text}
-                        </p>
+                        
+                        {/* Editing Mode */}
+                        {editingFeedback?.id === feedback.id ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              className="text-xs h-8"
+                              dir="auto"
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={saveEdit}
+                                className="flex-1 py-1 px-2 rounded-md bg-green-500/20 text-green-600 hover:bg-green-500/30 text-[10px] flex items-center justify-center gap-1"
+                              >
+                                <Check className="w-3 h-3" />
+                                {isRtl ? "حفظ" : "Save"}
+                              </button>
+                              <button
+                                onClick={cancelEditing}
+                                className="flex-1 py-1 px-2 rounded-md bg-muted text-muted-foreground hover:bg-muted/80 text-[10px] flex items-center justify-center gap-1"
+                              >
+                                <XCircle className="w-3 h-3" />
+                                {isRtl ? "إلغاء" : "Cancel"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-foreground/80 line-clamp-2">
+                            {feedback.suggested_text}
+                          </p>
+                        )}
                       </div>
                     ))
                   ) : (
