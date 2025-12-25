@@ -154,7 +154,7 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  // تصدير كصورة (بدون فتح تبويب/مشاركة)
+  // تصدير كصورة
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
@@ -168,42 +168,31 @@ export const TafsirComparisonPanel = ({
       });
 
       const fileName = `مقارنة-تفسير-سورة-${surahNumber}.png`;
+      const dataUrl = canvas.toDataURL('image/png');
 
-      // في تطبيق الجوال (Capacitor): احفظ في "التنزيلات" (Documents)
+      // في تطبيق الجوال (Capacitor)
       if (Capacitor.isNativePlatform()) {
-        const dataUrl = canvas.toDataURL('image/png');
         const base64 = dataUrl.split(',')[1] || '';
-
         await Filesystem.writeFile({
           path: fileName,
           data: base64,
           directory: Directory.Documents,
         });
-
         toast({
           title: 'تم حفظ الصورة',
-          description: 'تم حفظها داخل ملفات الجهاز (Documents).',
+          description: 'تم حفظها داخل ملفات الجهاز.',
         });
         return;
       }
 
-      // على الويب: تحميل مباشر
-      const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((b) => resolve(b), 'image/png');
-      });
-
-      if (!blob) {
-        throw new Error('Failed to create image blob');
-      }
-
-      const url = URL.createObjectURL(blob);
+      // على الويب: تحميل مباشر باستخدام dataURL
       const link = document.createElement('a');
-      link.href = url;
+      link.href = dataUrl;
       link.download = fileName;
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
 
       toast({
         title: 'تم حفظ الصورة',
@@ -213,7 +202,7 @@ export const TafsirComparisonPanel = ({
       console.error('Export image error:', error);
       toast({
         title: 'فشل التنزيل',
-        description: 'لم يتمكن المتصفح/النظام من حفظ الصورة.',
+        description: 'حدث خطأ أثناء إنشاء الصورة.',
         variant: 'destructive',
       });
     } finally {
