@@ -151,32 +151,7 @@ export const TafsirComparisonPanel = ({
     ? filteredVerses 
     : filteredVerses.filter(v => v.id === selectedVerse);
 
-  const saveCanvasAsPng = useCallback(async (canvas: HTMLCanvasElement, filename: string) => {
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) throw new Error('تعذر إنشاء ملف الصورة');
-
-    const url = URL.createObjectURL(blob);
-
-    try {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      // ملاحظة: بعض المتصفحات (خصوصاً داخل WebView) تمنع التنزيل المباشر
-      // لذلك نفتح الصورة في تبويب جديد كخطة بديلة.
-      if (/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
-    } finally {
-      // نؤخر الإلغاء قليلاً كي لا ينقطع التحميل
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    }
-  }, []);
-
-  // تصدير كصورة
+  // تصدير كصورة - استخدام toDataURL بدلاً من toBlob (أكثر توافقاً)
   const exportAsImage = async () => {
     if (!contentRef.current) return;
 
@@ -189,17 +164,45 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      await saveCanvasAsPng(canvas, `مقارنة-تفسير-سورة-${surahNumber}.png`);
+      // استخدام toDataURL - يعمل على جميع المتصفحات
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // فتح الصورة في نافذة جديدة (يعمل على الجوال والديسكتوب)
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>مقارنة التفاسير - سورة ${surahNumber}</title>
+              <style>
+                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
+                img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+                .actions { position: fixed; top: 10px; right: 10px; }
+                button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
+              </style>
+            </head>
+            <body>
+              <div class="actions">
+                <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}.png">
+                  <button>💾 حفظ الصورة</button>
+                </a>
+              </div>
+              <img src="${dataUrl}" alt="مقارنة التفاسير" />
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
 
       toast({
-        title: 'تم التصدير',
-        description: 'تم حفظ الصورة بنجاح',
+        title: 'تم فتح الصورة',
+        description: 'اضغط على زر "حفظ الصورة" في النافذة الجديدة',
       });
     } catch (error) {
       console.error('Export image error:', error);
       toast({
         title: 'خطأ',
-        description: error instanceof Error ? error.message : 'فشل في تصدير الصورة',
+        description: 'فشل في إنشاء الصورة',
         variant: 'destructive',
       });
     } finally {
@@ -207,7 +210,7 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كصورة عالية الجودة (Canvas)
+  // تصدير كصورة عالية الجودة
   const exportAsHighQualityImage = async () => {
     if (!contentRef.current) return;
 
@@ -220,17 +223,43 @@ export const TafsirComparisonPanel = ({
         logging: false,
       });
 
-      await saveCanvasAsPng(canvas, `مقارنة-تفسير-سورة-${surahNumber}-HD.png`);
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>مقارنة التفاسير HD - سورة ${surahNumber}</title>
+              <style>
+                body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f0f0; }
+                img { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+                .actions { position: fixed; top: 10px; right: 10px; }
+                button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 8px; }
+              </style>
+            </head>
+            <body>
+              <div class="actions">
+                <a href="${dataUrl}" download="مقارنة-تفسير-سورة-${surahNumber}-HD.png">
+                  <button>💾 حفظ الصورة HD</button>
+                </a>
+              </div>
+              <img src="${dataUrl}" alt="مقارنة التفاسير HD" />
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
 
       toast({
-        title: 'تم التصدير',
-        description: 'تم حفظ الصورة بجودة عالية',
+        title: 'تم فتح الصورة بجودة عالية',
+        description: 'اضغط على زر "حفظ الصورة HD" في النافذة الجديدة',
       });
     } catch (error) {
       console.error('Export HD image error:', error);
       toast({
         title: 'خطأ',
-        description: error instanceof Error ? error.message : 'فشل في تصدير الصورة',
+        description: 'فشل في إنشاء الصورة',
         variant: 'destructive',
       });
     } finally {
