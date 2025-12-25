@@ -63,6 +63,7 @@ const SURAH_ID = 36;
 const SURAH_NAME = "يس";
 
 type RepeatMode = "none" | "verse" | "surah";
+const RECITER_STORAGE_KEY = "quran_preferred_reciter";
 
 interface FullSurahPlayerProps {
   onVerseChange: (verseNumber: number) => void;
@@ -99,7 +100,13 @@ export const FullSurahPlayer = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
-  const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
+  const [selectedReciter, setSelectedReciter] = useState(() => {
+    const saved = localStorage.getItem(RECITER_STORAGE_KEY);
+    if (saved && RECITERS.some(r => r.id === saved)) {
+      return saved;
+    }
+    return RECITERS[0].id;
+  });
   const [error, setError] = useState<string | null>(null);
 
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
@@ -410,6 +417,7 @@ export const FullSurahPlayer = ({
 
   const handleReciterChange = (reciterId: string) => {
     setSelectedReciter(reciterId);
+    localStorage.setItem(RECITER_STORAGE_KEY, reciterId);
   };
 
   const handleSliderChange = (value: number[]) => {
