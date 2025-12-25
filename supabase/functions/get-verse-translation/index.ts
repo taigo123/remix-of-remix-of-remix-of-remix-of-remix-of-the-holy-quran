@@ -6,6 +6,88 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Complete mapping of 50+ languages to Quran.com translation IDs
+const quranComTranslations: Record<string, number> = {
+  // Major European Languages
+  en: 131, // Sahih International
+  fr: 136, // Muhammad Hamidullah
+  de: 27,  // Bubenheim & Elyas
+  es: 140, // Muhammad Isa Garcia
+  pt: 43,  // Samir El-Hayek
+  it: 153, // Hamza Roberto Piccardo
+  nl: 235, // Sofian S. Siregar
+  pl: 42,  // Józef Bielawski
+  ro: 44,  // Grigore
+  sv: 48,  // Knut Bernström
+  cs: 26,  // Preklad I. Hrbek
+  sk: 47,  // Slovak
+  
+  // Eastern European & Slavic
+  ru: 45,  // Elmir Kuliev
+  uk: 217, // Mykhaylo Yakubovych
+  bg: 237, // Tzvetan Theophanov
+  sr: 215, // Korkut
+  hr: 215, // Besim Korkut
+  bs: 25,  // Besim Korkut
+  sl: 215, // Korkut
+  mk: 215, // Korkut
+  sq: 89,  // Sherif Ahmeti
+  
+  // Turkish & Turkic Languages
+  tr: 210, // Diyanet Vakfi
+  az: 23,  // Vasim Mammadaliyev
+  uz: 127, // Muhammad Sodik
+  kk: 222, // Khalifa Altay
+  ky: 223, // Sooronbay Jdanov
+  tt: 53,  // Yakub Ibn Nugman
+  tg: 50,  // Khoja Mirzo
+  
+  // South Asian Languages
+  ur: 234, // Fateh Muhammad Jalandhry
+  hi: 122, // Muhammad Farooq Khan
+  bn: 163, // Muhiuddin Khan
+  ta: 229, // Jan Trust Foundation
+  te: 227, // Maulana Abder-Rahim
+  ml: 37,  // Abdul-Hamid Haidar
+  gu: 169, // Rauf Siddiqui
+  mr: 179, // Muhammad Shafi'i
+  pa: 180, // Punjabi
+  si: 228, // Ruwwad Center
+  ne: 108, // Ahl Al-Hadith
+  
+  // Southeast Asian Languages
+  id: 134, // Kemenag
+  ms: 39,  // Basmeih
+  th: 51,  // King Fahad Complex
+  vi: 177, // Ruwwad
+  my: 233, // Sani Taher
+  km: 224, // Cambodia
+  lo: 226, // Lao
+  fil: 211, // Diyanet
+  
+  // East Asian Languages
+  zh: 56,  // Ma Jian
+  ja: 35,  // Ryoichi Mita
+  ko: 36,  // Korean
+  
+  // Middle Eastern & Persian
+  fa: 29,  // Fooladvand
+  
+  // African Languages
+  am: 87,  // Sadiq & Sani
+  so: 46,  // Mahmud Abduh
+  sw: 49,  // Al-Barwani
+  ha: 32,  // Abubakar Gumi
+  yo: 125, // Shaykh Abu Rahimah
+  ig: 181, // Igbo
+  
+  // Maldivian
+  dv: 86,  // Office of the President
+};
+
+// Languages supported by AlQuran API
+const alQuranApiLanguages = ['en', 'fr', 'ur', 'id', 'tr', 'ru', 'bn', 'hi', 'ms', 'th', 'zh'];
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -22,20 +104,10 @@ serve(async (req) => {
       );
     }
 
-    // Language to translation ID mapping for Quran.com API (fallback)
-    const quranComTranslations: Record<string, number> = {
-      en: 131, // Sahih International
-      fr: 136, // French - Muhammad Hamidullah
-      ur: 234, // Urdu - Fateh Muhammad Jalandhry
-      id: 134, // Indonesian - Kemenag
-      tr: 210, // Turkish - Diyanet Vakfi
-      it: 153, // Italian - Hamza Roberto Piccardo
-    };
-
     let translations: any[] = [];
 
-    // Try AlQuran API first (except for Italian which isn't supported)
-    if (language !== 'it') {
+    // Try AlQuran API first for supported languages
+    if (alQuranApiLanguages.includes(language)) {
       try {
         const response = await fetch(
           `https://alquran-api.pages.dev/api/quran/surah/${surahNumber}?lang=${language}`
@@ -49,11 +121,11 @@ serve(async (req) => {
           })) || [];
         }
       } catch (e) {
-        console.log('AlQuran API failed, trying fallback');
+        console.log('AlQuran API failed, trying Quran.com fallback');
       }
     }
 
-    // Fallback to Quran.com API if needed
+    // Use Quran.com API for all other languages or as fallback
     if (translations.length === 0 && quranComTranslations[language]) {
       try {
         const translationId = quranComTranslations[language];
@@ -69,11 +141,11 @@ serve(async (req) => {
           })) || [];
         }
       } catch (e) {
-        console.log('Quran.com API also failed');
+        console.error('Quran.com API also failed:', e);
       }
     }
 
-    console.log('Translations fetched:', translations.length);
+    console.log(`Translations fetched for ${language}: ${translations.length} verses`);
 
     return new Response(
       JSON.stringify({ translations }),

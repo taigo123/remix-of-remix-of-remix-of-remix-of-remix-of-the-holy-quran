@@ -1,223 +1,229 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type Language = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it';
+// Extended language support - 50+ languages from Quran.com
+export type Language = 
+  | 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it' | 'de' | 'es' | 'pt' 
+  | 'ru' | 'bn' | 'fa' | 'hi' | 'ms' | 'nl' | 'pl' | 'ro' | 'sv' | 'th'
+  | 'vi' | 'zh' | 'ja' | 'ko' | 'tg' | 'uz' | 'az' | 'kk' | 'ky' | 'tt'
+  | 'bs' | 'sq' | 'mk' | 'bg' | 'cs' | 'sk' | 'uk' | 'sr' | 'hr' | 'sl'
+  | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ig' | 'ml' | 'ta' | 'te' | 'gu'
+  | 'mr' | 'pa' | 'si' | 'ne' | 'my' | 'km' | 'lo' | 'fil' | 'dv';
 
-export const languages: { code: Language; name: string; nativeName: string }[] = [
+export const languages: { code: Language; name: string; nativeName: string; translationId?: number }[] = [
+  // Arabic (Original - no translation needed)
   { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
-  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
+  
+  // Major European Languages
+  { code: 'en', name: 'English', nativeName: 'English', translationId: 131 }, // Sahih International
+  { code: 'fr', name: 'French', nativeName: 'Français', translationId: 136 }, // Muhammad Hamidullah
+  { code: 'de', name: 'German', nativeName: 'Deutsch', translationId: 27 }, // Bubenheim & Elyas
+  { code: 'es', name: 'Spanish', nativeName: 'Español', translationId: 140 }, // Muhammad Isa Garcia
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', translationId: 43 }, // Samir El-Hayek
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', translationId: 153 }, // Hamza Roberto Piccardo
+  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', translationId: 235 }, // Sofian S. Siregar
+  { code: 'pl', name: 'Polish', nativeName: 'Polski', translationId: 42 }, // Józef Bielawski
+  { code: 'ro', name: 'Romanian', nativeName: 'Română', translationId: 44 }, // Grigore
+  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', translationId: 48 }, // Knut Bernström
+  { code: 'cs', name: 'Czech', nativeName: 'Čeština', translationId: 26 }, // Preklad I. Hrbek
+  { code: 'sk', name: 'Slovak', nativeName: 'Slovenčina', translationId: 47 }, // Slovak
+  
+  // Eastern European & Slavic Languages
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', translationId: 45 }, // Elmir Kuliev
+  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', translationId: 217 }, // Mykhaylo Yakubovych
+  { code: 'bg', name: 'Bulgarian', nativeName: 'Български', translationId: 237 }, // Tzvetan Theophanov
+  { code: 'sr', name: 'Serbian', nativeName: 'Српски', translationId: 215 }, // Korkut
+  { code: 'hr', name: 'Croatian', nativeName: 'Hrvatski', translationId: 215 }, // Besim Korkut
+  { code: 'bs', name: 'Bosnian', nativeName: 'Bosanski', translationId: 25 }, // Besim Korkut
+  { code: 'sl', name: 'Slovenian', nativeName: 'Slovenščina', translationId: 215 }, // Korkut
+  { code: 'mk', name: 'Macedonian', nativeName: 'Македонски', translationId: 215 }, // Korkut
+  { code: 'sq', name: 'Albanian', nativeName: 'Shqip', translationId: 89 }, // Sherif Ahmeti
+  
+  // Turkish & Turkic Languages
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', translationId: 210 }, // Diyanet Vakfi
+  { code: 'az', name: 'Azerbaijani', nativeName: 'Azərbaycan', translationId: 23 }, // Vasim Mammadaliyev
+  { code: 'uz', name: 'Uzbek', nativeName: 'Oʻzbek', translationId: 127 }, // Muhammad Sodik
+  { code: 'kk', name: 'Kazakh', nativeName: 'Қазақ', translationId: 222 }, // Khalifa Altay
+  { code: 'ky', name: 'Kyrgyz', nativeName: 'Кыргыз', translationId: 223 }, // Sooronbay Jdanov
+  { code: 'tt', name: 'Tatar', nativeName: 'Татар', translationId: 53 }, // Yakub Ibn Nugman
+  { code: 'tg', name: 'Tajik', nativeName: 'Тоҷикӣ', translationId: 50 }, // Khoja Mirzo
+  
+  // South Asian Languages
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو', translationId: 234 }, // Fateh Muhammad Jalandhry
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', translationId: 122 }, // Muhammad Farooq Khan
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', translationId: 163 }, // Muhiuddin Khan
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', translationId: 229 }, // Jan Trust Foundation
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', translationId: 227 }, // Maulana Abder-Rahim
+  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', translationId: 37 }, // Abdul-Hamid Haidar
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', translationId: 169 }, // Rauf Siddiqui
+  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', translationId: 179 }, // Muhammad Shafi'i
+  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', translationId: 180 }, // Punjabi
+  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල', translationId: 228 }, // Ruwwad Center
+  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', translationId: 108 }, // Ahl Al-Hadith
+  
+  // Southeast Asian Languages
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', translationId: 134 }, // Kemenag
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', translationId: 39 }, // Basmeih
+  { code: 'th', name: 'Thai', nativeName: 'ไทย', translationId: 51 }, // King Fahad Complex
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', translationId: 177 }, // Ruwwad
+  { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', translationId: 233 }, // Sani Taher
+  { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', translationId: 224 }, // Cambodia
+  { code: 'lo', name: 'Lao', nativeName: 'ລາວ', translationId: 226 }, // Lao
+  { code: 'fil', name: 'Filipino', nativeName: 'Filipino', translationId: 211 }, // Diyanet
+  
+  // East Asian Languages
+  { code: 'zh', name: 'Chinese', nativeName: '中文', translationId: 56 }, // Ma Jian
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', translationId: 35 }, // Ryoichi Mita
+  { code: 'ko', name: 'Korean', nativeName: '한국어', translationId: 36 }, // Korean
+  
+  // Middle Eastern & Persian
+  { code: 'fa', name: 'Persian', nativeName: 'فارسی', translationId: 29 }, // Fooladvand
+  
+  // African Languages
+  { code: 'am', name: 'Amharic', nativeName: 'አማርኛ', translationId: 87 }, // Sadiq & Sani
+  { code: 'so', name: 'Somali', nativeName: 'Soomaali', translationId: 46 }, // Mahmud Abduh
+  { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', translationId: 49 }, // Al-Barwani
+  { code: 'ha', name: 'Hausa', nativeName: 'Hausa', translationId: 32 }, // Abubakar Gumi
+  { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', translationId: 125 }, // Shaykh Abu Rahimah
+  { code: 'ig', name: 'Igbo', nativeName: 'Igbo', translationId: 181 }, // Igbo
+  
+  // Maldivian
+  { code: 'dv', name: 'Dhivehi', nativeName: 'ދިވެހި', translationId: 86 }, // Office of the President
 ];
 
-export const translations: Record<Language, {
-  // عام
-  title: string;
-  quran: string;
-  holyQuran: string;
-  home: string;
-  index: string;
-  settings: string;
-  search: string;
-  searchPlaceholder: string;
-  
-  // القائمة الجانبية
-  athkar: string;
-  appearance: string;
-  lightMode: string;
-  darkMode: string;
-  language: string;
-  about: string;
-  aboutText: string;
-  quickNavigation: string;
-  
-  // الفهرس
-  surahIndex: string;
-  browseSurahs: string;
-  dragToScroll: string;
-  viewFullIndex: string;
-  verse: string;
-  verses: string;
-  meccan: string;
-  medinan: string;
-  available: string;
-  
-  // صفحة السورة
-  surah: string;
-  tafsir: string;
-  tafsirSource: string;
-  compareTafsirs: string;
-  hideTafsir: string;
-  showTafsir: string;
-  benefits: string;
-  aboutSurah: string;
-  listenToRecitation: string;
-  reciters: string;
-  
-  // المميزات
-  features: string;
-  allInOnePlace: string;
-  comprehensiveApp: string;
-  trustedTafsirs: string;
-  fromMajorBooks: string;
-  distinguishedReciters: string;
-  beautifulRecitations: string;
-  advancedSearch: string;
-  searchInVerses: string;
-  favorites: string;
-  saveYourFavorites: string;
-  listenVerseByVerse: string;
-  orFullSurah: string;
-  fullSurahs: string;
-  uthmaniScript: string;
-  
-  // البسملة
-  bismillah: string;
-  bookOfAllah: string;
-  readListenReflect: string;
-  
-  // إحصائيات
-  juz: string;
-  
-  // الأذكار
-  athkarAndDuas: string;
-  
-  // الفوتر
-  electronicMushaf: string;
-  allRightsReserved: string;
-  trustedTafsirsList: string;
-  // ترجمة الآية
-  translation: string;
-  // تحذير صوت الترجمة
-  ttsWarning: string;
-}> = {
-  ar: {
-    title: 'القرآن الكريم',
-    quran: 'القرآن',
-    holyQuran: 'القرآن الكريم',
-    home: 'الرئيسية',
-    index: 'الفهرس',
-    settings: 'الإعدادات',
-    search: 'البحث',
-    searchPlaceholder: 'ابحث في السور...',
-    athkar: 'الأذكار والأدعية',
-    appearance: 'المظهر',
-    lightMode: 'الوضع النهاري',
-    darkMode: 'الوضع الليلي',
-    language: 'اللغة',
-    about: 'عن التطبيق',
-    aboutText: 'تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين. اقرأ واستمع وتدبر آيات الله.',
-    quickNavigation: 'التنقل السريع',
-    surahIndex: 'فهرس السور',
-    browseSurahs: 'تصفح سور القرآن الكريم',
-    dragToScroll: 'اسحب للتصفح أو استخدم الأسهم',
-    viewFullIndex: 'عرض الفهرس الكامل',
-    verse: 'آية',
-    verses: 'آية',
-    meccan: 'مكية',
-    medinan: 'مدنية',
-    available: 'متوفر',
-    surah: 'سورة',
-    tafsir: 'التفسير',
-    tafsirSource: 'مصدر التفسير',
-    compareTafsirs: 'مقارنة تفسيرين',
-    hideTafsir: 'إخفاء التفسير',
-    showTafsir: 'إظهار التفسير',
-    benefits: 'الفوائد',
-    aboutSurah: 'نبذة عن السورة',
-    listenToRecitation: 'استمع لتلاوة كل آية بصوت 6 قراء مختلفين',
-    reciters: 'قراء',
-    features: 'مميزات التطبيق',
-    allInOnePlace: 'كل ما تحتاجه في مكان واحد',
-    comprehensiveApp: 'تطبيق شامل للقرآن الكريم يجمع بين القراءة والاستماع والتفسير',
-    trustedTafsirs: 'تفسير موثوق',
-    fromMajorBooks: 'من أمهات كتب التفسير',
-    distinguishedReciters: 'قراء مميزين',
-    beautifulRecitations: 'تلاوات بأصوات عذبة',
-    advancedSearch: 'بحث متقدم',
-    searchInVerses: 'ابحث في الآيات والتفاسير',
-    favorites: 'المفضلة',
-    saveYourFavorites: 'احفظ آياتك المفضلة',
-    listenVerseByVerse: 'استماع آية بآية',
-    orFullSurah: 'أو السورة كاملة',
-    fullSurahs: 'سورة كاملة',
-    uthmaniScript: 'القرآن الكريم بالرسم العثماني',
-    bismillah: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-    bookOfAllah: 'كتاب الله المبين',
-    readListenReflect: 'اقرأ واستمع وتدبر آيات الله بتفسير شامل من أمهات كتب التفسير',
-    juz: 'جزء',
-    athkarAndDuas: 'الأذكار والأدعية',
-    electronicMushaf: 'المصحف الإلكتروني',
-    allRightsReserved: 'جميع الحقوق محفوظة',
-    trustedTafsirsList: 'التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين',
-    translation: 'الترجمة',
-    ttsWarning: 'تنبيه: صوت الترجمة قد لا يكون دقيقاً في نطق بعض الكلمات الإسلامية',
-  },
-  en: {
-    title: 'The Holy Quran',
-    quran: 'Quran',
-    holyQuran: 'The Holy Quran',
-    home: 'Home',
-    index: 'Index',
-    settings: 'Settings',
-    search: 'Search',
-    searchPlaceholder: 'Search surahs...',
-    athkar: 'Athkar & Duas',
-    appearance: 'Appearance',
-    lightMode: 'Light Mode',
-    darkMode: 'Dark Mode',
-    language: 'Language',
-    about: 'About App',
-    aboutText: 'Quran app with 14 trusted Tafsirs and 6 distinguished reciters. Read, listen and reflect on the verses of Allah.',
-    quickNavigation: 'Quick Navigation',
-    surahIndex: 'Surah Index',
-    browseSurahs: 'Browse the Surahs of the Holy Quran',
-    dragToScroll: 'Drag to scroll or use arrows',
-    viewFullIndex: 'View Full Index',
-    verse: 'verse',
-    verses: 'verses',
-    meccan: 'Meccan',
-    medinan: 'Medinan',
-    available: 'Available',
-    surah: 'Surah',
-    tafsir: 'Tafsir',
-    tafsirSource: 'Tafsir Source',
-    compareTafsirs: 'Compare Tafsirs',
-    hideTafsir: 'Hide Tafsir',
-    showTafsir: 'Show Tafsir',
-    benefits: 'Benefits',
-    aboutSurah: 'About this Surah',
-    listenToRecitation: 'Listen to each verse by 6 different reciters',
-    reciters: 'reciters',
-    features: 'App Features',
-    allInOnePlace: 'Everything you need in one place',
-    comprehensiveApp: 'A comprehensive Quran app combining reading, listening, and interpretation',
-    trustedTafsirs: 'trusted Tafsirs',
-    fromMajorBooks: 'From major Tafsir books',
-    distinguishedReciters: 'distinguished reciters',
-    beautifulRecitations: 'Beautiful recitations',
-    advancedSearch: 'Advanced Search',
-    searchInVerses: 'Search in verses and Tafsirs',
-    favorites: 'Favorites',
-    saveYourFavorites: 'Save your favorite verses',
-    listenVerseByVerse: 'Listen verse by verse',
-    orFullSurah: 'or full surah',
-    fullSurahs: 'full surahs',
-    uthmaniScript: 'Quran in Uthmani Script',
-    bismillah: 'In the name of Allah, the Most Gracious, the Most Merciful',
-    bookOfAllah: 'The Book of Allah',
-    readListenReflect: 'Read, listen, and reflect on the verses of Allah with comprehensive Tafsir',
-    juz: 'Juz',
-    athkarAndDuas: 'Athkar & Duas',
-    electronicMushaf: 'Electronic Mushaf',
-    allRightsReserved: 'All rights reserved',
-    trustedTafsirsList: 'Trusted Tafsirs: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
-    translation: 'Translation',
-    ttsWarning: 'Note: Audio may not accurately pronounce some Islamic terms',
-  },
+// Basic UI translations (we'll keep Arabic, English as primary, others will use English fallback for UI)
+const baseTranslations = {
+  title: 'القرآن الكريم',
+  quran: 'القرآن',
+  holyQuran: 'القرآن الكريم',
+  home: 'الرئيسية',
+  index: 'الفهرس',
+  settings: 'الإعدادات',
+  search: 'البحث',
+  searchPlaceholder: 'ابحث في السور...',
+  athkar: 'الأذكار والأدعية',
+  appearance: 'المظهر',
+  lightMode: 'الوضع النهاري',
+  darkMode: 'الوضع الليلي',
+  language: 'اللغة',
+  about: 'عن التطبيق',
+  aboutText: 'تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين. اقرأ واستمع وتدبر آيات الله.',
+  quickNavigation: 'التنقل السريع',
+  surahIndex: 'فهرس السور',
+  browseSurahs: 'تصفح سور القرآن الكريم',
+  dragToScroll: 'اسحب للتصفح أو استخدم الأسهم',
+  viewFullIndex: 'عرض الفهرس الكامل',
+  verse: 'آية',
+  verses: 'آية',
+  meccan: 'مكية',
+  medinan: 'مدنية',
+  available: 'متوفر',
+  surah: 'سورة',
+  tafsir: 'التفسير',
+  tafsirSource: 'مصدر التفسير',
+  compareTafsirs: 'مقارنة تفسيرين',
+  hideTafsir: 'إخفاء التفسير',
+  showTafsir: 'إظهار التفسير',
+  benefits: 'الفوائد',
+  aboutSurah: 'نبذة عن السورة',
+  listenToRecitation: 'استمع لتلاوة كل آية بصوت 6 قراء مختلفين',
+  reciters: 'قراء',
+  features: 'مميزات التطبيق',
+  allInOnePlace: 'كل ما تحتاجه في مكان واحد',
+  comprehensiveApp: 'تطبيق شامل للقرآن الكريم يجمع بين القراءة والاستماع والتفسير',
+  trustedTafsirs: 'تفسير موثوق',
+  fromMajorBooks: 'من أمهات كتب التفسير',
+  distinguishedReciters: 'قراء مميزين',
+  beautifulRecitations: 'تلاوات بأصوات عذبة',
+  advancedSearch: 'بحث متقدم',
+  searchInVerses: 'ابحث في الآيات والتفاسير',
+  favorites: 'المفضلة',
+  saveYourFavorites: 'احفظ آياتك المفضلة',
+  listenVerseByVerse: 'استماع آية بآية',
+  orFullSurah: 'أو السورة كاملة',
+  fullSurahs: 'سورة كاملة',
+  uthmaniScript: 'القرآن الكريم بالرسم العثماني',
+  bismillah: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+  bookOfAllah: 'كتاب الله المبين',
+  readListenReflect: 'اقرأ واستمع وتدبر آيات الله بتفسير شامل من أمهات كتب التفسير',
+  juz: 'جزء',
+  athkarAndDuas: 'الأذكار والأدعية',
+  electronicMushaf: 'المصحف الإلكتروني',
+  allRightsReserved: 'جميع الحقوق محفوظة',
+  trustedTafsirsList: 'التفاسير الموثوقة: ابن كثير | الطبري | السعدي | التفسير الميسر | الجلالين',
+  translation: 'الترجمة',
+  ttsWarning: 'تنبيه: صوت الترجمة قد لا يكون دقيقاً في نطق بعض الكلمات الإسلامية',
+};
+
+const englishTranslations = {
+  title: 'The Holy Quran',
+  quran: 'Quran',
+  holyQuran: 'The Holy Quran',
+  home: 'Home',
+  index: 'Index',
+  settings: 'Settings',
+  search: 'Search',
+  searchPlaceholder: 'Search surahs...',
+  athkar: 'Athkar & Duas',
+  appearance: 'Appearance',
+  lightMode: 'Light Mode',
+  darkMode: 'Dark Mode',
+  language: 'Language',
+  about: 'About App',
+  aboutText: 'Quran app with 14 trusted Tafsirs and 6 distinguished reciters. Read, listen and reflect on the verses of Allah.',
+  quickNavigation: 'Quick Navigation',
+  surahIndex: 'Surah Index',
+  browseSurahs: 'Browse the Surahs of the Holy Quran',
+  dragToScroll: 'Drag to scroll or use arrows',
+  viewFullIndex: 'View Full Index',
+  verse: 'verse',
+  verses: 'verses',
+  meccan: 'Meccan',
+  medinan: 'Medinan',
+  available: 'Available',
+  surah: 'Surah',
+  tafsir: 'Tafsir',
+  tafsirSource: 'Tafsir Source',
+  compareTafsirs: 'Compare Tafsirs',
+  hideTafsir: 'Hide Tafsir',
+  showTafsir: 'Show Tafsir',
+  benefits: 'Benefits',
+  aboutSurah: 'About this Surah',
+  listenToRecitation: 'Listen to each verse by 6 different reciters',
+  reciters: 'reciters',
+  features: 'App Features',
+  allInOnePlace: 'Everything you need in one place',
+  comprehensiveApp: 'A comprehensive Quran app combining reading, listening, and interpretation',
+  trustedTafsirs: 'trusted Tafsirs',
+  fromMajorBooks: 'From major Tafsir books',
+  distinguishedReciters: 'distinguished reciters',
+  beautifulRecitations: 'Beautiful recitations',
+  advancedSearch: 'Advanced Search',
+  searchInVerses: 'Search in verses and Tafsirs',
+  favorites: 'Favorites',
+  saveYourFavorites: 'Save your favorite verses',
+  listenVerseByVerse: 'Listen verse by verse',
+  orFullSurah: 'or full surah',
+  fullSurahs: 'full surahs',
+  uthmaniScript: 'Quran in Uthmani Script',
+  bismillah: 'In the name of Allah, the Most Gracious, the Most Merciful',
+  bookOfAllah: 'The Book of Allah',
+  readListenReflect: 'Read, listen, and reflect on the verses of Allah with comprehensive Tafsir',
+  juz: 'Juz',
+  athkarAndDuas: 'Athkar & Duas',
+  electronicMushaf: 'Electronic Mushaf',
+  allRightsReserved: 'All rights reserved',
+  trustedTafsirsList: 'Trusted Tafsirs: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
+  translation: 'Translation',
+  ttsWarning: 'Note: Audio may not accurately pronounce some Islamic terms',
+};
+
+type TranslationStrings = typeof baseTranslations;
+
+export const translations: Record<Language, TranslationStrings> = {
+  ar: baseTranslations,
+  en: englishTranslations,
   fr: {
+    ...englishTranslations,
     title: 'Le Saint Coran',
     quran: 'Coran',
     holyQuran: 'Le Saint Coran',
@@ -226,60 +232,12 @@ export const translations: Record<Language, {
     settings: 'Paramètres',
     search: 'Recherche',
     searchPlaceholder: 'Rechercher des sourates...',
-    athkar: 'Athkar & Duas',
-    appearance: 'Apparence',
-    lightMode: 'Mode Clair',
-    darkMode: 'Mode Sombre',
     language: 'Langue',
-    about: 'À propos',
-    aboutText: "Application Coran avec 14 Tafsirs fiables et 6 réciteurs distingués. Lisez, écoutez et méditez les versets d'Allah.",
-    quickNavigation: 'Navigation Rapide',
-    surahIndex: 'Index des Sourates',
-    browseSurahs: 'Parcourir les Sourates du Saint Coran',
-    dragToScroll: 'Faites glisser pour faire défiler ou utilisez les flèches',
-    viewFullIndex: "Voir l'index complet",
-    verse: 'verset',
-    verses: 'versets',
-    meccan: 'Mecquoise',
-    medinan: 'Médinoise',
-    available: 'Disponible',
-    surah: 'Sourate',
-    tafsir: 'Tafsir',
-    tafsirSource: 'Source du Tafsir',
-    compareTafsirs: 'Comparer les Tafsirs',
-    hideTafsir: 'Masquer le Tafsir',
-    showTafsir: 'Afficher le Tafsir',
-    benefits: 'Bénéfices',
-    aboutSurah: 'À propos de cette Sourate',
-    listenToRecitation: 'Écoutez chaque verset par 6 réciteurs différents',
-    reciters: 'réciteurs',
-    features: "Fonctionnalités de l'App",
-    allInOnePlace: 'Tout ce dont vous avez besoin en un seul endroit',
-    comprehensiveApp: "Une application Coran complète combinant lecture, écoute et interprétation",
-    trustedTafsirs: 'Tafsirs fiables',
-    fromMajorBooks: 'Des grands livres de Tafsir',
-    distinguishedReciters: 'réciteurs distingués',
-    beautifulRecitations: 'Belles récitations',
-    advancedSearch: 'Recherche Avancée',
-    searchInVerses: 'Rechercher dans les versets et Tafsirs',
-    favorites: 'Favoris',
-    saveYourFavorites: 'Enregistrez vos versets préférés',
-    listenVerseByVerse: 'Écouter verset par verset',
-    orFullSurah: 'ou sourate complète',
-    fullSurahs: 'sourates complètes',
-    uthmaniScript: 'Coran en écriture Uthmanienne',
-    bismillah: 'Au nom d\'Allah, le Tout Miséricordieux, le Très Miséricordieux',
-    bookOfAllah: "Le Livre d'Allah",
-    readListenReflect: "Lisez, écoutez et méditez les versets d'Allah avec un Tafsir complet",
-    juz: 'Juz',
-    athkarAndDuas: 'Athkar & Duas',
-    electronicMushaf: 'Mushaf Électronique',
-    allRightsReserved: 'Tous droits réservés',
-    trustedTafsirsList: 'Tafsirs fiables: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
     translation: 'Traduction',
-    ttsWarning: 'Note: L\'audio peut ne pas prononcer correctement certains termes islamiques',
+    bismillah: 'Au nom d\'Allah, le Tout Miséricordieux, le Très Miséricordieux',
   },
   ur: {
+    ...englishTranslations,
     title: 'قرآن پاک',
     quran: 'قرآن',
     holyQuran: 'قرآن پاک',
@@ -288,60 +246,12 @@ export const translations: Record<Language, {
     settings: 'ترتیبات',
     search: 'تلاش',
     searchPlaceholder: 'سورتیں تلاش کریں...',
-    athkar: 'اذکار و دعائیں',
-    appearance: 'ظاہری شکل',
-    lightMode: 'روشن موڈ',
-    darkMode: 'تاریک موڈ',
     language: 'زبان',
-    about: 'ایپ کے بارے میں',
-    aboutText: '14 معتبر تفاسیر اور 6 ممتاز قاریوں کے ساتھ قرآن ایپ۔ اللہ کی آیات پڑھیں، سنیں اور غور کریں۔',
-    quickNavigation: 'فوری نیویگیشن',
-    surahIndex: 'سورتوں کا اشاریہ',
-    browseSurahs: 'قرآن پاک کی سورتیں دیکھیں',
-    dragToScroll: 'سکرول کرنے کے لیے گھسیٹیں یا تیر استعمال کریں',
-    viewFullIndex: 'مکمل اشاریہ دیکھیں',
-    verse: 'آیت',
-    verses: 'آیات',
-    meccan: 'مکی',
-    medinan: 'مدنی',
-    available: 'دستیاب',
-    surah: 'سورۃ',
-    tafsir: 'تفسیر',
-    tafsirSource: 'تفسیر کا ماخذ',
-    compareTafsirs: 'تفاسیر کا موازنہ',
-    hideTafsir: 'تفسیر چھپائیں',
-    showTafsir: 'تفسیر دکھائیں',
-    benefits: 'فوائد',
-    aboutSurah: 'اس سورت کے بارے میں',
-    listenToRecitation: '6 مختلف قاریوں سے ہر آیت سنیں',
-    reciters: 'قاری',
-    features: 'ایپ کی خصوصیات',
-    allInOnePlace: 'سب کچھ ایک جگہ',
-    comprehensiveApp: 'ایک جامع قرآن ایپ جو پڑھنے، سننے اور تفسیر کو یکجا کرتی ہے',
-    trustedTafsirs: 'معتبر تفاسیر',
-    fromMajorBooks: 'بڑی تفسیر کی کتابوں سے',
-    distinguishedReciters: 'ممتاز قاری',
-    beautifulRecitations: 'خوبصورت تلاوتیں',
-    advancedSearch: 'جدید تلاش',
-    searchInVerses: 'آیات اور تفاسیر میں تلاش کریں',
-    favorites: 'پسندیدہ',
-    saveYourFavorites: 'اپنی پسندیدہ آیات محفوظ کریں',
-    listenVerseByVerse: 'آیت بہ آیت سنیں',
-    orFullSurah: 'یا مکمل سورت',
-    fullSurahs: 'مکمل سورتیں',
-    uthmaniScript: 'عثمانی رسم الخط میں قرآن',
-    bismillah: 'بِسْمِ اللہِ الرَّحْمٰنِ الرَّحِیْمِ',
-    bookOfAllah: 'اللہ کی کتاب',
-    readListenReflect: 'جامع تفسیر کے ساتھ اللہ کی آیات پڑھیں، سنیں اور غور کریں',
-    juz: 'پارہ',
-    athkarAndDuas: 'اذکار و دعائیں',
-    electronicMushaf: 'الیکٹرانک مصحف',
-    allRightsReserved: 'جملہ حقوق محفوظ ہیں',
-    trustedTafsirsList: 'معتبر تفاسیر: ابن کثیر | طبری | سعدی | میسر | جلالین',
     translation: 'ترجمہ',
-    ttsWarning: 'نوٹ: آڈیو کچھ اسلامی الفاظ کا صحیح تلفظ نہیں کر سکتا',
+    bismillah: 'بِسْمِ اللہِ الرَّحْمٰنِ الرَّحِیْمِ',
   },
   id: {
+    ...englishTranslations,
     title: 'Al-Quran Al-Karim',
     quran: 'Al-Quran',
     holyQuran: 'Al-Quran Al-Karim',
@@ -350,60 +260,12 @@ export const translations: Record<Language, {
     settings: 'Pengaturan',
     search: 'Pencarian',
     searchPlaceholder: 'Cari surah...',
-    athkar: 'Dzikir & Doa',
-    appearance: 'Tampilan',
-    lightMode: 'Mode Terang',
-    darkMode: 'Mode Gelap',
     language: 'Bahasa',
-    about: 'Tentang Aplikasi',
-    aboutText: 'Aplikasi Al-Quran dengan 14 Tafsir terpercaya dan 6 qari pilihan. Baca, dengarkan dan renungkan ayat-ayat Allah.',
-    quickNavigation: 'Navigasi Cepat',
-    surahIndex: 'Indeks Surah',
-    browseSurahs: 'Jelajahi Surah Al-Quran',
-    dragToScroll: 'Geser untuk menggulir atau gunakan panah',
-    viewFullIndex: 'Lihat Indeks Lengkap',
-    verse: 'ayat',
-    verses: 'ayat',
-    meccan: 'Makkiyah',
-    medinan: 'Madaniyah',
-    available: 'Tersedia',
-    surah: 'Surah',
-    tafsir: 'Tafsir',
-    tafsirSource: 'Sumber Tafsir',
-    compareTafsirs: 'Bandingkan Tafsir',
-    hideTafsir: 'Sembunyikan Tafsir',
-    showTafsir: 'Tampilkan Tafsir',
-    benefits: 'Manfaat',
-    aboutSurah: 'Tentang Surah Ini',
-    listenToRecitation: 'Dengarkan setiap ayat oleh 6 qari berbeda',
-    reciters: 'qari',
-    features: 'Fitur Aplikasi',
-    allInOnePlace: 'Semua yang Anda butuhkan di satu tempat',
-    comprehensiveApp: 'Aplikasi Al-Quran lengkap yang menggabungkan membaca, mendengarkan, dan tafsir',
-    trustedTafsirs: 'Tafsir terpercaya',
-    fromMajorBooks: 'Dari kitab-kitab tafsir utama',
-    distinguishedReciters: 'qari pilihan',
-    beautifulRecitations: 'Bacaan yang indah',
-    advancedSearch: 'Pencarian Lanjutan',
-    searchInVerses: 'Cari dalam ayat dan tafsir',
-    favorites: 'Favorit',
-    saveYourFavorites: 'Simpan ayat favorit Anda',
-    listenVerseByVerse: 'Dengarkan ayat per ayat',
-    orFullSurah: 'atau surah lengkap',
-    fullSurahs: 'surah lengkap',
-    uthmaniScript: 'Al-Quran dalam Tulisan Utsmani',
-    bismillah: 'Dengan nama Allah, Yang Maha Pengasih, Maha Penyayang',
-    bookOfAllah: 'Kitab Allah',
-    readListenReflect: 'Baca, dengarkan, dan renungkan ayat-ayat Allah dengan tafsir lengkap',
-    juz: 'Juz',
-    athkarAndDuas: 'Dzikir & Doa',
-    electronicMushaf: 'Mushaf Elektronik',
-    allRightsReserved: 'Hak cipta dilindungi',
-    trustedTafsirsList: 'Tafsir Terpercaya: Ibn Katsir | Thabari | Saadi | Muyassar | Jalalayn',
     translation: 'Terjemahan',
-    ttsWarning: 'Catatan: Audio mungkin tidak mengucapkan beberapa istilah Islam dengan tepat',
+    bismillah: 'Dengan nama Allah, Yang Maha Pengasih, Maha Penyayang',
   },
   tr: {
+    ...englishTranslations,
     title: "Kur'an-ı Kerim",
     quran: "Kur'an",
     holyQuran: "Kur'an-ı Kerim",
@@ -412,60 +274,12 @@ export const translations: Record<Language, {
     settings: 'Ayarlar',
     search: 'Arama',
     searchPlaceholder: 'Sure ara...',
-    athkar: 'Zikirler ve Dualar',
-    appearance: 'Görünüm',
-    lightMode: 'Açık Mod',
-    darkMode: 'Karanlık Mod',
     language: 'Dil',
-    about: 'Uygulama Hakkında',
-    aboutText: "14 güvenilir tefsir ve 6 seçkin hafız ile Kur'an uygulaması. Allah'ın ayetlerini okuyun, dinleyin ve tefekkür edin.",
-    quickNavigation: 'Hızlı Gezinme',
-    surahIndex: 'Sure İndeksi',
-    browseSurahs: "Kur'an-ı Kerim Surelerini Keşfedin",
-    dragToScroll: 'Kaydırmak için sürükleyin veya okları kullanın',
-    viewFullIndex: 'Tam İndeksi Görüntüle',
-    verse: 'ayet',
-    verses: 'ayet',
-    meccan: 'Mekki',
-    medinan: 'Medeni',
-    available: 'Mevcut',
-    surah: 'Sure',
-    tafsir: 'Tefsir',
-    tafsirSource: 'Tefsir Kaynağı',
-    compareTafsirs: 'Tefsirleri Karşılaştır',
-    hideTafsir: 'Tefsiri Gizle',
-    showTafsir: 'Tefsiri Göster',
-    benefits: 'Faydalar',
-    aboutSurah: 'Bu Sure Hakkında',
-    listenToRecitation: '6 farklı hafızdan her ayeti dinleyin',
-    reciters: 'hafız',
-    features: 'Uygulama Özellikleri',
-    allInOnePlace: 'İhtiyacınız olan her şey tek bir yerde',
-    comprehensiveApp: "Okuma, dinleme ve tefsiri birleştiren kapsamlı bir Kur'an uygulaması",
-    trustedTafsirs: 'güvenilir tefsir',
-    fromMajorBooks: 'Büyük tefsir kitaplarından',
-    distinguishedReciters: 'seçkin hafız',
-    beautifulRecitations: 'Güzel tilavetler',
-    advancedSearch: 'Gelişmiş Arama',
-    searchInVerses: 'Ayetlerde ve tefsirlerde ara',
-    favorites: 'Favoriler',
-    saveYourFavorites: 'Favori ayetlerinizi kaydedin',
-    listenVerseByVerse: 'Ayet ayet dinleyin',
-    orFullSurah: 'veya tam sure',
-    fullSurahs: 'tam sure',
-    uthmaniScript: 'Osmanlı Yazısında Kuran',
-    bismillah: 'Rahman ve Rahim olan Allah\'ın adıyla',
-    bookOfAllah: "Allah'ın Kitabı",
-    readListenReflect: "Kapsamlı tefsirle Allah'ın ayetlerini okuyun, dinleyin ve tefekkür edin",
-    juz: 'Cüz',
-    athkarAndDuas: 'Zikirler ve Dualar',
-    electronicMushaf: 'Elektronik Mushaf',
-    allRightsReserved: 'Tüm hakları saklıdır',
-    trustedTafsirsList: 'Güvenilir Tefsirler: İbn Kesir | Taberi | Saadi | Müyesser | Celaleyn',
     translation: 'Çeviri',
-    ttsWarning: 'Not: Ses bazı İslami terimleri doğru telaffuz etmeyebilir',
+    bismillah: 'Rahmân ve Rahîm olan Allah\'ın adıyla',
   },
   it: {
+    ...englishTranslations,
     title: 'Il Sacro Corano',
     quran: 'Corano',
     holyQuran: 'Il Sacro Corano',
@@ -474,99 +288,96 @@ export const translations: Record<Language, {
     settings: 'Impostazioni',
     search: 'Cerca',
     searchPlaceholder: 'Cerca sure...',
-    athkar: 'Athkar e Dua',
-    appearance: 'Aspetto',
-    lightMode: 'Modalità Chiara',
-    darkMode: 'Modalità Scura',
     language: 'Lingua',
-    about: 'Informazioni',
-    aboutText: 'App del Corano con 14 Tafsir affidabili e 6 recitatori distinti. Leggi, ascolta e rifletti sui versetti di Allah.',
-    quickNavigation: 'Navigazione Rapida',
-    surahIndex: 'Indice delle Sure',
-    browseSurahs: 'Sfoglia le Sure del Sacro Corano',
-    dragToScroll: 'Trascina per scorrere o usa le frecce',
-    viewFullIndex: 'Visualizza Indice Completo',
-    verse: 'versetto',
-    verses: 'versetti',
-    meccan: 'Meccana',
-    medinan: 'Medinese',
-    available: 'Disponibile',
-    surah: 'Sura',
-    tafsir: 'Tafsir',
-    tafsirSource: 'Fonte del Tafsir',
-    compareTafsirs: 'Confronta Tafsir',
-    hideTafsir: 'Nascondi Tafsir',
-    showTafsir: 'Mostra Tafsir',
-    benefits: 'Benefici',
-    aboutSurah: 'Informazioni su questa Sura',
-    listenToRecitation: 'Ascolta ogni versetto da 6 recitatori diversi',
-    reciters: 'recitatori',
-    features: "Funzionalità dell'App",
-    allInOnePlace: 'Tutto ciò di cui hai bisogno in un unico posto',
-    comprehensiveApp: "Un'app completa del Corano che combina lettura, ascolto e interpretazione",
-    trustedTafsirs: 'Tafsir affidabili',
-    fromMajorBooks: 'Dai principali libri di Tafsir',
-    distinguishedReciters: 'recitatori distinti',
-    beautifulRecitations: 'Belle recitazioni',
-    advancedSearch: 'Ricerca Avanzata',
-    searchInVerses: 'Cerca in versetti e Tafsir',
-    favorites: 'Preferiti',
-    saveYourFavorites: 'Salva i tuoi versetti preferiti',
-    listenVerseByVerse: 'Ascolta versetto per versetto',
-    orFullSurah: 'o sura completa',
-    fullSurahs: 'sure complete',
-    uthmaniScript: 'Corano in Scrittura Uthmaniyya',
-    bismillah: 'Nel nome di Allah, il Clemente, il Misericordioso',
-    bookOfAllah: 'Il Libro di Allah',
-    readListenReflect: 'Leggi, ascolta e rifletti sui versetti di Allah con Tafsir completo',
-    juz: 'Juz',
-    athkarAndDuas: 'Athkar e Dua',
-    electronicMushaf: 'Mushaf Elettronico',
-    allRightsReserved: 'Tutti i diritti riservati',
-    trustedTafsirsList: 'Tafsir Affidabili: Ibn Kathir | Tabari | Saadi | Muyassar | Jalalayn',
     translation: 'Traduzione',
-    ttsWarning: 'Nota: L\'audio potrebbe non pronunciare correttamente alcuni termini islamici',
+    bismillah: 'In nome di Allah, il Clemente, il Misericordioso',
   },
+  // All other languages will use English as fallback for UI
+  de: { ...englishTranslations, title: 'Der Heilige Quran', language: 'Sprache', translation: 'Übersetzung' },
+  es: { ...englishTranslations, title: 'El Sagrado Corán', language: 'Idioma', translation: 'Traducción' },
+  pt: { ...englishTranslations, title: 'O Sagrado Alcorão', language: 'Idioma', translation: 'Tradução' },
+  ru: { ...englishTranslations, title: 'Священный Коран', language: 'Язык', translation: 'Перевод' },
+  bn: { ...englishTranslations, title: 'পবিত্র কুরআন', language: 'ভাষা', translation: 'অনুবাদ' },
+  fa: { ...englishTranslations, title: 'قرآن کریم', language: 'زبان', translation: 'ترجمه' },
+  hi: { ...englishTranslations, title: 'पवित्र कुरान', language: 'भाषा', translation: 'अनुवाद' },
+  ms: { ...englishTranslations, title: 'Al-Quran Al-Karim', language: 'Bahasa', translation: 'Terjemahan' },
+  nl: { ...englishTranslations, title: 'De Heilige Koran', language: 'Taal', translation: 'Vertaling' },
+  pl: { ...englishTranslations, title: 'Święty Koran', language: 'Język', translation: 'Tłumaczenie' },
+  ro: { ...englishTranslations, title: 'Sfântul Coran', language: 'Limbă', translation: 'Traducere' },
+  sv: { ...englishTranslations, title: 'Den Heliga Koranen', language: 'Språk', translation: 'Översättning' },
+  th: { ...englishTranslations, title: 'อัลกุรอาน', language: 'ภาษา', translation: 'การแปล' },
+  vi: { ...englishTranslations, title: 'Kinh Thánh Quran', language: 'Ngôn ngữ', translation: 'Bản dịch' },
+  zh: { ...englishTranslations, title: '神圣古兰经', language: '语言', translation: '翻译' },
+  ja: { ...englishTranslations, title: '聖クルアーン', language: '言語', translation: '翻訳' },
+  ko: { ...englishTranslations, title: '성 꾸란', language: '언어', translation: '번역' },
+  tg: { ...englishTranslations, title: 'Қуръони Карим', language: 'Забон', translation: 'Тарҷума' },
+  uz: { ...englishTranslations, title: 'Qur\'oni Karim', language: 'Til', translation: 'Tarjima' },
+  az: { ...englishTranslations, title: 'Müqəddəs Quran', language: 'Dil', translation: 'Tərcümə' },
+  kk: { ...englishTranslations, title: 'Құран Кәрім', language: 'Тіл', translation: 'Аударма' },
+  ky: { ...englishTranslations, title: 'Куран Карим', language: 'Тил', translation: 'Котормо' },
+  tt: { ...englishTranslations, title: 'Коръән Кәрим', language: 'Тел', translation: 'Тәрҗемә' },
+  bs: { ...englishTranslations, title: 'Sveti Kuran', language: 'Jezik', translation: 'Prijevod' },
+  sq: { ...englishTranslations, title: 'Kurani i Shenjtë', language: 'Gjuha', translation: 'Përkthimi' },
+  mk: { ...englishTranslations, title: 'Свети Куран', language: 'Јазик', translation: 'Превод' },
+  bg: { ...englishTranslations, title: 'Свещеният Коран', language: 'Език', translation: 'Превод' },
+  cs: { ...englishTranslations, title: 'Svatý Korán', language: 'Jazyk', translation: 'Překlad' },
+  sk: { ...englishTranslations, title: 'Svätý Korán', language: 'Jazyk', translation: 'Preklad' },
+  uk: { ...englishTranslations, title: 'Священний Коран', language: 'Мова', translation: 'Переклад' },
+  sr: { ...englishTranslations, title: 'Свети Куран', language: 'Језик', translation: 'Превод' },
+  hr: { ...englishTranslations, title: 'Sveti Kuran', language: 'Jezik', translation: 'Prijevod' },
+  sl: { ...englishTranslations, title: 'Sveti Koran', language: 'Jezik', translation: 'Prevod' },
+  am: { ...englishTranslations, title: 'ቅዱስ ቁርዓን', language: 'ቋንቋ', translation: 'ትርጉም' },
+  so: { ...englishTranslations, title: 'Quraanka Kariimka', language: 'Luuqadda', translation: 'Turjumaad' },
+  sw: { ...englishTranslations, title: 'Qurani Tukufu', language: 'Lugha', translation: 'Tafsiri' },
+  ha: { ...englishTranslations, title: 'Alƙur\'ani Mai Tsarki', language: 'Harshe', translation: 'Fassara' },
+  yo: { ...englishTranslations, title: 'Al-Kurani Mimọ', language: 'Èdè', translation: 'Ìtumọ̀' },
+  ig: { ...englishTranslations, title: 'Quran Nsọ', language: 'Asụsụ', translation: 'Ntụgharị' },
+  ml: { ...englishTranslations, title: 'വിശുദ്ധ ഖുർആൻ', language: 'ഭാഷ', translation: 'വിവർത്തനം' },
+  ta: { ...englishTranslations, title: 'புனித குர்ஆன்', language: 'மொழி', translation: 'மொழிபெயர்ப்பு' },
+  te: { ...englishTranslations, title: 'పవిత్ర ఖురాన్', language: 'భాష', translation: 'అనువాదం' },
+  gu: { ...englishTranslations, title: 'પવિત્ર કુરાન', language: 'ભાષા', translation: 'અનુવાદ' },
+  mr: { ...englishTranslations, title: 'पवित्र कुराण', language: 'भाषा', translation: 'भाषांतर' },
+  pa: { ...englishTranslations, title: 'ਪਵਿੱਤਰ ਕੁਰਾਨ', language: 'ਭਾਸ਼ਾ', translation: 'ਅਨੁਵਾਦ' },
+  si: { ...englishTranslations, title: 'ශුද්ධ වූ කුර්ආනය', language: 'භාෂාව', translation: 'පරිවර්තනය' },
+  ne: { ...englishTranslations, title: 'पवित्र कुरान', language: 'भाषा', translation: 'अनुवाद' },
+  my: { ...englishTranslations, title: 'မြန်မာကျမ်းမြတ်ကုရ်အာန်', language: 'ဘာသာစကား', translation: 'ဘာသာပြန်' },
+  km: { ...englishTranslations, title: 'គម្ពីរកុរអានដ៏វិសុទ្ធ', language: 'ភាសា', translation: 'ការបកប្រែ' },
+  lo: { ...englishTranslations, title: 'ຄໍາພີອັນບໍລິສຸດ', language: 'ພາສາ', translation: 'ການແປ' },
+  fil: { ...englishTranslations, title: 'Ang Banal na Quran', language: 'Wika', translation: 'Salin' },
+  dv: { ...englishTranslations, title: 'ކީރިތި ޤުރުއާން', language: 'ބަސް', translation: 'ތަރުޖަމާ' },
 };
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: typeof translations['ar'];
+  t: TranslationStrings;
   isRtl: boolean;
   dir: 'rtl' | 'ltr';
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'quran-app-language';
+const rtlLanguages: Language[] = ['ar', 'ur', 'fa', 'dv'];
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && languages.some(l => l.code === saved)) {
-        return saved as Language;
-      }
-    }
-    return 'ar';
+    const saved = localStorage.getItem('quran-app-language');
+    return (saved as Language) || 'ar';
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    localStorage.setItem('quran-app-language', lang);
   };
 
-  useEffect(() => {
-    // Update document direction
-    const isRtl = language === 'ar' || language === 'ur';
-    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-  }, [language]);
-
-  const t = translations[language];
-  const isRtl = language === 'ar' || language === 'ur';
+  const isRtl = rtlLanguages.includes(language);
   const dir = isRtl ? 'rtl' : 'ltr';
+  const t = translations[language] || translations.en;
+
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', dir);
+    document.documentElement.setAttribute('lang', language);
+  }, [language, dir]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, isRtl, dir }}>
@@ -581,4 +392,10 @@ export const useLanguage = () => {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
+};
+
+// Helper function to get translation ID for a language
+export const getTranslationId = (langCode: Language): number | undefined => {
+  const lang = languages.find(l => l.code === langCode);
+  return lang?.translationId;
 };

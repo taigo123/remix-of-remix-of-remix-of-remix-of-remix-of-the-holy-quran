@@ -11,17 +11,6 @@ interface TranslationCache {
   [key: string]: TranslatedVerse[];
 }
 
-// Language codes for translation API
-const languageCodeMap: Record<Language, string> = {
-  ar: 'ar', // Arabic (original - no translation needed)
-  en: 'en',
-  fr: 'fr',
-  ur: 'ur',
-  id: 'id',
-  tr: 'tr',
-  it: 'it', // Italian now supported via Quran.com API
-};
-
 const translationCache: TranslationCache = {};
 
 export const useVerseTranslation = (surahNumber: number) => {
@@ -37,8 +26,7 @@ export const useVerseTranslation = (surahNumber: number) => {
       return;
     }
 
-    const langCode = languageCodeMap[language];
-    const cacheKey = `${surahNumber}-${langCode}`;
+    const cacheKey = `${surahNumber}-${language}`;
 
     // Check cache first
     if (translationCache[cacheKey]) {
@@ -52,7 +40,7 @@ export const useVerseTranslation = (surahNumber: number) => {
 
       try {
         const { data, error: fnError } = await supabase.functions.invoke('get-verse-translation', {
-          body: { surahNumber, language: langCode }
+          body: { surahNumber, language }
         });
 
         if (fnError) {
