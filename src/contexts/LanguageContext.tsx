@@ -1,13 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Extended language support - 50+ languages from Quran.com
+// Removed: my (Burmese), km (Khmer), lo (Lao), ig (Igbo), fil (Filipino) - not available correctly in API
 export type Language = 
   | 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it' | 'de' | 'es' | 'pt' 
   | 'ru' | 'bn' | 'fa' | 'hi' | 'ms' | 'nl' | 'pl' | 'ro' | 'sv' | 'th'
   | 'vi' | 'zh' | 'ja' | 'ko' | 'tg' | 'uz' | 'az' | 'kk' | 'ky' | 'tt'
   | 'bs' | 'sq' | 'mk' | 'bg' | 'cs' | 'sk' | 'uk' | 'sr' | 'hr' | 'sl'
-  | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ig' | 'ml' | 'ta' | 'te' | 'gu'
-  | 'mr' | 'pa' | 'si' | 'ne' | 'my' | 'km' | 'lo' | 'fil' | 'dv';
+  | 'am' | 'so' | 'sw' | 'ha' | 'yo' | 'ml' | 'ta' | 'te' | 'gu'
+  | 'mr' | 'pa' | 'si' | 'ne' | 'dv';
 
 export type LanguageRegion = 'original' | 'european' | 'asian' | 'african' | 'middleeast';
 
@@ -78,10 +79,6 @@ export const languages: LanguageInfo[] = [
   { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', translationId: 39, translator: 'Abdullah Basmeih', source: 'King Fahd Complex', region: 'asian' },
   { code: 'th', name: 'Thai', nativeName: 'ไทย', translationId: 51, translator: 'King Fahad Complex', source: 'King Fahd Complex', region: 'asian' },
   { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', translationId: 177, translator: 'Ruwwad Center', source: 'Quran.com', region: 'asian' },
-  { code: 'my', name: 'Burmese', nativeName: 'မြန်မာ', translationId: 233, translator: 'Sani Taher', source: 'Quran.com', region: 'asian' },
-  { code: 'km', name: 'Khmer', nativeName: 'ភាសាខ្មែរ', translationId: 224, translator: 'Cambodia Islamic Center', source: 'Quran.com', region: 'asian' },
-  { code: 'lo', name: 'Lao', nativeName: 'ລາວ', translationId: 226, translator: 'Lao Translation', source: 'Quran.com', region: 'asian' },
-  { code: 'fil', name: 'Filipino', nativeName: 'Filipino', translationId: 211, translator: 'Diyanet Center', source: 'Quran.com', region: 'asian' },
   { code: 'zh', name: 'Chinese', nativeName: '中文', translationId: 56, translator: 'Ma Jian', source: 'King Fahd Complex', region: 'asian' },
   { code: 'ja', name: 'Japanese', nativeName: '日本語', translationId: 35, translator: 'Ryoichi Mita', source: 'King Fahd Complex', region: 'asian' },
   { code: 'ko', name: 'Korean', nativeName: '한국어', translationId: 36, translator: 'Korean Translation', source: 'King Fahd Complex', region: 'asian' },
@@ -97,7 +94,6 @@ export const languages: LanguageInfo[] = [
   { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', translationId: 49, translator: 'Ali Muhsin Al-Barwani', source: 'King Fahd Complex', region: 'african' },
   { code: 'ha', name: 'Hausa', nativeName: 'Hausa', translationId: 32, translator: 'Abubakar Mahmud Gumi', source: 'King Fahd Complex', region: 'african' },
   { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá', translationId: 125, translator: 'Shaykh Abu Rahimah', source: 'Quran.com', region: 'african' },
-  { code: 'ig', name: 'Igbo', nativeName: 'Igbo', translationId: 181, translator: 'Igbo Translation', source: 'Quran.com', region: 'african' },
 ];
 
 // Basic UI translations (we'll keep Arabic, English as primary, others will use English fallback for UI)
@@ -341,7 +337,6 @@ export const translations: Record<Language, TranslationStrings> = {
   sw: { ...englishTranslations, title: 'Qurani Tukufu', language: 'Lugha', translation: 'Tafsiri' },
   ha: { ...englishTranslations, title: 'Alƙur\'ani Mai Tsarki', language: 'Harshe', translation: 'Fassara' },
   yo: { ...englishTranslations, title: 'Al-Kurani Mimọ', language: 'Èdè', translation: 'Ìtumọ̀' },
-  ig: { ...englishTranslations, title: 'Quran Nsọ', language: 'Asụsụ', translation: 'Ntụgharị' },
   ml: { ...englishTranslations, title: 'വിശുദ്ധ ഖുർആൻ', language: 'ഭാഷ', translation: 'വിവർത്തനം' },
   ta: { ...englishTranslations, title: 'புனித குர்ஆன்', language: 'மொழி', translation: 'மொழிபெயர்ப்பு' },
   te: { ...englishTranslations, title: 'పవిత్ర ఖురాన్', language: 'భాష', translation: 'అనువాదం' },
@@ -350,10 +345,6 @@ export const translations: Record<Language, TranslationStrings> = {
   pa: { ...englishTranslations, title: 'ਪਵਿੱਤਰ ਕੁਰਾਨ', language: 'ਭਾਸ਼ਾ', translation: 'ਅਨੁਵਾਦ' },
   si: { ...englishTranslations, title: 'ශුද්ධ වූ කුර්ආනය', language: 'භාෂාව', translation: 'පරිවර්තනය' },
   ne: { ...englishTranslations, title: 'पवित्र कुरान', language: 'भाषा', translation: 'अनुवाद' },
-  my: { ...englishTranslations, title: 'မြန်မာကျမ်းမြတ်ကုရ်အာန်', language: 'ဘာသာစကား', translation: 'ဘာသာပြန်' },
-  km: { ...englishTranslations, title: 'គម្ពីរកុរអានដ៏វិសុទ្ធ', language: 'ភាសា', translation: 'ការបកប្រែ' },
-  lo: { ...englishTranslations, title: 'ຄໍາພີອັນບໍລິສຸດ', language: 'ພາສາ', translation: 'ການແປ' },
-  fil: { ...englishTranslations, title: 'Ang Banal na Quran', language: 'Wika', translation: 'Salin' },
   dv: { ...englishTranslations, title: 'ކީރިތި ޤުރުއާން', language: 'ބަސް', translation: 'ތަރުޖަމާ' },
 };
 
