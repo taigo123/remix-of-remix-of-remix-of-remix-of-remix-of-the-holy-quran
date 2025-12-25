@@ -191,107 +191,73 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF نصي
+  // تصدير كـ PDF - باستخدام الصورة للحفاظ على النص العربي
   const exportAsPdf = async () => {
+    if (!contentRef.current) return;
+
     setIsExporting(true);
     try {
+      // تحويل المحتوى لصورة
+      const canvas = await html2canvas(contentRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      // حساب أبعاد الصفحة
       const pdf = new jsPDF({
-        orientation: 'portrait',
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      // إعداد الخط العربي
-      pdf.setFont('Helvetica');
-      
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 15;
-      const contentWidth = pageWidth - margin * 2;
-      let yPos = 20;
-      const lineHeight = 7;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const availableWidth = pageWidth - margin * 2;
+      const availableHeight = pageHeight - margin * 2;
 
-      // العنوان
-      pdf.setFontSize(18);
-      const title = `مقارنة التفاسير - سورة ${surahName || surahNumber}`;
-      pdf.text(title, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 15;
+      // حساب النسبة
+      const ratio = Math.min(availableWidth / (imgWidth / 3.78), availableHeight / (imgHeight / 3.78));
+      const scaledWidth = (imgWidth / 3.78) * ratio;
+      const scaledHeight = (imgHeight / 3.78) * ratio;
 
-      // أسماء التفاسير
-      pdf.setFontSize(12);
-      const leftName = getSourceName(leftSource);
-      const rightName = getSourceName(rightSource);
-      pdf.text(`التفسير الأول: ${leftName}`, pageWidth - margin, yPos, { align: 'right' });
-      yPos += lineHeight;
-      pdf.text(`التفسير الثاني: ${rightName}`, pageWidth - margin, yPos, { align: 'right' });
-      yPos += 15;
+      // إذا كانت الصورة أطول من صفحة واحدة، نقسمها
+      const pxPerPage = (availableHeight * 3.78) / ratio;
+      const totalPages = Math.ceil(imgHeight / pxPerPage);
 
-      // الآيات
-      for (const verse of versesToShow) {
-        // التحقق من الحاجة لصفحة جديدة
-        if (yPos > 270) {
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
           pdf.addPage();
-          yPos = 20;
         }
 
-        // رقم الآية
-        pdf.setFontSize(14);
-        pdf.setTextColor(16, 185, 129); // أخضر
-        pdf.text(`الآية ${verse.id}`, pageWidth - margin, yPos, { align: 'right' });
-        yPos += lineHeight;
-
-        // نص الآية
-        pdf.setFontSize(11);
-        pdf.setTextColor(0, 0, 0);
-        const arabicLines = pdf.splitTextToSize(verse.arabicText, contentWidth);
-        for (const line of arabicLines) {
-          if (yPos > 280) {
-            pdf.addPage();
-            yPos = 20;
-          }
-          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
-          yPos += lineHeight;
-        }
-        yPos += 3;
-
-        // التفسير الأول
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(`[${leftName}]`, pageWidth - margin, yPos, { align: 'right' });
-        yPos += lineHeight;
+        // قص جزء من الصورة لكل صفحة
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = imgWidth;
+        tempCanvas.height = Math.min(pxPerPage, imgHeight - page * pxPerPage);
+        const ctx = tempCanvas.getContext('2d');
         
-        pdf.setTextColor(50, 50, 50);
-        const leftTafsir = leftCache.get(verse.id) || verse.tafsir;
-        const leftLines = pdf.splitTextToSize(leftTafsir, contentWidth);
-        for (const line of leftLines) {
-          if (yPos > 280) {
-            pdf.addPage();
-            yPos = 20;
-          }
-          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
-          yPos += lineHeight - 1;
+        if (ctx) {
+          ctx.drawImage(
+            canvas,
+            0, page * pxPerPage,
+            imgWidth, tempCanvas.height,
+            0, 0,
+            imgWidth, tempCanvas.height
+          );
+          
+          const pageImgData = tempCanvas.toDataURL('image/png');
+          const pageImgHeight = (tempCanvas.height / 3.78) * ratio;
+          
+          pdf.addImage(pageImgData, 'PNG', margin, margin, scaledWidth, pageImgHeight);
         }
-        yPos += 5;
-
-        // التفسير الثاني
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(`[${rightName}]`, pageWidth - margin, yPos, { align: 'right' });
-        yPos += lineHeight;
-        
-        pdf.setTextColor(50, 50, 50);
-        const rightTafsir = rightCache.get(verse.id) || verse.tafsir;
-        const rightLines = pdf.splitTextToSize(rightTafsir, contentWidth);
-        for (const line of rightLines) {
-          if (yPos > 280) {
-            pdf.addPage();
-            yPos = 20;
-          }
-          pdf.text(line, pageWidth - margin, yPos, { align: 'right' });
-          yPos += lineHeight - 1;
-        }
-        yPos += 15;
       }
 
-      // حفظ الملف
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
 
       toast({
