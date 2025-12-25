@@ -38,7 +38,7 @@ const RECITERS = [
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", downloadServer: "https://server12.mp3quran.net/maher" },
   { id: "ar.ahmedajamy", name: "أحمد العجمي", downloadServer: "https://server10.mp3quran.net/ajm" },
   { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد", downloadServer: "https://server7.mp3quran.net/basit_mjwd" },
-  { id: "ar.husary", name: "محمود خليل الحصري", downloadServer: "https://server13.mp3quran.net/husr" },
+  { id: "ar.husary", name: "محمود خليل الحصري (مرتل)", downloadServer: "https://server13.mp3quran.net/husr" },
   { id: "ar.husarymujawwad", name: "الحصري (مجود)", downloadServer: "https://server13.mp3quran.net/husr_mjwd" },
   { id: "ar.hudhaify", name: "علي الحذيفي", downloadServer: "https://server11.mp3quran.net/hthfi" },
   { id: "ar.abdullahbasfar", name: "عبدالله بصفر", downloadServer: "https://server11.mp3quran.net/basf" },

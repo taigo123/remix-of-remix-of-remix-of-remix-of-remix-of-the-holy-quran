@@ -25,7 +25,7 @@ const RECITERS = [
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
   { id: "ar.ahmedajamy", name: "أحمد العجمي" },
   { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد" },
-  { id: "ar.husary", name: "محمود خليل الحصري" },
+  { id: "ar.husary", name: "محمود خليل الحصري (مرتل)" },
   { id: "ar.husarymujawwad", name: "الحصري (مجود)" },
   { id: "ar.hudhaify", name: "علي الحذيفي" },
   { id: "ar.abdullahbasfar", name: "عبدالله بصفر" },
