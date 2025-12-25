@@ -3,16 +3,16 @@ import {
   ArrowRight, 
   Sun, 
   Moon, 
-  Cloud, 
   Sunrise,
   Star,
   Heart,
   BookOpen,
-  Home
+  ChevronLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { Helmet } from "react-helmet";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Thikr {
   id: number;
@@ -84,19 +84,20 @@ const athkarData: AthkarCategory[] = [
 
 const Athkar = () => {
   const { theme, setTheme } = useTheme();
+  const { t, isRtl, dir, language } = useLanguage();
 
   return (
     <>
       <Helmet>
-        <title>الأذكار والأدعية - القرآن الكريم</title>
+        <title>{t.athkarAndDuas} - {t.holyQuran}</title>
         <meta
           name="description"
-          content="أذكار الصباح والمساء والنوم والأدعية اليومية من السنة النبوية"
+          content={t.aboutText}
         />
-        <html lang="ar" dir="rtl" />
+        <html lang={language} dir={dir} />
       </Helmet>
 
-      <div className="min-h-screen bg-background" dir="rtl">
+      <div className="min-h-screen bg-background" dir={dir}>
         {/* خلفية */}
         <div className="fixed inset-0 opacity-[0.02] pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
@@ -118,8 +119,8 @@ const Athkar = () => {
               <div className="flex items-center gap-2">
                 <Link to="/">
                   <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <ArrowRight className="w-4 h-4" />
-                    <span className="hidden sm:inline">الرئيسية</span>
+                    {isRtl ? <ArrowRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                    <span className="hidden sm:inline">{t.home}</span>
                   </Button>
                 </Link>
                 <Link to="/quran">
@@ -133,7 +134,7 @@ const Athkar = () => {
                 <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center shadow-gold">
                   <Heart className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <h1 className="text-lg font-bold font-amiri text-foreground">الأذكار والأدعية</h1>
+                <h1 className="text-lg font-bold font-amiri text-foreground">{t.athkarAndDuas}</h1>
               </div>
 
               <Button
@@ -156,10 +157,10 @@ const Athkar = () => {
           {/* مقدمة */}
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold font-arabic text-foreground mb-3">
-              حَصِّن نفسك بذكر الله
+              {isRtl ? 'حَصِّن نفسك بذكر الله' : 'Protect yourself with the remembrance of Allah'}
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              أذكار من السنة النبوية الشريفة للحفظ والتحصين
+              {isRtl ? 'أذكار من السنة النبوية الشريفة للحفظ والتحصين' : 'Athkar from the Prophetic Sunnah for protection and fortification'}
             </p>
           </div>
 
@@ -178,19 +179,19 @@ const Athkar = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold font-amiri">{category.title}</h3>
-                      <p className="text-sm opacity-80">{category.athkar.length} أذكار</p>
+                      <p className="text-sm opacity-80">{category.athkar.length} {isRtl ? 'أذكار' : 'athkar'}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* الأذكار */}
                 <div className="p-4 space-y-3">
-                  {category.athkar.map((thikr, index) => (
+                  {category.athkar.map((thikr) => (
                     <div 
                       key={thikr.id}
                       className="p-4 bg-muted/30 rounded-xl border border-border/30 hover:border-primary/30 transition-colors"
                     >
-                      <p className="font-arabic text-lg text-foreground leading-loose mb-3">
+                      <p className="font-arabic text-lg text-foreground leading-loose mb-3" dir="rtl">
                         {thikr.text}
                       </p>
                       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -198,7 +199,7 @@ const Athkar = () => {
                           {thikr.reference}
                         </span>
                         <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                          {thikr.count} {thikr.count === 1 ? "مرة" : thikr.count <= 10 ? "مرات" : "مرة"}
+                          {thikr.count} {thikr.count === 1 ? (isRtl ? "مرة" : "time") : thikr.count <= 10 ? (isRtl ? "مرات" : "times") : (isRtl ? "مرة" : "times")}
                         </span>
                       </div>
                     </div>
@@ -214,10 +215,10 @@ const Athkar = () => {
           <div className="container mx-auto text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <BookOpen className="w-5 h-5 text-primary" />
-              <span className="font-amiri text-foreground">المصحف الإلكتروني</span>
+              <span className="font-amiri text-foreground">{t.electronicMushaf}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              جميع الحقوق محفوظة © {new Date().getFullYear()}
+              {t.allRightsReserved} © {new Date().getFullYear()}
             </p>
           </div>
         </footer>
