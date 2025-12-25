@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MessageSquarePlus, Send, Check } from 'lucide-react';
+import { MessageSquarePlus, Send, Check, Languages, Lightbulb, Wrench, Bug, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LANGUAGES = [
@@ -60,60 +60,82 @@ const LANGUAGES = [
   { code: 'ml', name: 'മലയാളം' },
 ];
 
-const UI_LABELS: Record<string, { title: string; description: string; originalLabel: string; suggestedLabel: string; contextLabel: string; contextPlaceholder: string; submit: string; success: string; error: string }> = {
+type FeedbackType = 'translation' | 'feature' | 'improvement' | 'bug' | 'other';
+
+const FEEDBACK_TYPES: { value: FeedbackType; labelAr: string; labelEn: string; icon: typeof Languages }[] = [
+  { value: 'translation', labelAr: 'تصحيح ترجمة', labelEn: 'Translation Correction', icon: Languages },
+  { value: 'feature', labelAr: 'اقتراح ميزة جديدة', labelEn: 'Feature Request', icon: Lightbulb },
+  { value: 'improvement', labelAr: 'تحسين موجود', labelEn: 'Improvement', icon: Wrench },
+  { value: 'bug', labelAr: 'الإبلاغ عن مشكلة', labelEn: 'Report Bug', icon: Bug },
+  { value: 'other', labelAr: 'رسالة أخرى', labelEn: 'Other Message', icon: MessageCircle },
+];
+
+const UI_LABELS = {
   ar: {
-    title: 'اقتراح تصحيح ترجمة',
-    description: 'ساعدنا في تحسين الترجمات عن طريق اقتراح تصحيحات',
+    title: 'أرسل ملاحظاتك',
+    description: 'ساعدنا في تحسين الموقع من خلال اقتراحاتك وملاحظاتك',
+    feedbackTypeLabel: 'نوع الملاحظة',
     originalLabel: 'النص الخاطئ',
     suggestedLabel: 'الترجمة الصحيحة المقترحة',
-    contextLabel: 'أين رأيت هذا النص؟ (اختياري)',
+    messageLabel: 'رسالتك',
+    messagePlaceholder: 'اكتب اقتراحك أو ملاحظتك هنا...',
+    contextLabel: 'تفاصيل إضافية (اختياري)',
     contextPlaceholder: 'مثال: في الصفحة الرئيسية، زر البحث',
-    submit: 'إرسال الاقتراح',
-    success: 'شكراً لك! تم إرسال اقتراحك بنجاح',
+    submit: 'إرسال',
+    success: 'شكراً لك! تم إرسال ملاحظتك بنجاح',
     error: 'حدث خطأ، يرجى المحاولة مرة أخرى',
+    buttonText: 'أرسل ملاحظاتك',
   },
   en: {
-    title: 'Suggest Translation Correction',
-    description: 'Help us improve translations by suggesting corrections',
+    title: 'Send Feedback',
+    description: 'Help us improve by sharing your suggestions and feedback',
+    feedbackTypeLabel: 'Feedback Type',
     originalLabel: 'Incorrect Text',
     suggestedLabel: 'Suggested Correct Translation',
-    contextLabel: 'Where did you see this text? (optional)',
+    messageLabel: 'Your Message',
+    messagePlaceholder: 'Write your suggestion or feedback here...',
+    contextLabel: 'Additional Details (optional)',
     contextPlaceholder: 'Example: on the homepage, search button',
-    submit: 'Submit Suggestion',
-    success: 'Thank you! Your suggestion has been submitted',
+    submit: 'Submit',
+    success: 'Thank you! Your feedback has been submitted',
     error: 'An error occurred, please try again',
+    buttonText: 'Send Feedback',
   },
 };
 
 const RTL_LANGUAGES = ['ar', 'ur', 'fa'];
 
-export const TranslationFeedback = () => {
+export const UserFeedback = () => {
   const { language } = useLanguage();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>('feature');
   const [selectedLanguage, setSelectedLanguage] = useState<string>(language);
   const [originalText, setOriginalText] = useState('');
   const [suggestedText, setSuggestedText] = useState('');
   const [context, setContext] = useState('');
 
-  const labels = UI_LABELS[language] || UI_LABELS.en;
+  const labels = UI_LABELS[language as keyof typeof UI_LABELS] || UI_LABELS.en;
   const isRTL = RTL_LANGUAGES.includes(language);
+  const isTranslation = feedbackType === 'translation';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!originalText.trim() || !suggestedText.trim()) {
+    const messageToSend = isTranslation ? suggestedText : suggestedText;
+    if (!messageToSend.trim()) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from('translation_suggestions').insert({
-        language_code: selectedLanguage,
-        original_text: originalText.trim(),
-        suggested_text: suggestedText.trim(),
+      const { error } = await supabase.from('user_feedback').insert({
+        feedback_type: feedbackType,
+        language_code: isTranslation ? selectedLanguage : null,
+        original_text: isTranslation ? (originalText.trim() || null) : null,
+        suggested_text: messageToSend.trim(),
         context: context.trim() || null,
       });
 
@@ -122,21 +144,24 @@ export const TranslationFeedback = () => {
       setIsSuccess(true);
       toast.success(labels.success);
       
-      // Reset form after delay
       setTimeout(() => {
         setOpen(false);
         setIsSuccess(false);
+        setFeedbackType('feature');
         setOriginalText('');
         setSuggestedText('');
         setContext('');
       }, 1500);
     } catch (error) {
-      console.error('Error submitting suggestion:', error);
+      console.error('Error submitting feedback:', error);
       toast.error(labels.error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const selectedType = FEEDBACK_TYPES.find(t => t.value === feedbackType);
+  const TypeIcon = selectedType?.icon || MessageCircle;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -148,14 +173,14 @@ export const TranslationFeedback = () => {
         >
           <MessageSquarePlus className="h-4 w-4" />
           <span className="hidden sm:inline">
-            {language === 'ar' ? 'اقتراح تصحيح' : 'Suggest Correction'}
+            {labels.buttonText}
           </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md" dir={isRTL ? 'rtl' : 'ltr'}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <MessageSquarePlus className="h-5 w-5 text-primary" />
+            <TypeIcon className="h-5 w-5 text-primary" />
             {labels.title}
           </DialogTitle>
           <DialogDescription>
@@ -172,47 +197,84 @@ export const TranslationFeedback = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Feedback Type Selection */}
             <div className="space-y-2">
-              <Label htmlFor="language">
-                {language === 'ar' ? 'اللغة' : 'Language'}
+              <Label>{labels.feedbackTypeLabel}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {FEEDBACK_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  const isSelected = feedbackType === type.value;
+                  return (
+                    <Button
+                      key={type.value}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      size="sm"
+                      className="justify-start gap-2 h-auto py-2"
+                      onClick={() => setFeedbackType(type.value)}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="text-xs">
+                        {language === 'ar' ? type.labelAr : type.labelEn}
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Language Selection - only for translation feedback */}
+            {isTranslation && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="language">
+                    {language === 'ar' ? 'اللغة' : 'Language'}
+                  </Label>
+                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="original">{labels.originalLabel}</Label>
+                  <Input
+                    id="original"
+                    value={originalText}
+                    onChange={(e) => setOriginalText(e.target.value)}
+                    placeholder={language === 'ar' ? 'اكتب النص الذي يحتوي على خطأ' : 'Enter the incorrect text'}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Main Message */}
+            <div className="space-y-2">
+              <Label htmlFor="suggested">
+                {isTranslation ? labels.suggestedLabel : labels.messageLabel}
               </Label>
-              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="original">{labels.originalLabel}</Label>
-              <Input
-                id="original"
-                value={originalText}
-                onChange={(e) => setOriginalText(e.target.value)}
-                placeholder={language === 'ar' ? 'اكتب النص الذي يحتوي على خطأ' : 'Enter the incorrect text'}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="suggested">{labels.suggestedLabel}</Label>
               <Textarea
                 id="suggested"
                 value={suggestedText}
                 onChange={(e) => setSuggestedText(e.target.value)}
-                placeholder={language === 'ar' ? 'اكتب الترجمة الصحيحة' : 'Enter the correct translation'}
+                placeholder={isTranslation 
+                  ? (language === 'ar' ? 'اكتب الترجمة الصحيحة' : 'Enter the correct translation')
+                  : labels.messagePlaceholder
+                }
                 required
                 rows={3}
               />
             </div>
 
+            {/* Context / Additional Details */}
             <div className="space-y-2">
               <Label htmlFor="context">{labels.contextLabel}</Label>
               <Input
@@ -226,7 +288,7 @@ export const TranslationFeedback = () => {
             <Button 
               type="submit" 
               className="w-full gap-2" 
-              disabled={isSubmitting || !originalText.trim() || !suggestedText.trim()}
+              disabled={isSubmitting || !suggestedText.trim()}
             >
               <Send className="h-4 w-4" />
               {labels.submit}
@@ -237,3 +299,6 @@ export const TranslationFeedback = () => {
     </Dialog>
   );
 };
+
+// Keep backward compatibility
+export const TranslationFeedback = UserFeedback;
