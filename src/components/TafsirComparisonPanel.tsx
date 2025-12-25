@@ -192,33 +192,38 @@ export const TafsirComparisonPanel = ({
     }
   };
 
-  // تصدير كـ PDF
+  // تصدير كـ PDF بجودة عالية
   const exportAsPDF = async () => {
     if (!contentRef.current) return;
     
     setIsExporting(true);
     try {
+      // جودة عالية للـ PDF
       const canvas = await html2canvas(contentRef.current, {
         backgroundColor: '#ffffff',
-        scale: 1,
+        scale: 2, // جودة أعلى
         useCORS: true,
         logging: false,
-        windowWidth: 800,
+        scrollX: 0,
+        scrollY: 0,
+        width: contentRef.current.scrollWidth,
+        height: contentRef.current.scrollHeight,
       });
       
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      const imgData = canvas.toDataURL('image/png'); // PNG بدلاً من JPEG لجودة أفضل
       
       // حساب الحجم المناسب للـ PDF (A4)
-      const pdfWidth = 595; // A4 width in points
-      const pdfHeight = 842; // A4 height in points
+      const pdfWidth = 595.28; // A4 width in points
+      const pdfHeight = 841.89; // A4 height in points
+      const margin = 20; // هامش
       
+      const contentWidth = pdfWidth - (margin * 2);
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       
-      // حساب عدد الصفحات المطلوبة
-      const ratio = pdfWidth / imgWidth;
+      // حساب النسبة للعرض المتاح
+      const ratio = contentWidth / imgWidth;
       const scaledHeight = imgHeight * ratio;
-      const pageCount = Math.ceil(scaledHeight / pdfHeight);
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -226,21 +231,34 @@ export const TafsirComparisonPanel = ({
         format: 'a4',
       });
       
-      // إضافة الصورة على صفحات متعددة إذا لزم الأمر
-      let position = 0;
-      for (let i = 0; i < pageCount; i++) {
-        if (i > 0) {
+      // تقسيم المحتوى على صفحات
+      const contentPerPage = pdfHeight - (margin * 2);
+      const totalPages = Math.ceil(scaledHeight / contentPerPage);
+      
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, scaledHeight);
-        position -= pdfHeight;
+        
+        // حساب موضع الصورة لهذه الصفحة
+        const yOffset = -(page * contentPerPage) + margin;
+        
+        // إضافة الصورة مع قص للصفحة الحالية
+        pdf.addImage(
+          imgData, 
+          'PNG', 
+          margin, 
+          yOffset, 
+          contentWidth, 
+          scaledHeight
+        );
       }
       
       pdf.save(`مقارنة-تفسير-سورة-${surahNumber}.pdf`);
       
       toast({
         title: 'تم التصدير',
-        description: 'تم حفظ ملف PDF بنجاح',
+        description: `تم حفظ ملف PDF (${totalPages} صفحات)`,
       });
     } catch (error) {
       console.error('Export PDF error:', error);
