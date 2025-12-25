@@ -21,7 +21,7 @@ import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-type Language = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr';
+type Language = 'ar' | 'en' | 'fr' | 'ur' | 'id' | 'tr' | 'it';
 
 const languages: { code: Language; name: string; nativeName: string }[] = [
   { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
@@ -30,6 +30,7 @@ const languages: { code: Language; name: string; nativeName: string }[] = [
   { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
   { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
   { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
 ];
 
 const translations: Record<Language, {
@@ -136,6 +137,21 @@ const translations: Record<Language, {
     about: 'Uygulama Hakkında',
     aboutText: '14 güvenilir tefsir ve 6 seçkin hafız ile Kur\'an uygulaması. Allah\'ın ayetlerini okuyun, dinleyin ve tefekkür edin.',
     verses: 'ayet',
+  },
+  it: {
+    title: 'Il Sacro Corano',
+    index: 'Indice delle Sure',
+    settings: 'Impostazioni',
+    home: 'Home',
+    athkar: 'Athkar e Dua',
+    search: 'Cerca',
+    appearance: 'Aspetto',
+    lightMode: 'Modalità Chiara',
+    darkMode: 'Modalità Scura',
+    language: 'Lingua',
+    about: 'Informazioni',
+    aboutText: 'App del Corano con 14 Tafsir affidabili e 6 recitatori distinti. Leggi, ascolta e rifletti sui versetti di Allah.',
+    verses: 'versetti',
   },
 };
 
@@ -254,10 +270,13 @@ const LandingSidebar = () => {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className={cn(
                 "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
-                isRtl ? "flex-row" : "flex-row-reverse"
+                isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
               )}
             >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+              <div className={cn(
+                "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors",
+                isRtl ? "order-first" : "order-last"
+              )}>
                 {theme === "dark" ? (
                   <Sun className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 ) : (
@@ -278,10 +297,13 @@ const LandingSidebar = () => {
                 onClick={() => setShowLanguages(!showLanguages)}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl hover:bg-primary/10 transition-colors w-full group",
-                  isRtl ? "flex-row" : "flex-row-reverse"
+                  isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
                 )}
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
+                <div className={cn(
+                  "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors",
+                  isRtl ? "order-first" : "order-last"
+                )}>
                   <Globe className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className={cn(
@@ -330,9 +352,9 @@ const LandingSidebar = () => {
             <div className="p-4 rounded-2xl bg-muted/30 border border-primary/10">
               <div className={cn(
                 "flex items-center gap-3 mb-3",
-                isRtl ? "flex-row" : "flex-row-reverse"
+                isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
               )}>
-                <Info className="w-5 h-5 text-primary" />
+                <Info className={cn("w-5 h-5 text-primary", isRtl ? "order-first" : "order-last")} />
                 <span className="font-medium text-foreground">{t.about}</span>
               </div>
               <p className={cn(
