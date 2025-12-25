@@ -1,6 +1,7 @@
 import * as React from "react";
+import { useState, useCallback } from "react";
 import { Verse } from "@/data/types";
-import { BookOpen, Heart, Lightbulb, Tag, Globe, Volume2, Loader2, VolumeX } from "lucide-react";
+import { BookOpen, Heart, Lightbulb, Tag, Globe, Volume2, Loader2, VolumeX, PlayCircle } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { HighlightText } from "./HighlightText";
 import { ShareVerseButton } from "./ShareVerseButton";
@@ -8,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslationTTS } from "@/hooks/useTranslationTTS";
+import { Switch } from "./ui/switch";
+
 interface VerseCardProps {
   verse: Verse;
   index: number;
@@ -35,7 +38,16 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
   ) => {
     const { t, language } = useLanguage();
     const { isPlaying, isLoading, playTranslation, stopPlayback } = useTranslationTTS();
+    const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
     const isRTL = ['ar', 'ur'].includes(language);
+
+    // Callback when Arabic recitation ends
+    const handleRecitationEnd = useCallback(() => {
+      if (autoPlayTranslation && showTranslation && translation && language !== 'ar') {
+        playTranslation(translation);
+      }
+    }, [autoPlayTranslation, showTranslation, translation, language, playTranslation]);
+
     return (
       <div
         ref={ref}
@@ -100,22 +112,33 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
                 <Globe className="w-4 h-4" />
                 <span className="text-sm font-medium">{t.translation}</span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => isPlaying ? stopPlayback() : playTranslation(translation)}
-                disabled={isLoading}
-                className="h-8 w-8 p-0 rounded-full hover:bg-secondary/20"
-                aria-label={isPlaying ? "إيقاف" : "استماع للترجمة"}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-secondary" />
-                ) : isPlaying ? (
-                  <VolumeX className="w-4 h-4 text-secondary" />
-                ) : (
-                  <Volume2 className="w-4 h-4 text-secondary" />
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Auto-play toggle */}
+                <div className="flex items-center gap-1.5" title="تشغيل تلقائي بعد التلاوة">
+                  <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-secondary" : "text-muted-foreground")} />
+                  <Switch
+                    checked={autoPlayTranslation}
+                    onCheckedChange={setAutoPlayTranslation}
+                    className="scale-75"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => isPlaying ? stopPlayback() : playTranslation(translation)}
+                  disabled={isLoading}
+                  className="h-8 w-8 p-0 rounded-full hover:bg-secondary/20"
+                  aria-label={isPlaying ? "إيقاف" : "استماع للترجمة"}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-secondary" />
+                  ) : isPlaying ? (
+                    <VolumeX className="w-4 h-4 text-secondary" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-secondary" />
+                  )}
+                </Button>
+              </div>
             </div>
             <p
               className="text-base leading-relaxed text-foreground/85"
@@ -128,7 +151,7 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
 
         {/* Audio Player */}
         <div className="mb-6 flex justify-center" dir="rtl">
-          <AudioPlayer verseNumber={verse.id} />
+          <AudioPlayer verseNumber={verse.id} onRecitationEnd={handleRecitationEnd} />
         </div>
 
         {/* Tafsir */}
@@ -160,4 +183,3 @@ export const VerseCard = React.forwardRef<HTMLDivElement, VerseCardProps>(
 );
 
 VerseCard.displayName = "VerseCard";
-
