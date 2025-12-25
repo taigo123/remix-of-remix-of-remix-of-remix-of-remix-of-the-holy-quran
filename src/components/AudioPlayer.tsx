@@ -10,17 +10,14 @@ interface AudioPlayerProps {
   onRecitationEnd?: () => void;
 }
 
-// القراء المتاحون في Islamic Network API للآيات المنفردة
+// القراء المتاحون في Islamic Network API للآيات المنفردة (تم التحقق من صحة الروابط)
 const RECITERS = [
   { id: "ar.alafasy", name: "مشاري العفاسي" },
   { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس" },
   { id: "ar.saoodshuraym", name: "سعود الشريم" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي" },
   { id: "ar.ahmedajamy", name: "أحمد العجمي" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)" },
-  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي" },
-  { id: "ar.minshawimujawwad", name: "المنشاوي (مجود)" },
+  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد" },
   { id: "ar.husary", name: "محمود خليل الحصري" },
   { id: "ar.husarymujawwad", name: "الحصري (مجود)" },
   { id: "ar.hudhaify", name: "علي الحذيفي" },
@@ -30,13 +27,12 @@ const RECITERS = [
   { id: "ar.shaatree", name: "أبو بكر الشاطري" },
   { id: "ar.muhammadjibreel", name: "محمد جبريل" },
   { id: "ar.aymanswoaid", name: "أيمن سويد" },
+  { id: "ar.ibrahimakhbar", name: "إبراهيم الأخضر" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
-  "ar.abdulbasitmurattal": 64,
   "ar.saoodshuraym": 64,
-  "ar.minshawimujawwad": 64,
   "ar.aymanswoaid": 64,
 };
 

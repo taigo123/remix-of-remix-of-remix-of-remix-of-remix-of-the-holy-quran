@@ -30,17 +30,14 @@ import { useReadingStats } from "@/hooks/useReadingStats";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// القراء المتاحون - متوافقون مع Islamic Network API و MP3Quran
+// القراء المتاحون - متوافقون مع Islamic Network API و MP3Quran (تم التحقق من صحة الروابط)
 const RECITERS = [
   { id: "ar.alafasy", name: "مشاري العفاسي", downloadServer: "https://server8.mp3quran.net/afs" },
   { id: "ar.abdurrahmaansudais", name: "عبد الرحمن السديس", downloadServer: "https://server11.mp3quran.net/sds" },
   { id: "ar.saoodshuraym", name: "سعود الشريم", downloadServer: "https://server7.mp3quran.net/shur" },
   { id: "ar.mahermuaiqly", name: "ماهر المعيقلي", downloadServer: "https://server12.mp3quran.net/maher" },
   { id: "ar.ahmedajamy", name: "أحمد العجمي", downloadServer: "https://server10.mp3quran.net/ajm" },
-  { id: "ar.abdulbasitmurattal", name: "عبد الباسط عبد الصمد (مرتل)", downloadServer: "https://server7.mp3quran.net/basit" },
-  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد (مجود)", downloadServer: "https://server7.mp3quran.net/basit_mjwd" },
-  { id: "ar.minshawi", name: "محمد صديق المنشاوي", downloadServer: "https://server10.mp3quran.net/minsh" },
-  { id: "ar.minshawimujawwad", name: "المنشاوي (مجود)", downloadServer: "https://server10.mp3quran.net/minsh_mjwd" },
+  { id: "ar.abdulsamad", name: "عبد الباسط عبد الصمد", downloadServer: "https://server7.mp3quran.net/basit_mjwd" },
   { id: "ar.husary", name: "محمود خليل الحصري", downloadServer: "https://server13.mp3quran.net/husr" },
   { id: "ar.husarymujawwad", name: "الحصري (مجود)", downloadServer: "https://server13.mp3quran.net/husr_mjwd" },
   { id: "ar.hudhaify", name: "علي الحذيفي", downloadServer: "https://server11.mp3quran.net/hthfi" },
@@ -50,13 +47,12 @@ const RECITERS = [
   { id: "ar.shaatree", name: "أبو بكر الشاطري", downloadServer: "https://server11.mp3quran.net/shatri" },
   { id: "ar.muhammadjibreel", name: "محمد جبريل", downloadServer: "https://server8.mp3quran.net/jbrl" },
   { id: "ar.aymanswoaid", name: "أيمن سويد", downloadServer: "https://server6.mp3quran.net/ayman" },
+  { id: "ar.ibrahimakhbar", name: "إبراهيم الأخضر", downloadServer: "https://server8.mp3quran.net/ibrahim" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
-  "ar.abdulbasitmurattal": 64,
   "ar.saoodshuraym": 64,
-  "ar.minshawimujawwad": 64,
   "ar.aymanswoaid": 64,
 };
 
