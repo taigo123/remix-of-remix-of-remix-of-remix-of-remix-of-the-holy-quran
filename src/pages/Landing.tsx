@@ -24,7 +24,7 @@ import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import LandingSidebar from "@/components/LandingSidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { UserFeedback } from "@/components/UserFeedback";
+
 
 const Landing = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -433,11 +433,9 @@ const Landing = () => {
           {/* Quote Footer */}
           <section className="py-12 px-4 bg-gradient-to-b from-transparent to-muted/30">
             <div className="container mx-auto max-w-4xl text-center">
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm text-muted-foreground">
                 {t.trustedTafsirsList}
               </p>
-              {/* User Feedback Button */}
-              <UserFeedback />
             </div>
           </section>
         </div>
