@@ -9,6 +9,7 @@ interface SurahAudioPlayerProps {
   surahId: number;
   verseNumber: number;
   surahName?: string;
+  onPlaybackComplete?: () => void;
 }
 
 const RECITERS = [
@@ -45,7 +46,7 @@ const formatTime = (seconds: number) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export const SurahAudioPlayer = ({ surahId, verseNumber, surahName }: SurahAudioPlayerProps) => {
+export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackComplete }: SurahAudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -73,6 +74,8 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName }: SurahAudio
       } else {
         setIsPlaying(false);
         setCurrentRepeat(0);
+        // Call the completion callback when playback finishes
+        onPlaybackComplete?.();
       }
     };
 
@@ -101,7 +104,7 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName }: SurahAudio
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audioRef.current = null;
     };
-  }, [repeatCount, currentRepeat]);
+  }, [repeatCount, currentRepeat, onPlaybackComplete]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted;

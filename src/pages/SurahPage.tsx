@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, PlayCircle } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 import { useTranslationTTS } from '@/hooks/useTranslationTTS';
-
+import { Switch } from '@/components/ui/switch';
 
 const SurahPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +42,7 @@ const SurahPage = () => {
   } = useTranslationTTS();
   const [currentTTSVerse, setCurrentTTSVerse] = useState<number | null>(null);
   const [showTTSWarning, setShowTTSWarning] = useState(true);
+  const [autoPlayTranslation, setAutoPlayTranslation] = useState(false);
   
   const {
     selectedSource,
@@ -354,11 +355,37 @@ const SurahPage = () => {
                 
                 {/* مشغل الصوت */}
                 <div className="p-4 bg-muted/30 rounded-xl mb-6">
-                  <SurahAudioPlayer 
-                    surahId={surahId} 
-                    verseNumber={verse.id} 
-                    surahName={surah.name}
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <SurahAudioPlayer 
+                      surahId={surahId} 
+                      verseNumber={verse.id} 
+                      surahName={surah.name}
+                      onPlaybackComplete={() => {
+                        if (autoPlayTranslation && language !== 'ar' && getTranslation(verse.id)) {
+                          setCurrentTTSVerse(verse.id);
+                          playTranslation(getTranslation(verse.id) || '').then(() => {
+                            setCurrentTTSVerse(null);
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                  {/* Auto-play translation toggle */}
+                  {language !== 'ar' && getTranslation(verse.id) && (
+                    <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border/30">
+                      <span className="text-xs text-muted-foreground">
+                        {isRtl ? 'تشغيل الترجمة تلقائياً' : 'Auto-play translation'}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <PlayCircle className={cn("w-3.5 h-3.5", autoPlayTranslation ? "text-primary" : "text-muted-foreground")} />
+                        <Switch
+                          checked={autoPlayTranslation}
+                          onCheckedChange={setAutoPlayTranslation}
+                          className="scale-75"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* التفسير */}
