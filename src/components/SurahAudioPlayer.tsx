@@ -60,6 +60,12 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
 
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const onPlaybackCompleteRef = useRef(onPlaybackComplete);
+
+  // Keep callback ref updated
+  useEffect(() => {
+    onPlaybackCompleteRef.current = onPlaybackComplete;
+  }, [onPlaybackComplete]);
 
   useEffect(() => {
     const audio = new Audio();
@@ -75,7 +81,8 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
         setIsPlaying(false);
         setCurrentRepeat(0);
         // Call the completion callback when playback finishes
-        onPlaybackComplete?.();
+        console.log('Audio ended, calling onPlaybackComplete');
+        onPlaybackCompleteRef.current?.();
       }
     };
 
@@ -104,7 +111,7 @@ export const SurahAudioPlayer = ({ surahId, verseNumber, surahName, onPlaybackCo
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audioRef.current = null;
     };
-  }, [repeatCount, currentRepeat, onPlaybackComplete]);
+  }, [repeatCount, currentRepeat]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = isMuted;

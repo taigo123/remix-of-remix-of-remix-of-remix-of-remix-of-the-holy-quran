@@ -19,6 +19,20 @@ const languageVoiceMap: Record<string, string> = {
   it: 'it',
 };
 
+// Common male voice name patterns
+const maleVoicePatterns = [
+  'david', 'james', 'daniel', 'george', 'thomas', 'mark', 'paul', 'john',
+  'microsoft david', 'google uk english male', 'male', 'homme', 'uomo',
+  'erkek', 'pria', 'mard', 'ahmed', 'mehdi', 'rajan'
+];
+
+// Female voice patterns to avoid
+const femaleVoicePatterns = [
+  'female', 'woman', 'girl', 'zira', 'hazel', 'susan', 'samantha',
+  'karen', 'moira', 'tessa', 'fiona', 'kate', 'victoria', 'alice',
+  'femme', 'donna', 'kadın', 'wanita', 'aurat'
+];
+
 export const useTranslationTTS = (): UseTranslationTTSReturn => {
   const { language } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -36,31 +50,39 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       const voices = window.speechSynthesis.getVoices();
       const langPrefix = languageVoiceMap[language] || 'en';
       
+      console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+      
       // Filter voices for current language
       const langVoices = voices.filter(v => 
         v.lang.toLowerCase().startsWith(langPrefix.toLowerCase())
       );
       
-      // Try to find a male voice (common patterns in voice names)
-      const maleVoice = langVoices.find(v => {
+      console.log('Language voices:', langVoices.map(v => v.name));
+      
+      // First, try to find explicitly male voices
+      let selectedVoice = langVoices.find(v => {
         const name = v.name.toLowerCase();
-        return name.includes('male') || 
-               name.includes('david') || 
-               name.includes('james') ||
-               name.includes('daniel') ||
-               name.includes('george') ||
-               name.includes('thomas') ||
-               name.includes('microsoft david') ||
-               name.includes('google us english') ||
-               name.includes('ahmed') ||
-               name.includes('mehdi') ||
-               (!name.includes('female') && !name.includes('woman') && !name.includes('girl'));
+        return maleVoicePatterns.some(pattern => name.includes(pattern));
       });
       
-      // Use male voice if found, otherwise use first available voice
-      maleVoiceRef.current = maleVoice || langVoices[0] || null;
+      // If no explicit male voice, find one that's not female
+      if (!selectedVoice) {
+        selectedVoice = langVoices.find(v => {
+          const name = v.name.toLowerCase();
+          return !femaleVoicePatterns.some(pattern => name.includes(pattern));
+        });
+      }
+      
+      // Fallback to first available voice
+      if (!selectedVoice && langVoices.length > 0) {
+        selectedVoice = langVoices[0];
+      }
+      
+      console.log('Selected voice:', selectedVoice?.name);
+      maleVoiceRef.current = selectedVoice || null;
     };
 
+    // Initial load
     findMaleVoice();
     
     // Chrome loads voices asynchronously
@@ -111,12 +133,13 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       const langPrefix = languageVoiceMap[language] || 'en';
       utterance.lang = langPrefix;
       utterance.rate = 0.9; // Slightly slower for clarity
-      utterance.pitch = 0.9; // Slightly lower pitch for male voice
+      utterance.pitch = 0.85; // Lower pitch for more masculine voice
 
       // Use cached male voice
       if (maleVoiceRef.current) {
         utterance.voice = maleVoiceRef.current;
         utterance.lang = maleVoiceRef.current.lang;
+        console.log('Using voice:', maleVoiceRef.current.name);
       }
 
       utterance.onstart = () => {
@@ -127,6 +150,7 @@ export const useTranslationTTS = (): UseTranslationTTSReturn => {
       utterance.onend = () => {
         setIsPlaying(false);
         utteranceRef.current = null;
+        console.log('TTS playback ended');
         // Call completion callback
         if (onCompleteRef.current) {
           onCompleteRef.current();
