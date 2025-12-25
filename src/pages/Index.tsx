@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { TafsirContent } from "@/components/TafsirContent";
 import { Footer } from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserFeedback } from "@/components/UserFeedback";
 import { ReadingModePanel } from "@/components/ReadingModePanel";
 import { DailyReminderPanel } from "@/components/DailyReminderPanel";
 import { InstallButton } from "@/components/InstallButton";
@@ -60,6 +61,12 @@ const Index = () => {
           currentHighlightedVerse={playerHighlightedVerse}
         />
         <TafsirContent playerHighlightedVerse={playerHighlightedVerse} />
+        
+        {/* User Feedback Section */}
+        <div className="py-8 flex justify-center bg-muted/30">
+          <UserFeedback />
+        </div>
+        
         <Footer />
       </div>
     </>
