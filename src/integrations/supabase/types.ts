@@ -14,31 +14,34 @@ export type Database = {
   }
   public: {
     Tables: {
-      translation_suggestions: {
+      user_feedback: {
         Row: {
           context: string | null
           created_at: string
+          feedback_type: string
           id: string
-          language_code: string
-          original_text: string
+          language_code: string | null
+          original_text: string | null
           status: string
           suggested_text: string
         }
         Insert: {
           context?: string | null
           created_at?: string
+          feedback_type?: string
           id?: string
-          language_code: string
-          original_text: string
+          language_code?: string | null
+          original_text?: string | null
           status?: string
           suggested_text: string
         }
         Update: {
           context?: string | null
           created_at?: string
+          feedback_type?: string
           id?: string
-          language_code?: string
-          original_text?: string
+          language_code?: string | null
+          original_text?: string | null
           status?: string
           suggested_text?: string
         }
