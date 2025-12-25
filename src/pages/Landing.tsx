@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useRef } from "react";
 import { 
   BookOpen, 
   ChevronLeft, 
+  ChevronRight,
   Moon, 
   Sparkles, 
   Star, 
@@ -16,40 +18,63 @@ import {
   BookMarked,
   Users,
   Mic2,
-  FileText
+  FileText,
+  GripHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { Helmet } from "react-helmet";
+import { surahIndex } from "@/data/surahIndex";
+import { isDataAvailable } from "@/data/surahsData";
+import { cn } from "@/lib/utils";
 
 const Landing = () => {
   const { theme, setTheme } = useTheme();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // قائمة التفاسير
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  // قائمة التفاسير الـ 14 الموجودة فعلياً
   const tafsirs = [
     { name: "تفسير ابن كثير", author: "الإمام ابن كثير" },
     { name: "تفسير الطبري", author: "الإمام الطبري" },
     { name: "تفسير السعدي", author: "الشيخ السعدي" },
     { name: "التفسير الميسر", author: "مجمع الملك فهد" },
     { name: "تفسير الجلالين", author: "المحلي والسيوطي" },
-    { name: "تفسير البغوي", author: "الإمام البغوي" },
     { name: "تفسير القرطبي", author: "الإمام القرطبي" },
+    { name: "تفسير البغوي", author: "الإمام البغوي" },
+    { name: "التفسير الوسيط", author: "مجمع البحوث الإسلامية" },
+    { name: "تنوير المقباس", author: "منسوب لابن عباس" },
+    { name: "التفسير الميسر (مفصل)", author: "مجمع الملك فهد" },
+    { name: "تفسير القرطبي (مفصل)", author: "الإمام القرطبي" },
+    { name: "تفسير البغوي (مفصل)", author: "الإمام البغوي" },
+    { name: "التفسير الوسيط للطنطاوي", author: "الشيخ الطنطاوي" },
   ];
 
-  // قائمة القراء
+  // قائمة القراء الـ 6 الموجودين فعلياً
   const reciters = [
-    { name: "عبدالباسط عبدالصمد", style: "المجود" },
+    { name: "مشاري العفاسي", style: "المرتل" },
+    { name: "عبد الباسط عبد الصمد", style: "المرتل" },
+    { name: "عبد الباسط عبد الصمد", style: "المجود" },
+    { name: "محمد صديق المنشاوي", style: "المرتل" },
     { name: "محمود خليل الحصري", style: "المعلم" },
-    { name: "مشاري راشد العفاسي", style: "الحجازي" },
     { name: "ماهر المعيقلي", style: "المرتل" },
-    { name: "عبدالرحمن السديس", style: "إمام الحرم" },
-    { name: "سعود الشريم", style: "إمام الحرم" },
   ];
 
   // المميزات
   const features = [
     { icon: BookMarked, title: "114 سورة كاملة", desc: "القرآن الكريم بالرسم العثماني" },
-    { icon: Languages, title: "7 تفاسير موثوقة", desc: "من أمهات كتب التفسير" },
+    { icon: Languages, title: "14 تفسير موثوق", desc: "من أمهات كتب التفسير" },
     { icon: Headphones, title: "6 قراء مميزين", desc: "تلاوات بأصوات عذبة" },
     { icon: Search, title: "بحث متقدم", desc: "ابحث في الآيات والتفاسير" },
     { icon: Heart, title: "المفضلة", desc: "احفظ آياتك المفضلة" },
@@ -62,7 +87,7 @@ const Landing = () => {
         <title>القرآن الكريم - تفسير وتلاوة | أفضل تطبيق للقرآن</title>
         <meta
           name="description"
-          content="تطبيق القرآن الكريم مع 7 تفاسير موثوقة و6 قراء مميزين - اقرأ واستمع وتدبر آيات الله بتصميم عصري فريد"
+          content="تطبيق القرآن الكريم مع 14 تفسير موثوق و6 قراء مميزين - اقرأ واستمع وتدبر آيات الله بتصميم عصري فريد"
         />
         <html lang="ar" dir="rtl" />
       </Helmet>
@@ -172,22 +197,110 @@ const Landing = () => {
                       ))}
                     </div>
 
-                    {/* CTA Button */}
-                    <div className="flex justify-center">
-                      <Link to="/quran">
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                      <Link to="/athkar">
                         <Button
                           size="lg"
-                          className="group relative overflow-hidden gradient-gold text-primary-foreground gap-4 px-12 py-8 text-xl rounded-2xl shadow-[0_15px_50px_-12px_hsl(var(--primary)/0.5)] transition-all duration-500 hover:shadow-[0_25px_70px_-15px_hsl(var(--primary)/0.6)] hover:scale-105"
+                          className="group relative overflow-hidden gradient-gold text-primary-foreground gap-4 px-10 py-7 text-lg rounded-2xl shadow-[0_15px_50px_-12px_hsl(var(--primary)/0.5)] transition-all duration-500 hover:shadow-[0_25px_70px_-15px_hsl(var(--primary)/0.6)] hover:scale-105"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                          <BookOpen className="w-7 h-7 relative z-10" />
-                          <span className="font-amiri font-bold text-2xl relative z-10">ابدأ القراءة</span>
-                          <ChevronLeft className="w-7 h-7 relative z-10 transition-transform group-hover:-translate-x-2" />
+                          <Heart className="w-6 h-6 relative z-10" />
+                          <span className="font-amiri font-bold text-xl relative z-10">الأذكار والأدعية</span>
+                          <ChevronLeft className="w-6 h-6 relative z-10 transition-transform group-hover:-translate-x-2" />
                         </Button>
                       </Link>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Surah Index - Horizontal Scrollable */}
+          <section className="py-12 px-4">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 mb-4">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-primary font-medium">فهرس السور</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold font-arabic text-foreground mb-2">
+                  تصفح سور القرآن الكريم
+                </h2>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <GripHorizontal className="w-4 h-4" />
+                  اسحب للتصفح أو استخدم الأسهم
+                </p>
+              </div>
+
+              {/* Navigation Arrows */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={scrollRight}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={scrollLeft}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-primary/20 hover:bg-primary hover:text-primary-foreground hidden md:flex"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </Button>
+
+                {/* Scrollable Container */}
+                <div 
+                  ref={scrollContainerRef}
+                  className="flex gap-3 overflow-x-auto pb-4 px-2 md:px-12 scrollbar-hide scroll-smooth"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {surahIndex.map((surah) => {
+                    const hasData = isDataAvailable(surah.id);
+                    return (
+                      <Link
+                        key={surah.id}
+                        to={hasData ? `/surah/${surah.id}` : '#'}
+                        onClick={(e) => !hasData && e.preventDefault()}
+                        className={cn(
+                          'shrink-0 w-28 p-4 rounded-2xl border text-center transition-all duration-200 group',
+                          hasData 
+                            ? 'bg-card hover:bg-card/80 hover:shadow-lg hover:border-primary/30 cursor-pointer hover:scale-105' 
+                            : 'bg-muted/20 cursor-not-allowed opacity-40'
+                        )}
+                      >
+                        <div className={cn(
+                          'mx-auto mb-2 rounded-xl flex items-center justify-center font-bold w-10 h-10 text-sm transition-all',
+                          hasData ? 'gradient-gold text-primary-foreground shadow-gold group-hover:scale-110' : 'bg-muted text-muted-foreground'
+                        )}>
+                          {surah.id}
+                        </div>
+                        <h3 className={cn(
+                          'font-bold font-amiri truncate text-sm',
+                          hasData ? 'text-foreground' : 'text-muted-foreground'
+                        )}>
+                          {surah.name}
+                        </h3>
+                        <span className="text-xs text-muted-foreground">{surah.versesCount} آية</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Full Index Link */}
+              <div className="text-center mt-6">
+                <Link to="/quran">
+                  <Button variant="outline" className="gap-2 rounded-xl">
+                    <BookOpen className="w-4 h-4" />
+                    عرض الفهرس الكامل
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
           </section>
