@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { 
@@ -14,7 +14,8 @@ import {
   Search,
   Info,
   Globe,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,31 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage, languages, regionLabels, LanguageRegion, LanguageInfo } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+
+// Notification sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (error) {
+    console.log('Could not play notification sound:', error);
+  }
+};
 
 const LandingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,8 +56,10 @@ const LandingSidebar = () => {
   const { language, setLanguage, t, isRtl } = useLanguage();
   const [showLanguages, setShowLanguages] = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
+  const [hasNewFeedback, setHasNewFeedback] = useState(false);
 
   useEffect(() => {
+    // Fetch initial count
     const fetchFeedbackCount = async () => {
       const { count } = await supabase
         .from('user_feedback')
@@ -39,7 +67,44 @@ const LandingSidebar = () => {
       setFeedbackCount(count || 0);
     };
     fetchFeedbackCount();
-  }, []);
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('feedback-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_feedback'
+        },
+        (payload) => {
+          console.log('New feedback received:', payload);
+          setFeedbackCount(prev => prev + 1);
+          setHasNewFeedback(true);
+          playNotificationSound();
+          
+          // Show toast notification
+          toast.success(
+            language === 'ar' ? '📬 وصلت ملاحظة جديدة!' : '📬 New feedback received!',
+            {
+              description: language === 'ar' 
+                ? `نوع الملاحظة: ${payload.new.feedback_type}` 
+                : `Type: ${payload.new.feedback_type}`,
+              duration: 5000,
+            }
+          );
+          
+          // Reset animation after 3 seconds
+          setTimeout(() => setHasNewFeedback(false), 3000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [language]);
   const [languageSearch, setLanguageSearch] = useState("");
 
   // Filter languages based on search
@@ -327,15 +392,24 @@ const LandingSidebar = () => {
             {/* Feedback Button */}
             <div className={cn(
               "flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group cursor-pointer",
-              isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
+              isRtl ? "flex-row text-right" : "flex-row-reverse text-left",
+              hasNewFeedback && "bg-amber-500/20 animate-pulse"
             )}>
               <div className={cn(
                 "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300 relative",
-                isRtl ? "order-first" : "order-last"
+                isRtl ? "order-first" : "order-last",
+                hasNewFeedback && "bg-amber-500 animate-bounce"
               )}>
-                <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                {hasNewFeedback ? (
+                  <Bell className="w-5 h-5 text-white animate-shake" />
+                ) : (
+                  <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                )}
                 {feedbackCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+                  <span className={cn(
+                    "absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center",
+                    hasNewFeedback ? "animate-ping" : "animate-pulse"
+                  )}>
                     {feedbackCount > 99 ? '99+' : feedbackCount}
                   </span>
                 )}
@@ -343,9 +417,12 @@ const LandingSidebar = () => {
               <div className="flex items-center gap-2">
                 <span className={cn(
                   "font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
-                  isRtl ? "order-last" : "order-first"
+                  isRtl ? "order-last" : "order-first",
+                  hasNewFeedback && "text-amber-500 font-bold"
                 )}>
-                  {isRtl ? "ملاحظات" : "Feedback"}
+                  {hasNewFeedback 
+                    ? (isRtl ? "📬 ملاحظة جديدة!" : "📬 New feedback!") 
+                    : (isRtl ? "ملاحظات" : "Feedback")}
                 </span>
                 <UserFeedback />
               </div>
