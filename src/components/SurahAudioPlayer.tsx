@@ -29,18 +29,18 @@ const RECITERS = [
   { id: "ar.husarymujawwad", name: "الحصري (مجود)" },
   { id: "ar.hudhaify", name: "علي الحذيفي" },
   { id: "ar.abdullahbasfar", name: "عبدالله بصفر" },
-  { id: "ar.hanirifai", name: "هاني الرفاعي" },
   { id: "ar.muhammadayyoub", name: "محمد أيوب" },
   { id: "ar.shaatree", name: "أبو بكر الشاطري" },
   { id: "ar.muhammadjibreel", name: "محمد جبريل" },
   { id: "ar.aymanswoaid", name: "أيمن سويد" },
-  { id: "ar.ibrahimakhbar", name: "إبراهيم الأخضر" },
 ];
 
 const RECITER_BITRATE: Record<string, number> = {
   "ar.abdulsamad": 64,
   "ar.saoodshuraym": 64,
   "ar.aymanswoaid": 64,
+  "ar.abdurrahmaansudais": 64,
+  "ar.abdullahbasfar": 64,
 };
 
 const REPEAT_OPTIONS = [0, 2, 3, 5, 7, 10];
