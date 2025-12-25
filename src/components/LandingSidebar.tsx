@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { 
   Menu, 
@@ -28,6 +29,17 @@ const LandingSidebar = () => {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t, isRtl } = useLanguage();
   const [showLanguages, setShowLanguages] = useState(false);
+  const [feedbackCount, setFeedbackCount] = useState(0);
+
+  useEffect(() => {
+    const fetchFeedbackCount = async () => {
+      const { count } = await supabase
+        .from('user_feedback')
+        .select('*', { count: 'exact', head: true });
+      setFeedbackCount(count || 0);
+    };
+    fetchFeedbackCount();
+  }, []);
   const [languageSearch, setLanguageSearch] = useState("");
 
   // Filter languages based on search
@@ -314,18 +326,23 @@ const LandingSidebar = () => {
 
             {/* Feedback Button */}
             <div className={cn(
-              "flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group",
+              "flex items-center gap-3 p-3 rounded-xl hover:bg-amber-500/10 transition-colors w-full group cursor-pointer",
               isRtl ? "flex-row text-right" : "flex-row-reverse text-left"
             )}>
               <div className={cn(
-                "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-colors",
+                "w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300 relative",
                 isRtl ? "order-first" : "order-last"
               )}>
-                <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-colors" />
+                <MessageSquare className="w-5 h-5 text-amber-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                {feedbackCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+                    {feedbackCount > 99 ? '99+' : feedbackCount}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className={cn(
-                  "font-medium text-amber-600 dark:text-amber-400",
+                  "font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
                   isRtl ? "order-last" : "order-first"
                 )}>
                   {isRtl ? "ملاحظات" : "Feedback"}
