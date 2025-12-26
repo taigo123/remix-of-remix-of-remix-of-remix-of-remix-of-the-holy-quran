@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, X, ChevronDown, ChevronUp, Filter, SlidersHorizontal } from "lucide-react";
+import { Search, X, ChevronDown, ChevronUp, Filter, SlidersHorizontal, Mic, MicOff, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -8,6 +8,8 @@ import { availableSurahs } from "@/data/surahsData";
 import { surahIndex } from "@/data/surahIndex";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
+import { toast } from "sonner";
 
 interface SearchResult {
   surahId: number;
@@ -32,6 +34,24 @@ export const QuranSearch = () => {
   const [matchFilter, setMatchFilter] = useState<MatchFilter>("all");
   const [revelationFilter, setRevelationFilter] = useState<RevelationFilter>("all");
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
+  
+  // البحث الصوتي
+  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecording();
+
+  const handleVoiceSearch = async () => {
+    if (isRecording) {
+      const transcript = await stopRecording();
+      if (transcript) {
+        setQuery(transcript);
+        setShowResults(true);
+        setCurrentIndex(0);
+        toast.success(`تم البحث عن: ${transcript}`);
+      }
+    } else {
+      startRecording();
+      toast.info('🎤 تحدث الآن...');
+    }
+  };
 
   const results = useMemo(() => {
     if (!query.trim() || query.length < 2) return [];
@@ -154,6 +174,27 @@ export const QuranSearch = () => {
               </button>
             )}
           </div>
+
+          {/* زر البحث الصوتي */}
+          <Button
+            variant={isRecording ? "default" : "outline"}
+            size="icon"
+            onClick={handleVoiceSearch}
+            disabled={isProcessing}
+            className={cn(
+              "shrink-0 transition-all",
+              isRecording && "bg-red-500 hover:bg-red-600 text-white animate-pulse"
+            )}
+            title="البحث الصوتي"
+          >
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isRecording ? (
+              <MicOff className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </Button>
 
           {/* زر الفلاتر */}
           <Button
