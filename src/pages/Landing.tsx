@@ -42,6 +42,7 @@ import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import LandingSidebar from "@/components/LandingSidebar";
 import { useLanguage, languages, regionLabels, LanguageRegion } from "@/contexts/LanguageContext";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 
 const Landing = () => {
@@ -116,7 +117,7 @@ const Landing = () => {
   // الميزات المتقدمة
   const advancedFeatures = [
     { icon: EyeOff, title: isRtl ? 'إخفاء/إظهار التفسير' : 'Hide/Show Tafsir', desc: isRtl ? 'للقراءة المركزة دون تشتت' : 'For focused reading without distractions' },
-    { icon: Globe, title: isRtl ? 'ترجمة الآيات' : 'Verse Translation', desc: isRtl ? 'ترجمة فورية لـ 41 لغة' : 'Instant translation to 41 languages' },
+    { icon: Globe, title: isRtl ? 'ترجمة الآيات' : 'Verse Translation', desc: isRtl ? 'ترجمة فورية موثوقة لـ 41 لغة' : 'Trusted instant translation to 41 languages' },
     { icon: Bookmark, title: isRtl ? 'حفظ القارئ المفضل' : 'Save Preferred Reciter', desc: isRtl ? 'يُحفظ تلقائياً في المتصفح' : 'Automatically saved in browser' },
     { icon: Repeat, title: isRtl ? 'تكرار الآيات' : 'Verse Repeat', desc: isRtl ? 'كرر الآية 2-10 مرات للحفظ' : 'Repeat verse 2-10 times for memorization' },
     { icon: Volume2, title: t.listenVerseByVerse, desc: t.orFullSurah },
@@ -607,7 +608,7 @@ const Landing = () => {
                     <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
                       <stat.icon className="w-7 h-7 text-white" />
                     </div>
-                    <div className="text-2xl md:text-3xl font-bold text-foreground mb-1">{stat.number}</div>
+                    <AnimatedCounter value={stat.number} className="text-2xl md:text-3xl font-bold text-foreground mb-1" duration={2000} />
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 ))}
