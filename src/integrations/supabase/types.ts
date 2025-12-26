@@ -50,12 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_stats: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          total_visits: number
+          unique_visitors: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          total_visits?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          total_visits?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      visits: {
+        Row: {
+          id: string
+          page_path: string | null
+          visited_at: string
+          visitor_id: string
+        }
+        Insert: {
+          id?: string
+          page_path?: string | null
+          visited_at?: string
+          visitor_id: string
+        }
+        Update: {
+          id?: string
+          page_path?: string | null
+          visited_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_visit: {
+        Args: { p_page_path?: string; p_visitor_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
