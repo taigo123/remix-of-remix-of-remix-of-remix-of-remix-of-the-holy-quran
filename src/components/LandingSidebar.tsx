@@ -24,7 +24,8 @@ import {
   Trash2,
   Pencil,
   Check,
-  XCircle
+  XCircle,
+  HardDrive
 } from "lucide-react";
 import { UserFeedback } from "@/components/UserFeedback";
 import { Button } from "@/components/ui/button";
@@ -320,6 +321,7 @@ const LandingSidebar = () => {
     { icon: Home, label: t.home, to: "/" },
     { icon: Heart, label: t.athkar, to: "/athkar" },
     { icon: Search, label: t.search, to: "/quran" },
+    { icon: HardDrive, label: isRtl ? 'إدارة التخزين' : 'Storage', to: "/offline-settings" },
   ];
 
   return (

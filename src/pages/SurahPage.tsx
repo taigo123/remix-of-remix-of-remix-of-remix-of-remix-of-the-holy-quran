@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, SkipForward, Square } from 'lucide-react';
+import { ArrowRight, Book, BookOpen, Home, ChevronRight, ChevronLeft, Music, Columns2, Sparkles, Eye, EyeOff, Globe, Volume2, VolumeX, Loader2, SkipForward, Square, Download, HardDrive, Check } from 'lucide-react';
 import { getSurahData, isDataAvailable } from '@/data/surahsData';
 import { getSurahById } from '@/data/surahIndex';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 import { useLanguage, languages } from '@/contexts/LanguageContext';
 import { useVerseTranslation } from '@/hooks/useVerseTranslation';
 import { useTranslationTTS } from '@/hooks/useTranslationTTS';
+import { useOfflineTafsir } from '@/hooks/useOfflineTafsir';
+import { toast } from 'sonner';
 
 
 const SurahPage = () => {
@@ -55,6 +57,15 @@ const SurahPage = () => {
     error: tafsirError,
     availableSources,
   } = useTafsir({ surahNumber: surahId, versesCount: surah?.versesCount || 7 });
+
+  // Offline Tafsir
+  const { 
+    saveTafsir, 
+    isTafsirCached, 
+    exportTafsirAsText,
+    isSaving: isSavingTafsir 
+  } = useOfflineTafsir();
+  const [tafsirCacheStatus, setTafsirCacheStatus] = useState<Record<number, boolean>>({});
 
   // Keep ref in sync
   useEffect(() => {
@@ -494,16 +505,64 @@ const SurahPage = () => {
                 {/* التفسير */}
                 {showTafsir && (
                   <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/10">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                       <h4 className="text-sm font-bold text-secondary flex items-center gap-2">
                         <BookOpen className="w-4 h-4" />
                         {t.tafsir}
                       </h4>
-                      {selectedSource !== 'local' && (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-lg">
-                          {availableSources.find(s => s.id === selectedSource)?.name}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {selectedSource !== 'local' && (
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-lg">
+                            {availableSources.find(s => s.id === selectedSource)?.name}
+                          </span>
+                        )}
+                        {/* زر حفظ التفسير أوفلاين */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            const tafsirText = getTafsir(verse.id, verse.tafsir);
+                            if (tafsirText) {
+                              await saveTafsir(surahId, verse.id, selectedSource, tafsirText);
+                              setTafsirCacheStatus(prev => ({ ...prev, [verse.id]: true }));
+                            }
+                          }}
+                          disabled={isSavingTafsir}
+                          className="h-7 w-7 p-0 rounded-full hover:bg-secondary/20"
+                          title={isRtl ? 'حفظ للقراءة أوفلاين' : 'Save for offline'}
+                        >
+                          {tafsirCacheStatus[verse.id] ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          ) : (
+                            <HardDrive className="w-3.5 h-3.5 text-secondary" />
+                          )}
+                        </Button>
+                        {/* زر تحميل التفسير كملف */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const tafsirText = getTafsir(verse.id, verse.tafsir);
+                            if (tafsirText) {
+                              const content = `${surah?.name} - ${isRtl ? 'الآية' : 'Verse'} ${verse.id}\n\n${verse.arabicText}\n\n${isRtl ? 'التفسير:' : 'Tafsir:'}\n${tafsirText}`;
+                              const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${surah?.name}-${verse.id}-tafsir.txt`;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                              toast.success(isRtl ? 'تم تحميل التفسير' : 'Tafsir downloaded');
+                            }
+                          }}
+                          className="h-7 w-7 p-0 rounded-full hover:bg-secondary/20"
+                          title={isRtl ? 'تحميل التفسير' : 'Download tafsir'}
+                        >
+                          <Download className="w-3.5 h-3.5 text-secondary" />
+                        </Button>
+                      </div>
                     </div>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                       {getTafsir(verse.id, verse.tafsir)}

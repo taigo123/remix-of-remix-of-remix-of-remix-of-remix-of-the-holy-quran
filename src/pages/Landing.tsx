@@ -33,7 +33,9 @@ import {
   Users,
   PlayCircle,
   HelpCircle,
-  ChevronDown
+  ChevronDown,
+  HardDrive,
+  WifiOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet";
@@ -126,10 +128,13 @@ const Landing = () => {
     { icon: Repeat, title: isRtl ? 'تكرار الآيات' : 'Verse Repeat', desc: isRtl ? 'كرر الآية 2-10 مرات للحفظ' : 'Repeat verse 2-10 times for memorization' },
     { icon: Volume2, title: t.listenVerseByVerse, desc: t.orFullSurah },
     { icon: Download, title: isRtl ? 'تحميل التلاوات' : 'Download Recitations', desc: isRtl ? 'حمّل الصوت للاستماع دون إنترنت' : 'Download audio for offline listening' },
+    { icon: HardDrive, title: isRtl ? 'حفظ التفسير أوفلاين' : 'Offline Tafsir', desc: isRtl ? 'احفظ التفسير للقراءة بدون إنترنت' : 'Save tafsir for offline reading' },
+    { icon: WifiOff, title: isRtl ? 'استماع بدون إنترنت' : 'Offline Listening', desc: isRtl ? 'استمع للتلاوات المحفوظة أوفلاين' : 'Listen to saved recitations offline' },
     { icon: Share2, title: isRtl ? 'مشاركة الآيات' : 'Share Verses', desc: isRtl ? 'شارك الآيات مع الآخرين' : 'Share verses with others' },
     { icon: Moon, title: isRtl ? 'الوضع الليلي' : 'Dark Mode', desc: isRtl ? 'راحة للعين في الإضاءة المنخفضة' : 'Easy on eyes in low light' },
     { icon: Clock, title: isRtl ? 'إحصائيات الاستماع' : 'Listening Stats', desc: isRtl ? 'تتبع وقت الاستماع والتقدم' : 'Track listening time and progress' },
     { icon: TrendingUp, title: isRtl ? 'حفظ التقدم' : 'Save Progress', desc: isRtl ? 'استأنف من حيث توقفت' : 'Resume from where you left off' },
+    { icon: Search, title: isRtl ? 'البحث بأسماء الأجزاء' : 'Search by Juz Name', desc: isRtl ? 'ابحث عن الجزء بالاسم أو الرقم' : 'Search juz by name or number' },
     { icon: Smartphone, title: isRtl ? 'تطبيق PWA' : 'PWA App', desc: isRtl ? 'ثبّته على جهازك كتطبيق' : 'Install on your device as an app' },
     { icon: Shield, title: isRtl ? 'بدون إعلانات' : 'Ad-Free', desc: isRtl ? 'تجربة نقية بدون مقاطعة' : 'Pure experience without interruption' },
   ];
@@ -608,7 +613,7 @@ const Landing = () => {
                   <span className="text-sm text-primary font-medium">{isRtl ? 'إحصائيات التطبيق' : 'App Statistics'}</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold font-arabic text-foreground mb-4">
-                  {isRtl ? 'يثق بنا الآلاف' : 'Trusted by Thousands'}
+                  {isRtl ? 'انضم إلينا' : 'Join Our Community'}
                 </h2>
               </div>
 
