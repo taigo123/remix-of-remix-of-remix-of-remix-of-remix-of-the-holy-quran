@@ -132,15 +132,14 @@ const Landing = () => {
     { icon: Shield, title: isRtl ? 'بدون إعلانات' : 'Ad-Free', desc: isRtl ? 'تجربة نقية بدون مقاطعة' : 'Pure experience without interruption' },
   ];
 
-  // إحصائيات التطبيق (ديناميكي + ثابت)
+  // إحصائيات التطبيق (حقيقية فقط)
   const appStats = [
     { 
       icon: Users, 
-      number: visitorLoading ? '...' : `${visitorStats.uniqueVisitors + 50000}+`, 
+      number: visitorLoading ? '...' : `${visitorStats.uniqueVisitors}`, 
       label: isRtl ? 'زائر فريد' : 'Unique Visitors', 
       color: 'from-blue-500 to-cyan-500' 
     },
-    { icon: PlayCircle, number: '1,000,000+', label: isRtl ? 'تلاوة مكتملة' : 'Recitations Completed', color: 'from-green-500 to-emerald-500' },
     { icon: Globe, number: '41', label: isRtl ? 'لغة مدعومة' : 'Supported Languages', color: 'from-purple-500 to-pink-500' },
     { icon: BookOpen, number: '14', label: isRtl ? 'تفسير موثوق' : 'Trusted Tafsirs', color: 'from-amber-500 to-orange-500' },
   ];
