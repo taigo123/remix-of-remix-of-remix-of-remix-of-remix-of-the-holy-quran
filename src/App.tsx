@@ -12,6 +12,7 @@ import QuranIndex from "./pages/QuranIndex";
 import SurahPage from "./pages/SurahPage";
 import TafsirList from "./pages/TafsirList";
 import Athkar from "./pages/Athkar";
+import OfflineSettings from "./pages/OfflineSettings";
 import NotFound from "./pages/NotFound";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./components/PWAUpdatePrompt";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/tafsir-list" element={<TafsirList />} />
               <Route path="/athkar" element={<Athkar />} />
               <Route path="/install-guide" element={<InstallGuide />} />
+              <Route path="/offline-settings" element={<OfflineSettings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <PWAUpdatePrompt />
