@@ -8,7 +8,9 @@ import {
   LayoutGrid,
   List,
   Grid3X3,
-  Headphones
+  Headphones,
+  ChevronDown,
+  Layers
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { surahIndex } from '@/data/surahIndex';
@@ -16,11 +18,12 @@ import { isDataAvailable } from '@/data/surahsData';
 import { Button } from '@/components/ui/button';
 import { QuranSearch } from '@/components/QuranSearch';
 import { useTheme } from 'next-themes';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 type CardStyle = 'grid' | 'list' | 'compact';
+type ViewMode = 'all' | 'juz';
 
 const QuranIndex = () => {
   const { theme, setTheme } = useTheme();
@@ -29,10 +32,30 @@ const QuranIndex = () => {
     const saved = localStorage.getItem('quran-card-style');
     return (saved as CardStyle) || 'grid';
   });
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('quran-view-mode');
+    return (saved as ViewMode) || 'all';
+  });
+  const [expandedJuz, setExpandedJuz] = useState<number | null>(null);
 
   useEffect(() => {
     localStorage.setItem('quran-card-style', cardStyle);
   }, [cardStyle]);
+
+  useEffect(() => {
+    localStorage.setItem('quran-view-mode', viewMode);
+  }, [viewMode]);
+
+  // تنظيم السور حسب الأجزاء الـ 30
+  const surahsByJuz = useMemo(() => {
+    const juzMap: Record<number, typeof surahIndex> = {};
+    
+    for (let j = 1; j <= 30; j++) {
+      juzMap[j] = surahIndex.filter(surah => surah.juz.includes(j));
+    }
+    
+    return juzMap;
+  }, []);
   
   return (
     <div 
@@ -83,6 +106,34 @@ const QuranIndex = () => {
 
             {/* الأزرار */}
             <div className="flex items-center gap-1">
+              {/* طريقة العرض: كل السور / حسب الجزء */}
+              <div className="flex items-center bg-muted/50 rounded-xl p-1 mr-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-8 px-3 rounded-lg transition-all text-xs gap-1",
+                    viewMode === 'all' && 'bg-primary text-primary-foreground shadow-sm'
+                  )}
+                  onClick={() => setViewMode('all')}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{isRtl ? 'الكل' : 'All'}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-8 px-3 rounded-lg transition-all text-xs gap-1",
+                    viewMode === 'juz' && 'bg-primary text-primary-foreground shadow-sm'
+                  )}
+                  onClick={() => setViewMode('juz')}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{isRtl ? 'الأجزاء' : 'Juz'}</span>
+                </Button>
+              </div>
+
               {/* نمط العرض */}
               <div className="flex items-center bg-muted/50 rounded-xl p-1">
                 {[
@@ -130,12 +181,62 @@ const QuranIndex = () => {
         </div>
 
         {/* الفهرس */}
-        <div className={cn(
-          'transition-all duration-300',
-          cardStyle === 'grid' && 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3',
-          cardStyle === 'list' && 'space-y-2',
-          cardStyle === 'compact' && 'grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2'
-        )}>
+        {viewMode === 'juz' ? (
+          // عرض حسب الأجزاء الـ 30
+          <div className="space-y-4">
+            {Array.from({ length: 30 }, (_, i) => i + 1).map((juzNum) => (
+              <div key={juzNum} className="bg-card/80 rounded-2xl border border-border/50 overflow-hidden">
+                <button
+                  onClick={() => setExpandedJuz(expandedJuz === juzNum ? null : juzNum)}
+                  className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg">
+                      {juzNum}
+                    </div>
+                    <div className={cn("text-right", !isRtl && "text-left")}>
+                      <h3 className="font-bold text-foreground">{isRtl ? `الجزء ${juzNum}` : `Juz ${juzNum}`}</h3>
+                      <p className="text-sm text-muted-foreground">{surahsByJuz[juzNum]?.length || 0} {isRtl ? 'سورة' : 'Surahs'}</p>
+                    </div>
+                  </div>
+                  <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", expandedJuz === juzNum && "rotate-180")} />
+                </button>
+                {expandedJuz === juzNum && (
+                  <div className="p-4 pt-0 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 animate-fade-in">
+                    {surahsByJuz[juzNum]?.map((surah) => {
+                      const hasData = isDataAvailable(surah.id);
+                      return (
+                        <Link
+                          key={surah.id}
+                          to={hasData ? `/surah/${surah.id}` : '#'}
+                          onClick={(e) => !hasData && e.preventDefault()}
+                          className={cn(
+                            'p-3 rounded-xl border text-center transition-all group',
+                            hasData ? 'bg-muted/30 hover:bg-primary/10 hover:border-primary/30' : 'opacity-40 cursor-not-allowed'
+                          )}
+                        >
+                          <div className={cn(
+                            'mx-auto mb-2 rounded-lg flex items-center justify-center font-bold w-8 h-8 text-sm',
+                            hasData ? 'gradient-gold text-primary-foreground' : 'bg-muted text-muted-foreground'
+                          )}>{surah.id}</div>
+                          <h4 className="font-amiri font-bold text-sm truncate">{surah.name}</h4>
+                          <p className="text-xs text-muted-foreground">{surah.versesCount} {t.verse}</p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          // العرض العادي
+          <div className={cn(
+            'transition-all duration-300',
+            cardStyle === 'grid' && 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3',
+            cardStyle === 'list' && 'space-y-2',
+            cardStyle === 'compact' && 'grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2'
+          )}>
           {surahIndex.map((surah, index) => {
             const hasData = isDataAvailable(surah.id);
             
@@ -289,7 +390,8 @@ const QuranIndex = () => {
               </Link>
             );
           })}
-        </div>
+          </div>
+        )}
       </main>
 
       {/* الفوتر */}
