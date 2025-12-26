@@ -597,13 +597,13 @@ const LandingSidebar = () => {
                 </div>
                 <div className="flex-1 flex items-center gap-2">
                   <span className={cn(
-                    "font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
+                    "font-amiri font-medium text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors",
                     isRtl ? "order-last" : "order-first",
                     hasNewFeedback && "text-amber-500 font-bold"
                   )}>
                     {hasNewFeedback 
                       ? `📬 ${FEEDBACK_LABELS[language]?.newFeedback || FEEDBACK_LABELS.en.newFeedback}` 
-                      : (FEEDBACK_LABELS[language]?.feedback || FEEDBACK_LABELS.en.feedback)}
+                      : (isRtl ? '📩 إرسال ملاحظات' : '📩 Send Feedback')}
                   </span>
                   <ChevronDown className={cn(
                     "w-4 h-4 text-amber-500 transition-transform",

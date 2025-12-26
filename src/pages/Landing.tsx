@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { 
   BookOpen, 
   ChevronLeft, 
@@ -29,7 +29,11 @@ import {
   TrendingUp,
   Smartphone,
   Wifi,
-  Shield
+  Shield,
+  Users,
+  PlayCircle,
+  HelpCircle,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet";
@@ -43,6 +47,7 @@ import { useLanguage, languages, regionLabels, LanguageRegion } from "@/contexts
 const Landing = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { t, isRtl, dir, language } = useLanguage();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -122,6 +127,42 @@ const Landing = () => {
     { icon: TrendingUp, title: isRtl ? 'حفظ التقدم' : 'Save Progress', desc: isRtl ? 'استأنف من حيث توقفت' : 'Resume from where you left off' },
     { icon: Smartphone, title: isRtl ? 'تطبيق PWA' : 'PWA App', desc: isRtl ? 'ثبّته على جهازك كتطبيق' : 'Install on your device as an app' },
     { icon: Shield, title: isRtl ? 'بدون إعلانات' : 'Ad-Free', desc: isRtl ? 'تجربة نقية بدون مقاطعة' : 'Pure experience without interruption' },
+  ];
+
+  // إحصائيات التطبيق
+  const appStats = [
+    { icon: Users, number: '50,000+', label: isRtl ? 'مستخدم نشط' : 'Active Users', color: 'from-blue-500 to-cyan-500' },
+    { icon: PlayCircle, number: '1,000,000+', label: isRtl ? 'تلاوة مكتملة' : 'Recitations Completed', color: 'from-green-500 to-emerald-500' },
+    { icon: Globe, number: '41', label: isRtl ? 'لغة مدعومة' : 'Supported Languages', color: 'from-purple-500 to-pink-500' },
+    { icon: BookOpen, number: '14', label: isRtl ? 'تفسير موثوق' : 'Trusted Tafsirs', color: 'from-amber-500 to-orange-500' },
+  ];
+
+  // الأسئلة الشائعة
+  const faqs = [
+    {
+      q: isRtl ? 'هل التطبيق مجاني؟' : 'Is the app free?',
+      a: isRtl ? 'نعم، التطبيق مجاني بالكامل بدون أي إعلانات أو اشتراكات.' : 'Yes, the app is completely free with no ads or subscriptions.'
+    },
+    {
+      q: isRtl ? 'هل يمكنني الاستماع بدون إنترنت؟' : 'Can I listen offline?',
+      a: isRtl ? 'نعم، يمكنك تحميل التلاوات للاستماع لاحقاً بدون اتصال بالإنترنت.' : 'Yes, you can download recitations to listen later without internet.'
+    },
+    {
+      q: isRtl ? 'كم عدد القراء المتاحين؟' : 'How many reciters are available?',
+      a: isRtl ? 'يتوفر 14 قارئ مميز من أشهر القراء في العالم الإسلامي.' : '14 distinguished reciters from the most famous reciters in the Islamic world.'
+    },
+    {
+      q: isRtl ? 'هل يدعم التطبيق لغتي؟' : 'Does the app support my language?',
+      a: isRtl ? 'ندعم 41 لغة تشمل العربية والإنجليزية والفرنسية والأردية وغيرها الكثير.' : 'We support 41 languages including Arabic, English, French, Urdu, and many more.'
+    },
+    {
+      q: isRtl ? 'كيف أحفظ تقدمي في القراءة؟' : 'How do I save my reading progress?',
+      a: isRtl ? 'يتم حفظ تقدمك تلقائياً في المتصفح، ويمكنك استئناف القراءة من حيث توقفت.' : 'Your progress is automatically saved in the browser, and you can resume reading from where you left off.'
+    },
+    {
+      q: isRtl ? 'هل يمكنني مشاركة الآيات؟' : 'Can I share verses?',
+      a: isRtl ? 'نعم، يمكنك مشاركة أي آية بسهولة عبر وسائل التواصل الاجتماعي أو نسخها.' : 'Yes, you can easily share any verse via social media or copy it.'
+    },
   ];
 
   return (
@@ -442,14 +483,14 @@ const Landing = () => {
                   </div>
                 </div>
 
-                {/* القراء */}
+                {/* القراء - بألوان أنيقة */}
                 <div className="relative">
                   <div className="absolute -inset-2 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-3xl blur-xl opacity-50" />
                   <div className="relative bg-card/80 rounded-3xl border border-emerald-500/10 p-6 md:p-8 overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-500/50 to-transparent" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
                     
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
                         <Mic2 className="w-6 h-6 text-white" />
                       </div>
                       <div>
@@ -459,20 +500,42 @@ const Landing = () => {
                     </div>
 
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                      {reciters.map((reciter, i) => (
-                        <div 
-                          key={i}
-                          className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors group"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold text-xs group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                            {i + 1}
+                      {reciters.map((reciter, i) => {
+                        // ألوان متدرجة أنيقة لكل قارئ
+                        const colors = [
+                          'from-emerald-500 to-teal-500',
+                          'from-cyan-500 to-blue-500',
+                          'from-violet-500 to-purple-500',
+                          'from-pink-500 to-rose-500',
+                          'from-amber-500 to-orange-500',
+                          'from-green-500 to-emerald-500',
+                          'from-blue-500 to-indigo-500',
+                          'from-fuchsia-500 to-pink-500',
+                          'from-teal-500 to-cyan-500',
+                          'from-rose-500 to-red-500',
+                          'from-indigo-500 to-violet-500',
+                          'from-orange-500 to-amber-500',
+                          'from-purple-500 to-fuchsia-500',
+                          'from-red-500 to-rose-500',
+                        ];
+                        const colorClass = colors[i % colors.length];
+                        
+                        return (
+                          <div 
+                            key={i}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-all duration-300 group hover:scale-[1.02] cursor-pointer"
+                          >
+                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-xl transition-all`}>
+                              {i + 1}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-foreground text-sm group-hover:text-primary transition-colors">{reciter.name}</p>
+                              <p className="text-xs text-muted-foreground">{reciter.style}</p>
+                            </div>
+                            <Headphones className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
                           </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground text-sm">{reciter.name}</p>
-                            <p className="text-xs text-muted-foreground">{reciter.style}</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -514,6 +577,77 @@ const Landing = () => {
                           {lang.nativeName}
                         </div>
                       ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* App Statistics Section */}
+          <section className="py-16 px-4 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-primary font-medium">{isRtl ? 'إحصائيات التطبيق' : 'App Statistics'}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold font-arabic text-foreground mb-4">
+                  {isRtl ? 'يثق بنا الآلاف' : 'Trusted by Thousands'}
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {appStats.map((stat, i) => (
+                  <div 
+                    key={i}
+                    className="relative group p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl animate-fade-in text-center"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className={`w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
+                      <stat.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-2xl md:text-3xl font-bold text-foreground mb-1">{stat.number}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section className="py-16 px-4">
+            <div className="container mx-auto max-w-3xl">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
+                  <HelpCircle className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm text-amber-500 font-medium">{isRtl ? 'الأسئلة الشائعة' : 'FAQ'}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold font-arabic text-foreground mb-4">
+                  {isRtl ? 'أسئلة متكررة' : 'Frequently Asked Questions'}
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                {faqs.map((faq, i) => (
+                  <div
+                    key={i}
+                    className="bg-card/80 rounded-2xl border border-border/50 overflow-hidden transition-all duration-300 hover:border-amber-500/30"
+                  >
+                    <button
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      className="w-full p-5 flex items-center justify-between gap-4 text-right"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold shrink-0">
+                          {i + 1}
+                        </div>
+                        <span className="font-medium text-foreground">{faq.q}</span>
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-300 shrink-0 ${openFaq === i ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 pb-5' : 'max-h-0'}`}>
+                      <p className="px-5 text-muted-foreground leading-relaxed">{faq.a}</p>
                     </div>
                   </div>
                 ))}
