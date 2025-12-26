@@ -15,7 +15,21 @@ import {
   BookMarked,
   Mic2,
   FileText,
-  GripHorizontal
+  GripHorizontal,
+  Eye,
+  EyeOff,
+  Globe,
+  Bookmark,
+  Download,
+  Repeat,
+  Share2,
+  Moon,
+  Sun,
+  Clock,
+  TrendingUp,
+  Smartphone,
+  Wifi,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet";
@@ -23,7 +37,7 @@ import { surahIndex } from "@/data/surahIndex";
 import { isDataAvailable } from "@/data/surahsData";
 import { cn } from "@/lib/utils";
 import LandingSidebar from "@/components/LandingSidebar";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, languages, regionLabels, LanguageRegion } from "@/contexts/LanguageContext";
 
 
 const Landing = () => {
@@ -59,24 +73,55 @@ const Landing = () => {
     { name: "التفسير الوسيط للطنطاوي", author: "الشيخ الطنطاوي" },
   ];
 
-  // قائمة القراء الـ 6 الموجودين فعلياً
+  // قائمة القراء الـ 14 المتاحين
   const reciters = [
-    { name: "مشاري العفاسي", style: "المرتل" },
-    { name: "عبد الباسط عبد الصمد", style: "المرتل" },
-    { name: "عبد الباسط عبد الصمد", style: "المجود" },
+    { name: "مشاري العفاسي", style: "الافتراضي" },
+    { name: "عبد الرحمن السديس", style: "إمام الحرم المكي" },
     { name: "محمد صديق المنشاوي", style: "المرتل" },
-    { name: "محمود خليل الحصري", style: "المعلم" },
+    { name: "محمود خليل الحصري", style: "المرتل" },
+    { name: "الحصري", style: "المجود" },
+    { name: "سعود الشريم", style: "إمام الحرم المكي" },
     { name: "ماهر المعيقلي", style: "المرتل" },
+    { name: "أحمد العجمي", style: "المرتل" },
+    { name: "عبد الباسط عبد الصمد", style: "المرتل" },
+    { name: "علي الحذيفي", style: "إمام المسجد النبوي" },
+    { name: "عبدالله بصفر", style: "المرتل" },
+    { name: "محمد أيوب", style: "إمام المسجد النبوي" },
+    { name: "أبو بكر الشاطري", style: "المرتل" },
+    { name: "محمد جبريل", style: "المرتل" },
   ];
 
-  // المميزات
+  // اللغات المدعومة مجمعة حسب المنطقة
+  const languagesByRegion = languages.reduce((acc, lang) => {
+    if (!acc[lang.region]) acc[lang.region] = [];
+    acc[lang.region].push(lang);
+    return acc;
+  }, {} as Record<LanguageRegion, typeof languages>);
+
+  // المميزات الأساسية
   const features = [
     { icon: BookMarked, title: `114 ${t.fullSurahs}`, desc: t.uthmaniScript },
     { icon: Languages, title: `14 ${t.trustedTafsirs}`, desc: t.fromMajorBooks },
-    { icon: Headphones, title: `6 ${t.distinguishedReciters}`, desc: t.beautifulRecitations },
+    { icon: Headphones, title: `14 ${isRtl ? 'قارئ مميز' : 'Distinguished Reciters'}`, desc: t.beautifulRecitations },
+    { icon: Globe, title: `41 ${isRtl ? 'لغة مدعومة' : 'Languages Supported'}`, desc: isRtl ? 'ترجمات من مصادر موثوقة' : 'Translations from trusted sources' },
     { icon: Search, title: t.advancedSearch, desc: t.searchInVerses },
     { icon: Heart, title: t.favorites, desc: t.saveYourFavorites },
+  ];
+
+  // الميزات المتقدمة
+  const advancedFeatures = [
+    { icon: EyeOff, title: isRtl ? 'إخفاء/إظهار التفسير' : 'Hide/Show Tafsir', desc: isRtl ? 'للقراءة المركزة دون تشتت' : 'For focused reading without distractions' },
+    { icon: Globe, title: isRtl ? 'ترجمة الآيات' : 'Verse Translation', desc: isRtl ? 'ترجمة فورية لـ 41 لغة' : 'Instant translation to 41 languages' },
+    { icon: Bookmark, title: isRtl ? 'حفظ القارئ المفضل' : 'Save Preferred Reciter', desc: isRtl ? 'يُحفظ تلقائياً في المتصفح' : 'Automatically saved in browser' },
+    { icon: Repeat, title: isRtl ? 'تكرار الآيات' : 'Verse Repeat', desc: isRtl ? 'كرر الآية 2-10 مرات للحفظ' : 'Repeat verse 2-10 times for memorization' },
     { icon: Volume2, title: t.listenVerseByVerse, desc: t.orFullSurah },
+    { icon: Download, title: isRtl ? 'تحميل التلاوات' : 'Download Recitations', desc: isRtl ? 'حمّل الصوت للاستماع دون إنترنت' : 'Download audio for offline listening' },
+    { icon: Share2, title: isRtl ? 'مشاركة الآيات' : 'Share Verses', desc: isRtl ? 'شارك الآيات مع الآخرين' : 'Share verses with others' },
+    { icon: Moon, title: isRtl ? 'الوضع الليلي' : 'Dark Mode', desc: isRtl ? 'راحة للعين في الإضاءة المنخفضة' : 'Easy on eyes in low light' },
+    { icon: Clock, title: isRtl ? 'إحصائيات الاستماع' : 'Listening Stats', desc: isRtl ? 'تتبع وقت الاستماع والتقدم' : 'Track listening time and progress' },
+    { icon: TrendingUp, title: isRtl ? 'حفظ التقدم' : 'Save Progress', desc: isRtl ? 'استأنف من حيث توقفت' : 'Resume from where you left off' },
+    { icon: Smartphone, title: isRtl ? 'تطبيق PWA' : 'PWA App', desc: isRtl ? 'ثبّته على جهازك كتطبيق' : 'Install on your device as an app' },
+    { icon: Shield, title: isRtl ? 'بدون إعلانات' : 'Ad-Free', desc: isRtl ? 'تجربة نقية بدون مقاطعة' : 'Pure experience without interruption' },
   ];
 
   return (
@@ -334,10 +379,31 @@ const Landing = () => {
                   </div>
                 ))}
               </div>
+
+              {/* الميزات المتقدمة */}
+              <div className="mt-12">
+                <h3 className="text-xl font-bold text-center text-foreground mb-8">
+                  {isRtl ? '✨ ميزات متقدمة' : '✨ Advanced Features'}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {advancedFeatures.map((feature, i) => (
+                    <div 
+                      key={i} 
+                      className="group p-4 rounded-xl bg-card/30 border border-border/30 hover:border-primary/20 hover:bg-card/50 transition-all duration-300"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                        <feature.icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <h4 className="font-medium text-foreground text-sm mb-1">{feature.title}</h4>
+                      <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* Tafsirs Section */}
+          {/* Tafsirs & Reciters Section */}
           <section className="py-16 px-4">
             <div className="container mx-auto max-w-6xl">
               <div className="grid md:grid-cols-2 gap-8">
@@ -357,7 +423,7 @@ const Landing = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                       {tafsirs.map((tafsir, i) => (
                         <div 
                           key={i}
@@ -387,19 +453,19 @@ const Landing = () => {
                         <Mic2 className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">{t.distinguishedReciters}</h3>
+                        <h3 className="text-xl font-bold text-foreground">{isRtl ? 'قراء مميزون' : 'Distinguished Reciters'}</h3>
                         <p className="text-sm text-muted-foreground">{reciters.length} {t.reciters}</p>
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                       {reciters.map((reciter, i) => (
                         <div 
                           key={i}
                           className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors group"
                         >
-                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                            <Headphones className="w-4 h-4 text-emerald-500" />
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold text-xs group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                            {i + 1}
                           </div>
                           <div className="flex-1">
                             <p className="font-medium text-foreground text-sm">{reciter.name}</p>
@@ -410,6 +476,47 @@ const Landing = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Languages Section */}
+          <section className="py-16 px-4 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent">
+            <div className="container mx-auto max-w-6xl">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+                  <Globe className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm text-blue-500 font-medium">{isRtl ? 'دعم متعدد اللغات' : 'Multi-Language Support'}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold font-arabic text-foreground mb-4">
+                  {isRtl ? '41 لغة مدعومة' : '41 Languages Supported'}
+                </h2>
+                <p className="text-muted-foreground max-w-xl mx-auto">
+                  {isRtl ? 'ترجمات موثوقة من مصادر معتمدة حول العالم' : 'Trusted translations from accredited sources worldwide'}
+                </p>
+              </div>
+
+              <div className="grid gap-6">
+                {(['european', 'asian', 'middleeast', 'african'] as LanguageRegion[]).map((region) => (
+                  <div key={region} className="bg-card/50 rounded-2xl border border-border/50 p-6">
+                    <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                      <Languages className="w-5 h-5 text-blue-500" />
+                      {isRtl ? regionLabels[region].ar : regionLabels[region].en}
+                      <span className="text-sm font-normal text-muted-foreground">({languagesByRegion[region]?.length || 0})</span>
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {languagesByRegion[region]?.map((lang) => (
+                        <div 
+                          key={lang.code}
+                          className="px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-sm text-foreground hover:bg-blue-500/20 transition-colors cursor-default"
+                          title={lang.translator}
+                        >
+                          {lang.nativeName}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
