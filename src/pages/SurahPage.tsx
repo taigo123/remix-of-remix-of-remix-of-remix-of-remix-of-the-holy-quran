@@ -61,11 +61,45 @@ const SurahPage = () => {
   // Offline Tafsir
   const { 
     saveTafsir, 
+    saveSurahTafsir,
     isTafsirCached, 
     exportTafsirAsText,
     isSaving: isSavingTafsir 
   } = useOfflineTafsir();
   const [tafsirCacheStatus, setTafsirCacheStatus] = useState<Record<number, boolean>>({});
+  const [isSavingFullSurah, setIsSavingFullSurah] = useState(false);
+
+  // حفظ تفسير السورة كاملة
+  const handleSaveFullSurahTafsir = async () => {
+    if (!surah) return;
+    setIsSavingFullSurah(true);
+    try {
+      const versesWithTafsir = surah.verses.map(verse => ({
+        verseId: verse.id,
+        content: getTafsir(verse.id, verse.tafsir)
+      }));
+      
+      await saveSurahTafsir(surahId, selectedSource, versesWithTafsir);
+      
+      // تحديث حالة الكاش لكل الآيات
+      const newStatus: Record<number, boolean> = {};
+      surah.verses.forEach(v => { newStatus[v.id] = true; });
+      setTafsirCacheStatus(newStatus);
+    } finally {
+      setIsSavingFullSurah(false);
+    }
+  };
+
+  // تصدير تفسير السورة كاملة
+  const handleExportFullSurahTafsir = () => {
+    if (!surah) return;
+    const versesData = surah.verses.map(verse => ({
+      verseId: verse.id,
+      arabicText: verse.arabicText,
+      tafsir: getTafsir(verse.id, verse.tafsir)
+    }));
+    exportTafsirAsText(surah.name, versesData);
+  };
 
   // Keep ref in sync
   useEffect(() => {
@@ -296,7 +330,7 @@ const SurahPage = () => {
 
         {/* اختيار التفسير */}
         <div className="mb-6 p-5 bg-card rounded-2xl border border-border/50 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <TafsirSourceSelector
               selectedSource={selectedSource}
               onSourceChange={setSelectedSource}
@@ -312,6 +346,36 @@ const SurahPage = () => {
               {t.compareTafsirs}
             </Button>
           </div>
+          
+          {/* أزرار حفظ وتحميل التفسير الكامل */}
+          <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveFullSurahTafsir}
+              disabled={isSavingFullSurah || isTafsirLoading}
+              className="gap-2 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
+            >
+              {isSavingFullSurah ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <HardDrive className="w-4 h-4" />
+              )}
+              {isRtl ? 'حفظ التفسير كاملاً (أوفلاين)' : 'Save Full Tafsir (Offline)'}
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportFullSurahTafsir}
+              disabled={isTafsirLoading}
+              className="gap-2 rounded-xl"
+            >
+              <Download className="w-4 h-4" />
+              {isRtl ? 'تحميل التفسير كملف' : 'Download Tafsir File'}
+            </Button>
+          </div>
+          
           {tafsirError && (
             <p className="mt-3 text-sm text-destructive bg-destructive/10 p-3 rounded-xl">{tafsirError}</p>
           )}
