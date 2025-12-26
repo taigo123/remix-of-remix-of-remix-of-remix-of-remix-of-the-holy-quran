@@ -35,6 +35,7 @@ import { useLanguage, languages, regionLabels, LanguageRegion, LanguageInfo } fr
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useViewerId } from "@/hooks/useViewerId";
+import { DailyReminderPanel } from "@/components/DailyReminderPanel";
 
 interface FeedbackItem {
   id: string;
@@ -323,15 +324,21 @@ const LandingSidebar = () => {
 
   return (
     <>
-      {/* Toggle Button - Right Side */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setIsOpen(true)}
-        className="fixed top-6 right-6 z-50 h-12 w-12 rounded-2xl border-primary/20 bg-background/80 backdrop-blur-xl hover:bg-primary/10 transition-all duration-300 hover:scale-110 hover:border-primary shadow-lg"
-      >
-        <Menu className="w-5 h-5 text-primary" />
-      </Button>
+      {/* Fixed Top Buttons */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+        {/* Daily Reminder Button */}
+        <DailyReminderPanel />
+        
+        {/* Toggle Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setIsOpen(true)}
+          className="h-12 w-12 rounded-2xl border-primary/20 bg-background/80 backdrop-blur-xl hover:bg-primary/10 transition-all duration-300 hover:scale-110 hover:border-primary shadow-lg"
+        >
+          <Menu className="w-5 h-5 text-primary" />
+        </Button>
+      </div>
 
       {/* Overlay */}
       {isOpen && (
