@@ -46,6 +46,16 @@ const QuranIndex = () => {
     localStorage.setItem('quran-view-mode', viewMode);
   }, [viewMode]);
 
+  // أسماء الأجزاء الثلاثين
+  const juzNames: Record<number, string> = {
+    1: 'الم', 2: 'سيقول', 3: 'تلك الرسل', 4: 'لن تنالوا', 5: 'والمحصنات',
+    6: 'لا يحب الله', 7: 'وإذا سمعوا', 8: 'ولو أننا', 9: 'قال الملأ', 10: 'واعلموا',
+    11: 'يعتذرون', 12: 'وما من دابة', 13: 'وما أبرئ', 14: 'ربما', 15: 'سبحان الذي',
+    16: 'قال ألم', 17: 'اقترب للناس', 18: 'قد أفلح', 19: 'وقال الذين', 20: 'أمن خلق',
+    21: 'اتل ما أوحي', 22: 'ومن يقنت', 23: 'وما لي', 24: 'فمن أظلم', 25: 'إليه يرد',
+    26: 'حم', 27: 'قال فما خطبكم', 28: 'قد سمع الله', 29: 'تبارك الذي', 30: 'عم'
+  };
+
   // تنظيم السور حسب الأجزاء الـ 30
   const surahsByJuz = useMemo(() => {
     const juzMap: Record<number, typeof surahIndex> = {};
@@ -195,7 +205,7 @@ const QuranIndex = () => {
                       {juzNum}
                     </div>
                     <div className={cn("text-right", !isRtl && "text-left")}>
-                      <h3 className="font-bold text-foreground">{isRtl ? `الجزء ${juzNum}` : `Juz ${juzNum}`}</h3>
+                      <h3 className="font-bold text-foreground">{isRtl ? `الجزء ${juzNum}` : `Juz ${juzNum}`} - <span className="font-amiri text-primary">{juzNames[juzNum]}</span></h3>
                       <p className="text-sm text-muted-foreground">{surahsByJuz[juzNum]?.length || 0} {isRtl ? 'سورة' : 'Surahs'}</p>
                     </div>
                   </div>
