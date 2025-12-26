@@ -10,7 +10,9 @@ import {
   Grid3X3,
   Headphones,
   ChevronDown,
-  Layers
+  Layers,
+  Search,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { surahIndex } from '@/data/surahIndex';
@@ -37,6 +39,7 @@ const QuranIndex = () => {
     return (saved as ViewMode) || 'all';
   });
   const [expandedJuz, setExpandedJuz] = useState<number | null>(null);
+  const [juzSearch, setJuzSearch] = useState('');
 
   useEffect(() => {
     localStorage.setItem('quran-card-style', cardStyle);
@@ -55,6 +58,18 @@ const QuranIndex = () => {
     21: 'اتل ما أوحي', 22: 'ومن يقنت', 23: 'وما لي', 24: 'فمن أظلم', 25: 'إليه يرد',
     26: 'حم', 27: 'قال فما خطبكم', 28: 'قد سمع الله', 29: 'تبارك الذي', 30: 'عم'
   };
+
+  // تصفية الأجزاء حسب البحث
+  const filteredJuzNumbers = useMemo(() => {
+    if (!juzSearch.trim()) return Array.from({ length: 30 }, (_, i) => i + 1);
+    
+    const search = juzSearch.trim().toLowerCase();
+    return Array.from({ length: 30 }, (_, i) => i + 1).filter(juzNum => {
+      const juzName = juzNames[juzNum].toLowerCase();
+      const juzLabel = `الجزء ${juzNum}`;
+      return juzName.includes(search) || juzLabel.includes(search) || String(juzNum).includes(search);
+    });
+  }, [juzSearch]);
 
   // تنظيم السور حسب الأجزاء الـ 30
   const surahsByJuz = useMemo(() => {
@@ -194,7 +209,34 @@ const QuranIndex = () => {
         {viewMode === 'juz' ? (
           // عرض حسب الأجزاء الـ 30
           <div className="space-y-4">
-            {Array.from({ length: 30 }, (_, i) => i + 1).map((juzNum) => (
+            {/* شريط البحث عن الأجزاء */}
+            <div className="relative max-w-md mx-auto mb-4">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={juzSearch}
+                onChange={(e) => setJuzSearch(e.target.value)}
+                placeholder={isRtl ? "ابحث عن جزء بالاسم أو الرقم..." : "Search juz by name or number..."}
+                className="w-full pr-10 pl-10 py-2 rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/50 focus:outline-none text-sm"
+                dir={dir}
+              />
+              {juzSearch && (
+                <button
+                  onClick={() => setJuzSearch('')}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            
+            {filteredJuzNumbers.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>{isRtl ? 'لا توجد نتائج' : 'No results found'}</p>
+              </div>
+            ) : (
+              filteredJuzNumbers.map((juzNum) => (
               <div key={juzNum} className="bg-card/80 rounded-2xl border border-border/50 overflow-hidden">
                 <button
                   onClick={() => setExpandedJuz(expandedJuz === juzNum ? null : juzNum)}
@@ -237,7 +279,8 @@ const QuranIndex = () => {
                   </div>
                 )}
               </div>
-            ))}
+            ))
+            )}
           </div>
         ) : (
           // العرض العادي

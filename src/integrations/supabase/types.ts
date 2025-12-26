@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      recitation_stats: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          total_recitations: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          total_recitations?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          total_recitations?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recitations: {
+        Row: {
+          completed_at: string
+          id: string
+          reciter: string | null
+          surah_id: number
+          verse_end: number | null
+          verse_start: number | null
+          visitor_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          reciter?: string | null
+          surah_id: number
+          verse_end?: number | null
+          verse_start?: number | null
+          visitor_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          reciter?: string | null
+          surah_id?: number
+          verse_end?: number | null
+          verse_start?: number | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       user_feedback: {
         Row: {
           context: string | null
@@ -103,6 +157,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      record_recitation: {
+        Args: {
+          p_reciter?: string
+          p_surah_id: number
+          p_verse_end?: number
+          p_verse_start?: number
+          p_visitor_id: string
+        }
+        Returns: undefined
+      }
       record_visit: {
         Args: { p_page_path?: string; p_visitor_id: string }
         Returns: undefined
