@@ -44,6 +44,7 @@ import LandingSidebar from "@/components/LandingSidebar";
 import { useLanguage, languages, regionLabels, LanguageRegion } from "@/contexts/LanguageContext";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { useVisitorStats } from "@/hooks/useVisitorStats";
+import { useRecitationStats } from "@/hooks/useRecitationStats";
 
 
 const Landing = () => {
@@ -51,6 +52,7 @@ const Landing = () => {
   const { t, isRtl, dir, language } = useLanguage();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { stats: visitorStats, loading: visitorLoading } = useVisitorStats();
+  const { stats: recitationStats, loading: recitationLoading } = useRecitationStats();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -139,6 +141,12 @@ const Landing = () => {
       number: visitorLoading ? '...' : `${visitorStats.uniqueVisitors}`, 
       label: isRtl ? 'زائر فريد' : 'Unique Visitors', 
       color: 'from-blue-500 to-cyan-500' 
+    },
+    { 
+      icon: PlayCircle, 
+      number: recitationLoading ? '...' : `${recitationStats.totalRecitations}`, 
+      label: isRtl ? 'تلاوة مكتملة' : 'Recitations Completed', 
+      color: 'from-green-500 to-emerald-500' 
     },
     { icon: Globe, number: '41', label: isRtl ? 'لغة مدعومة' : 'Supported Languages', color: 'from-purple-500 to-pink-500' },
     { icon: BookOpen, number: '14', label: isRtl ? 'تفسير موثوق' : 'Trusted Tafsirs', color: 'from-amber-500 to-orange-500' },

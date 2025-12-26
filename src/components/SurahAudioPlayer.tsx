@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Download, Loader2, Pause, Play, Repeat, Volume2, VolumeX } from "lucide-react";
+import { Download, HardDrive, Loader2, Pause, Play, Repeat, Volume2, VolumeX, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useOfflineAudio } from "@/hooks/useOfflineAudio";
+import { useRecitationStats } from "@/hooks/useRecitationStats";
+import { useViewerId } from "@/hooks/useViewerId";
 
 interface SurahAudioPlayerProps {
   surahId: number;
@@ -82,6 +85,7 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
   const [isDownloading, setIsDownloading] = useState(false);
   const [repeatCount, setRepeatCount] = useState(0);
   const [currentRepeat, setCurrentRepeat] = useState(0);
+  const [isCached, setIsCached] = useState(false);
 
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -89,6 +93,10 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
   const repeatCountRef = useRef(repeatCount);
   const currentRepeatRef = useRef(currentRepeat);
   const selectedReciterRef = useRef(selectedReciter);
+  
+  const { downloadAudio, isAudioCached, getCachedAudio, isDownloading: isOfflineDownloading, downloadProgress } = useOfflineAudio();
+  const { recordRecitation } = useRecitationStats();
+  const viewerId = useViewerId();
 
   // Keep refs updated
   useEffect(() => {
@@ -120,6 +128,16 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
     return `https://cdn.islamic.network/quran/audio/${bitrate}/${selectedReciterRef.current}/${getGlobalVerseNumber()}.mp3`;
   }, [getGlobalVerseNumber]);
 
+  // Check if audio is cached
+  useEffect(() => {
+    const checkCache = async () => {
+      const url = getAudioUrl();
+      const cached = await isAudioCached(url);
+      setIsCached(cached);
+    };
+    checkCache();
+  }, [getAudioUrl, isAudioCached, selectedReciter, verseNumber]);
+
   // Initialize audio element once
   useEffect(() => {
     const audio = new Audio();
@@ -137,6 +155,8 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
       } else {
         setIsPlaying(false);
         setCurrentRepeat(0);
+        // Record the completed recitation
+        recordRecitation(surahId, verseNumber, verseNumber, selectedReciterRef.current);
         // Call the completion callback when playback finishes
         console.log('Audio ended, calling onPlaybackComplete');
         if (onPlaybackCompleteRef.current) {
@@ -278,6 +298,15 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
     setIsDownloading(false);
   };
 
+  const handleOfflineDownload = async () => {
+    const url = getAudioUrl();
+    const reciterName = RECITERS.find(r => r.id === selectedReciter)?.name || selectedReciter;
+    const success = await downloadAudio(url, surahId, reciterName, verseNumber);
+    if (success) {
+      setIsCached(true);
+    }
+  };
+
   const cycleRepeat = () => {
     const currentIndex = REPEAT_OPTIONS.indexOf(repeatCount);
     const nextIndex = (currentIndex + 1) % REPEAT_OPTIONS.length;
@@ -352,13 +381,34 @@ export const SurahAudioPlayer = forwardRef<SurahAudioPlayerRef, SurahAudioPlayer
           onClick={handleDownload}
           disabled={isDownloading}
           className="h-8 w-8 p-0 rounded-full hover:bg-primary/10"
-          aria-label="تحميل تلاوة الآية"
+          aria-label="تحميل خارجي"
           title="تحميل mp3"
         >
           {isDownloading ? (
             <Loader2 className="w-4 h-4 animate-spin text-primary" />
           ) : (
             <Download className="w-4 h-4 text-primary" />
+          )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleOfflineDownload}
+          disabled={isOfflineDownloading || isCached}
+          className={cn(
+            "h-8 w-8 p-0 rounded-full hover:bg-primary/10",
+            isCached && "text-green-500"
+          )}
+          aria-label={isCached ? "محفوظ للاستماع بدون إنترنت" : "حفظ للاستماع بدون إنترنت"}
+          title={isCached ? "محفوظ ✓" : "حفظ للأوفلاين"}
+        >
+          {isOfflineDownloading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          ) : isCached ? (
+            <Check className="w-4 h-4 text-green-500" />
+          ) : (
+            <HardDrive className="w-4 h-4 text-primary" />
           )}
         </Button>
 
